@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### jacoco Testing ###
-/jacoco
+src/jacoco/
 
 ### System Os ###
 .DS_Store
