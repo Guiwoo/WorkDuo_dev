@@ -35,3 +35,13 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### jacoco Testing ###
+src/jacoco/
+
+### System Os ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
