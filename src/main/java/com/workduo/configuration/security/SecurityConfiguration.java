@@ -1,6 +1,6 @@
 package com.workduo.configuration.security;
 
-//import com.workduo.configuration.jwt.JwtAuthenticationFilter;
+import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration {
-//    private final JwtAuthenticationFilter authenticationFilter;
+    private final JwtAuthenticationFilter authenticationFilter;
 
     @Bean
     public SuccessHandler getSuccessHandler() {
@@ -54,10 +54,11 @@ public class SecurityConfiguration {
         http
                 .authorizeRequests()
                 .antMatchers(
-                        "/h2-console/**"
-                ).permitAll();
-//                .and()
-//                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        "/h2-console/**",
+                        "/groupMeetingParticipant/**"
+                ).permitAll()
+                .and()
+                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         http
                 .formLogin()
