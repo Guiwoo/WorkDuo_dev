@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Entity(name = "group_table")
+@Entity
 @Table(name = "group_table")
 public class Group extends BaseEntity {
 

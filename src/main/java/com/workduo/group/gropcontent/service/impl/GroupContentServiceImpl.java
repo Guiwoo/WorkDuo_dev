@@ -24,7 +24,6 @@ public class GroupContentServiceImpl implements GroupContentService {
     private final GroupContentRepository groupContentRepository;
     private final MemberRepository memberRepository;
     private final GroupRepository groupRepository;
-    private final GroupMeetingRepository groupMeetingRepository;
 
     @Override
     @Transactional
@@ -42,20 +41,6 @@ public class GroupContentServiceImpl implements GroupContentService {
                 .build();
 
         groupContentRepository.save(groupContent);
-
-        if (request.isActivate()
-            && !groupMeetingRepository.existsByMemberAndGroupContent(findMember, groupContent)) {
-
-            GroupMeeting groupMeeting = GroupMeeting.builder()
-                    .groupContent(groupContent)
-                    .member(findMember)
-                    .maxParticipant(request.getMaxParticipant())
-                    .meetingDate(request.getMeetingDate())
-                    .location(request.getLocation())
-                    .build();
-
-            groupMeetingRepository.save(groupMeeting);
-        }
 
         return CreateGroupContentDto.fromEntity(groupContent);
     }

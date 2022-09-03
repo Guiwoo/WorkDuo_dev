@@ -2,6 +2,7 @@ package com.workduo.group.groupmetting.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
 import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.group.entity.Group;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Entity(name = "group_meeting")
+@Entity
 @Table(name = "group_meeting")
 public class GroupMeeting extends BaseEntity {
 
@@ -25,9 +26,11 @@ public class GroupMeeting extends BaseEntity {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_content_id")
-    private GroupContent groupContent;
+    @JoinColumn(name = "group_id")
+    private Group group;
 
+    private String title;
+    private String content;
     private Integer maxParticipant;
     private LocalDateTime meetingDate;
 

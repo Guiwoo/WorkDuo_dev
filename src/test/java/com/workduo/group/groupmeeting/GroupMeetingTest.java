@@ -1,5 +1,7 @@
 package com.workduo.group.groupmeeting;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContentDto;
 import com.workduo.group.gropcontent.repository.GroupContentRepository;
@@ -20,7 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
@@ -28,6 +32,9 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -59,7 +66,11 @@ public class GroupMeetingTest {
     @Autowired
     private GroupMeetingLockService groupMeetingLockService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
 
+    @Autowired
+    MockMvc mockMvc;
 
     @Test
     @DisplayName("createGroupContentAndMeeting Test")
@@ -124,49 +135,39 @@ public class GroupMeetingTest {
         assertEquals(illegalStateException.getMessage(), "이미 참가한 모임입니다.");
     }
 
-    static class MeetingRunnable implements Runnable {
-        Member member;
-        CreateParticipant.Request request;
-        GroupMeetingParticipantService groupMeetingParticipantService;
-
-        public MeetingRunnable(Member member, CreateParticipant.Request request, GroupMeetingParticipantService groupMeetingParticipantService) {
-            this.member = member;
-            this.request = request;
-            this.groupMeetingParticipantService = groupMeetingParticipantService;
-        }
-
-        @Override
-        public void run() {
-            try {
-                groupMeetingParticipantService.meetingParticipant(request, member.getId());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     @Test
-    @DisplayName("createGroupContentAndMeeting lock")
-    public void createGroupContentMeetingParticipantLock() throws InterruptedException {
+    @DisplayName("createGroupContentAndMeeting lock") // 실패함...
+    public void createGroupContentMeetingParticipantLock() throws Exception {
         // given
-        Long numberOfThreads = 17L;
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        Thread[] thread = new Thread[2];
         for (int i = 0; i < 2; i++) {
             Member member = memberRepository.findById(17L + i)
                     .orElseThrow(() -> new IllegalStateException("not found member"));
 
             CreateParticipant.Request request = CreateParticipant.Request.builder()
                     .groupMeetingId(1L)
+                    .memberId(member.getId())
                     .build();
 
-            MeetingRunnable meetingRunnable = new MeetingRunnable(member, request, groupMeetingParticipantService);
-            Thread thread = new Thread(meetingRunnable);
-            thread.start();
+            mockMvc.perform(post( "/groupMeetingParticipant")
+                    .content(
+                            objectMapper.writeValueAsString(request)
+                    )
+                    .contentType(MediaType.APPLICATION_JSON));
+//            Runnable runnable = () -> {
+//                try {
+//                    mockMvc.perform(post( "/groupMeetingParticipant")
+//                                    .content(
+//                                            objectMapper.writeValueAsString(request)
+//                                    )
+//                                    .contentType(MediaType.APPLICATION_JSON));
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            };
+//
+//            thread[i] = new Thread(runnable);
+//            thread[i].start();
         }
     }
 }

@@ -30,6 +30,7 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
+        // single instance server이기 때문에 RedisStandaloneConfiguration instance 생성
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(host);
         redisStandaloneConfiguration.setPort(port);
@@ -42,6 +43,9 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        // Serialization
+        // 데이터 or 오브젝트와 같은 값들을 바이트 형태로 반환
+        // 자바에서 쓰고있는 데이터를 다른 곳에서도 쓸 수 있는 기본 데이터 타입인 바이트 형태로 바꾸는 과정
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));

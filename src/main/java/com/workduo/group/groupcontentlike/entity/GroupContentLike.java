@@ -10,7 +10,7 @@ import javax.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Entity(name = "group_content_like")
+@Entity
 @Table(name = "group_content_like")
 public class GroupContentLike {
 

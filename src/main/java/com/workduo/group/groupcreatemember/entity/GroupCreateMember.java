@@ -11,7 +11,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @IdClass(GroupCreateMemberId.class)
-@Entity(name = "group_create_member")
+@Entity
 @Table(name = "group_create_member")
 public class GroupCreateMember {
 

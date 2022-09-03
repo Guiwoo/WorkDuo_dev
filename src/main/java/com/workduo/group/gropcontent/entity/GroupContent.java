@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Entity(name = "group_content")
+@Entity
 @Table(name = "group_content")
 public class GroupContent extends BaseEntity {
 
@@ -40,4 +40,7 @@ public class GroupContent extends BaseEntity {
 
     private boolean deletedYn; // 삭제(탈퇴) 여부
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
+
+    private boolean noticeYn;
+    private int sortValue;
 }
