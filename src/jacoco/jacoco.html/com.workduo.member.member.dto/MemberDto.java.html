@@ -8,19 +8,19 @@ import java.time.LocalDateTime;
 @Getter
 <span class="nc" id="L9">@Setter</span>
 <span class="nc" id="L10">@NoArgsConstructor</span>
-<span class="fc" id="L11">@AllArgsConstructor</span>
-<span class="pc" id="L12">@Builder</span>
+<span class="nc" id="L11">@AllArgsConstructor</span>
+<span class="nc" id="L12">@Builder</span>
 public class MemberDto {
-<span class="fc" id="L14">    private String email;</span>
+<span class="nc" id="L14">    private String email;</span>
 <span class="nc" id="L15">    private String username;</span>
 <span class="nc" id="L16">    private LocalDateTime createdAt;</span>
 
     public static MemberDto fromEntity(Member member) {
-<span class="fc" id="L19">        return MemberDto.builder()</span>
-<span class="fc" id="L20">                .email(member.getEmail())</span>
-<span class="fc" id="L21">                .username(member.getUsername())</span>
-<span class="fc" id="L22">                .createdAt(member.getCreatedAt())</span>
-<span class="fc" id="L23">                .build();</span>
+<span class="nc" id="L19">        return MemberDto.builder()</span>
+<span class="nc" id="L20">                .email(member.getEmail())</span>
+<span class="nc" id="L21">                .username(member.getUsername())</span>
+<span class="nc" id="L22">                .createdAt(member.getCreatedAt())</span>
+<span class="nc" id="L23">                .build();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

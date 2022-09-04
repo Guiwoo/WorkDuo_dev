@@ -8,9 +8,9 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
-<span class="nc" id="L11">@NoArgsConstructor(access = AccessLevel.PROTECTED)</span>
-<span class="fc" id="L12">@AllArgsConstructor</span>
-<span class="pc" id="L13">@Builder</span>
+<span class="fc" id="L11">@NoArgsConstructor(access = AccessLevel.PROTECTED)</span>
+<span class="nc" id="L12">@AllArgsConstructor</span>
+<span class="nc" id="L13">@Builder</span>
 @Entity
 @Table(name = &quot;member&quot;)
 public class Member extends BaseEntity {
@@ -19,8 +19,8 @@ public class Member extends BaseEntity {
     @Column(name = &quot;member_id&quot;)
 <span class="nc" id="L20">    private Long id;</span>
 
-<span class="fc" id="L22">    private String username; // 유저 이름</span>
-<span class="fc" id="L23">    private String email; // 유저 이메일 (실제 사용되는 id)</span>
+<span class="nc" id="L22">    private String username; // 유저 이름</span>
+<span class="nc" id="L23">    private String email; // 유저 이메일 (실제 사용되는 id)</span>
 <span class="nc" id="L24">    private String phoneNumber; // 핸드폰</span>
 <span class="nc" id="L25">    private String password; // 비밀번호</span>
 <span class="nc" id="L26">    private String nickname; // 별명</span>

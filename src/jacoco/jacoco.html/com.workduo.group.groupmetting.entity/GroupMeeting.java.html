@@ -2,6 +2,7 @@
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
 import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.group.entity.Group;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
 
@@ -9,32 +10,34 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
-<span class="nc" id="L12">@NoArgsConstructor(access = AccessLevel.PROTECTED)</span>
-<span class="nc" id="L13">@AllArgsConstructor</span>
-<span class="nc" id="L14">@Builder</span>
-@Entity(name = &quot;group_meeting&quot;)
+<span class="fc" id="L13">@NoArgsConstructor(access = AccessLevel.PROTECTED)</span>
+<span class="nc" id="L14">@AllArgsConstructor</span>
+<span class="nc" id="L15">@Builder</span>
+@Entity
 @Table(name = &quot;group_meeting&quot;)
 public class GroupMeeting extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = &quot;group_meeting_id&quot;)
-<span class="nc" id="L21">    private Long id;</span>
+<span class="nc" id="L22">    private Long id;</span>
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = &quot;member_id&quot;)
-<span class="nc" id="L25">    private Member member;</span>
+<span class="nc" id="L26">    private Member member;</span>
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = &quot;group_content_id&quot;)
-<span class="nc" id="L29">    private GroupContent groupContent;</span>
+    @JoinColumn(name = &quot;group_id&quot;)
+<span class="nc" id="L30">    private Group group;</span>
 
-<span class="nc" id="L31">    private Integer maxParticipant;</span>
-<span class="nc" id="L32">    private LocalDateTime meetingDate;</span>
+<span class="nc" id="L32">    private String title;</span>
+<span class="nc" id="L33">    private String content;</span>
+<span class="nc" id="L34">    private Integer maxParticipant;</span>
+<span class="nc" id="L35">    private LocalDateTime meetingDate;</span>
 
     @Lob
-<span class="nc" id="L35">    private String location;</span>
+<span class="nc" id="L38">    private String location;</span>
 
-<span class="nc" id="L37">    private boolean deletedYn; // 삭제(탈퇴) 여부</span>
-<span class="nc" id="L38">    private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜</span>
+<span class="nc" id="L40">    private boolean deletedYn; // 삭제(탈퇴) 여부</span>
+<span class="nc" id="L41">    private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

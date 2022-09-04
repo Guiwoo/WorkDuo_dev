@@ -9,10 +9,10 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
-<span class="nc" id="L12">@NoArgsConstructor(access = AccessLevel.PROTECTED)</span>
+<span class="fc" id="L12">@NoArgsConstructor(access = AccessLevel.PROTECTED)</span>
 <span class="nc" id="L13">@AllArgsConstructor</span>
 <span class="nc" id="L14">@Builder</span>
-@Entity(name = &quot;group_content&quot;)
+@Entity
 @Table(name = &quot;group_content&quot;)
 public class GroupContent extends BaseEntity {
 
@@ -33,12 +33,10 @@ public class GroupContent extends BaseEntity {
     @Lob
 <span class="nc" id="L34">    private String content;</span>
 
-<span class="nc" id="L36">    private boolean activate; // 모임 활성</span>
+<span class="nc" id="L36">    private boolean deletedYn; // 삭제(탈퇴) 여부</span>
+<span class="nc" id="L37">    private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜</span>
 
-    @Lob
-<span class="nc" id="L39">    private String thumbnailPath;</span>
-
-<span class="nc" id="L41">    private boolean deletedYn; // 삭제(탈퇴) 여부</span>
-<span class="nc" id="L42">    private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜</span>
+<span class="nc" id="L39">    private boolean noticeYn;</span>
+<span class="nc" id="L40">    private int sortValue;</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
