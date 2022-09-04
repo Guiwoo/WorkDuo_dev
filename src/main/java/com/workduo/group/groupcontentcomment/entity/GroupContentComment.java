@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Entity(name = "group_content_comment")
+@Entity
 @Table(name = "group_content_comment")
 public class GroupContentComment extends BaseEntity {
 

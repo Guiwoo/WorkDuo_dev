@@ -1,5 +1,6 @@
 package com.workduo.group.groupmeetingparticipant.service.impl;
 
+import com.workduo.configuration.aop.groupmeeting.GroupMeetingLock;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.repository.GroupRepository;
 import com.workduo.group.groupmeetingparticipant.dto.createGroupMeetingParticipant.CreateParticipant;

@@ -9,7 +9,7 @@ import javax.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Entity(name = "group_content_image")
+@Entity
 @Table(name = "group_content_image")
 public class GroupContentImage {
 

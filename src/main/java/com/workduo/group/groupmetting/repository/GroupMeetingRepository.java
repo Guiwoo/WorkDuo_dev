@@ -8,6 +8,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupMeetingRepository extends JpaRepository<GroupMeeting, Long> {
-    boolean
-    existsByMemberAndGroupContent(Member member, GroupContent groupContent);
 }
