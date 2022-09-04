@@ -35,8 +35,6 @@ public class GroupContentServiceImpl implements GroupContentService {
                 .group(findGroup)
                 .title(request.getTitle())
                 .content(request.getContent())
-                .activate(request.isActivate())
-                .thumbnailPath(request.getThumbnail())
                 .deletedYn(false)
                 .build();
 

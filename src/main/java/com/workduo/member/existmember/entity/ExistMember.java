@@ -1,4 +1,4 @@
-package com.workduo.member.existsmember.entity;
+package com.workduo.member.existmember.entity;
 
 import lombok.*;
 
@@ -12,8 +12,8 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "exists_member")
-public class ExistsMember {
+@Table(name = "exist_member")
+public class ExistMember {
 
     @Id
     @Column(name = "member_email")

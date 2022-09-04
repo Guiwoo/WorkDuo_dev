@@ -17,8 +17,6 @@ public class CreateGroupContentDto {
     private Long groupId;
     private String title;
     private String content;
-    private boolean activate;
-    private String thumbnailPath;
     private LocalDateTime createdAt;
 
     public static CreateGroupContentDto fromEntity(GroupContent groupContent) {
@@ -28,8 +26,6 @@ public class CreateGroupContentDto {
                 .groupId(groupContent.getGroup().getId())
                 .title(groupContent.getTitle())
                 .content(groupContent.getContent())
-                .activate(groupContent.isActivate())
-                .thumbnailPath(groupContent.getThumbnailPath())
                 .createdAt(groupContent.getCreatedAt())
                 .build();
     }
