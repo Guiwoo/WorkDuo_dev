@@ -87,7 +87,6 @@ public class GroupMeetingTest {
                 .groupId(group.getId())
                 .title("title")
                 .content("content")
-                .activate(true)
                 .maxParticipant(10)
                 .location("location")
                 .meetingDate(LocalDateTime.now())

@@ -98,7 +98,7 @@ public class MemberGroupJoinTest {
         GroupJoinMember groupJoinUser = GroupJoinMember.builder()
                 .member(member)
                 .group(group)
-                .role(GROUP_ROLE_NORMAL)
+                .groupRole(GROUP_ROLE_NORMAL)
                 .groupJoinMemberStatus(GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING)
                 .build();
 
