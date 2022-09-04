@@ -22,11 +22,6 @@ public class CreateGroupContent {
         @NotNull
         private String content;
 
-        @NotNull
-        private boolean activate;
-
-        private String thumbnail;
-
         private int maxParticipant;
         private LocalDateTime meetingDate;
         private String location;
@@ -41,8 +36,6 @@ public class CreateGroupContent {
         private Long id;
         private String title;
         private String content;
-        private boolean activate;
-        private String thumbnailPath;
         private LocalDateTime createdAt;
 
         public static Response from(CreateGroupContentDto createGroupContentDto) {
@@ -50,8 +43,6 @@ public class CreateGroupContent {
                     .id(createGroupContentDto.getId())
                     .title(createGroupContentDto.getTitle())
                     .content(createGroupContentDto.getContent())
-                    .activate(createGroupContentDto.isActivate())
-                    .thumbnailPath(createGroupContentDto.getThumbnailPath())
                     .createdAt(createGroupContentDto.getCreatedAt())
                     .build();
         }

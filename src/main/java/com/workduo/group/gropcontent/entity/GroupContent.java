@@ -33,11 +33,6 @@ public class GroupContent extends BaseEntity {
     @Lob
     private String content;
 
-    private boolean activate; // 모임 활성
-
-    @Lob
-    private String thumbnailPath;
-
     private boolean deletedYn; // 삭제(탈퇴) 여부
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
 

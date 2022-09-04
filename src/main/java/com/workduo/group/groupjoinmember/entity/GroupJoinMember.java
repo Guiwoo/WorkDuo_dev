@@ -31,7 +31,7 @@ public class GroupJoinMember extends BaseEntity {
     private Group group;
 
     @Enumerated(EnumType.STRING)
-    private GroupRole role;
+    private GroupRole groupRole;
 
     @Enumerated(EnumType.STRING)
     private GroupJoinMemberStatus groupJoinMemberStatus;
