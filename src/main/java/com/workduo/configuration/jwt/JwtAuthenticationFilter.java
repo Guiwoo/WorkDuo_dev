@@ -1,5 +1,6 @@
 package com.workduo.configuration.jwt;
 
+import com.workduo.common.CommonRequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public static final String TOKEN_PREFIX = "Bearer ";
 
     private final TokenProvider tokenProvider;
+    private final CommonRequestContext context;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -34,6 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // request scope을 이용하여 전역으로 memberEmail을 쓸 수 있게 활용
+            String memberEmail = tokenProvider.getUsername(token);
+            context.setMemberEmail(memberEmail);
         }
 
         filterChain.doFilter(request, response);
