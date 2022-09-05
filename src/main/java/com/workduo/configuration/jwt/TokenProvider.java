@@ -40,7 +40,7 @@ public class TokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
-                .signWith(SignatureAlgorithm.HS512, this.secretKey)
+                .signWith(this.secretKey)
                 .compact();
     }
 
@@ -67,7 +67,7 @@ public class TokenProvider {
     public List<MemberRoleAuthDto> getKeyRoles(String token){
         return this.parseClaims(token).get(KEY_ROLES, List.class);
     }
-    private Claims parseClaims(String token) {
+    public Claims parseClaims(String token) {
         try {
             return Jwts.parser()
                     .setSigningKey(this.secretKey)
