@@ -6,6 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
 
@@ -26,15 +28,7 @@ public class TokenProvider {
 
     private final MemberService memberService;
 
-    @Value("${spring.jwt.secret}")
-    private String secretKey;
-
-    /**
-     * token generator
-     * @param username
-     * @param roles
-     * @return
-     */
+    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     public String generateToken(String username, List<MemberRoleAuthDto> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put(KEY_ROLES, roles);
