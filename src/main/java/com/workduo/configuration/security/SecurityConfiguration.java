@@ -54,8 +54,7 @@ public class SecurityConfiguration {
         http
                 .authorizeRequests()
                 .antMatchers(
-                        "/h2-console/**",
-                        "/groupMeetingParticipant/**"
+                        "/h2-console/**"
                 ).permitAll()
                 .and()
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
