@@ -30,7 +30,8 @@ class GlobalExceptionHandlerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().is(INTERNAL_SERVER_ERROR.value()))
-                .andExpect(content().string("❌ 서버 내부 에러 입니다."))
+                .andExpect(jsonPath("$.message")
+                        .value("❌ 서버 내부 에러 입니다."))
                 .andDo(print());
     }
 

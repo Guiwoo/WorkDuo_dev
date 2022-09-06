@@ -4,6 +4,7 @@ import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -14,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -42,6 +44,8 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        http.exceptionHandling().authenticationEntryPoint(new Custom403ForbiddenEntry());
+
         http
                 .httpBasic().disable()
                 .csrf().disable()
@@ -51,17 +55,24 @@ public class SecurityConfiguration {
                 .headers().frameOptions().sameOrigin().and()
                 .csrf().ignoringAntMatchers("/h2-console/**").disable();
 
-        http
-                .authorizeRequests()
-                .antMatchers(
-                        "/h2-console/**"
-                ).permitAll()
-                .and()
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http
-                .formLogin()
-                .successHandler(getSuccessHandler());
+        //접근 누구나 가능
+        http.authorizeRequests()
+                .antMatchers(
+                        "/h2-console/**","/api/v1/login"
+                ).permitAll();
+
+        http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+
+        // 로그인 된 유저(토큰 이 있는),권한 이 있는 접근
+        http.authorizeRequests()
+                .antMatchers("/api/v1/auth")
+                .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN");
+
+//        http
+//                .formLogin()
+//                .successHandler(getSuccessHandler());
 
         return http.build();
     }
