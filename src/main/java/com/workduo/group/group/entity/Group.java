@@ -9,6 +9,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_CANCEL;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -41,4 +43,9 @@ public class Group extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private GroupStatus groupStatus;
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
+
+    public void updateGroupStatusCancel() {
+        this.groupStatus = GROUP_STATUS_CANCEL;
+        this.deletedAt = LocalDateTime.now();
+    }
 }
