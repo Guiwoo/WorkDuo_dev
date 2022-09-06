@@ -5,7 +5,8 @@ import lombok.Value;
 
 @Value
 @Builder
-public class GlobalServerErrorResult {
+public class GlobalErrorResult {
     private String success;
     private String message;
+    private String result;
 }

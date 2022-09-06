@@ -1,12 +1,11 @@
 package com.workduo.error.global.handler;
 
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
-import com.workduo.error.global.result.GlobalServerErrorResult;
+import com.workduo.error.global.result.GlobalErrorResult;
 import com.workduo.error.global.result.ValidErrorResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -21,10 +20,11 @@ public class GlobalExceptionHandler {
         ValidErrorResult result = ValidErrorResult.of(e.getBindingResult());
         return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<GlobalServerErrorResult> handleException(Exception e) {
+    public ResponseEntity<GlobalErrorResult> handleException(Exception e) {
         log.error("Exception is occurred.", e);
-        GlobalServerErrorResult result = GlobalServerErrorResult.builder()
+        GlobalErrorResult result = GlobalErrorResult.builder()
                 .success("F")
                 .message(e.getMessage())
                 .build();
