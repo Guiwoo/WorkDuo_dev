@@ -5,13 +5,19 @@ import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.error.group.exception.GroupException;
 import com.workduo.group.group.dto.CreateGroup;
+import com.workduo.group.group.dto.GroupDto;
+import com.workduo.group.group.dto.GroupListDto;
 import com.workduo.group.group.entity.Group;
+import com.workduo.group.group.entity.GroupLike;
+import com.workduo.group.group.repository.GroupLikeRepository;
+import com.workduo.group.group.repository.query.GroupQueryRepository;
 import com.workduo.group.group.repository.GroupRepository;
 import com.workduo.group.group.service.GroupService;
+import com.workduo.group.group.type.GroupStatus;
 import com.workduo.group.groupcreatemember.entity.GroupCreateMember;
 import com.workduo.group.groupcreatemember.repository.GroupCreateMemberRepository;
-import com.workduo.group.groupjoinmember.entity.GroupJoinMember;
-import com.workduo.group.groupjoinmember.repository.GroupJoinMemberRepository;
+import com.workduo.group.group.entity.GroupJoinMember;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
@@ -19,16 +25,16 @@ import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 import static com.workduo.error.group.type.GroupErrorCode.*;
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
-import static com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
-import static com.workduo.group.groupjoinmember.type.GroupRole.GROUP_ROLE_LEADER;
+import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_LEADER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
@@ -36,9 +42,11 @@ public class GroupServiceImpl implements GroupService {
     private final MemberRepository memberRepository;
     private final MemberCalendarRepository memberCalendarRepository;
     private final GroupRepository groupRepository;
+    private final GroupQueryRepository groupQueryRepository;
     private final GroupCreateMemberRepository groupCreateMemberRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
     private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
+    private final GroupLikeRepository groupLikeRepository;
     private final SportRepository sportRepository;
     private final SiggAreaRepository siggAreaRepository;
     private final CommonRequestContext context;
@@ -87,14 +95,6 @@ public class GroupServiceImpl implements GroupService {
         groupCreateMemberRepository.save(groupCreateMember);
     }
 
-    private void createGroupValidate(Member member) {
-
-        Long groupCreateMemberCount = groupCreateMemberCount(member);
-        if (groupCreateMemberCount >= 3) {
-            throw new GroupException(GROUP_MAXIMUM_EXCEEDED);
-        }
-    }
-
     /**
      * 그룹 해지 - 그룹장만 가능
      * @param groupId
@@ -139,7 +139,81 @@ public class GroupServiceImpl implements GroupService {
         groupJoinMember.withdrawGroup();
     }
 
+    /**
+     * 그룹 상세
+     * @param groupId
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public GroupDto groupDetail(Long groupId) {
+        getMember(context.getMemberEmail());
+
+        return groupQueryRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
+    }
+
+    /**
+     * 그룹 리스트
+     * @param page
+     * @param offset
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public GroupListDto groupList(int page, int offset) {
+        return null;
+    }
+
+    /**
+     * 그룹 좋아요
+     * @param groupId
+     */
+    @Override
+    @Transactional
+    public void groupLike(Long groupId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        groupLikeValidate(member, group);
+
+        GroupLike groupLike = GroupLike.builder()
+                .group(group)
+                .member(member)
+                .build();
+
+        groupLikeRepository.save(groupLike);
+    }
+
+    /**
+     * 그룹 좋아요 취소
+     * @param groupId
+     */
+    @Override
+    @Transactional
+    public void groupUnLike(Long groupId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        groupLikeValidate(member, group);
+
+        groupLikeRepository.deleteByGroupAndMember(group, member);
+    }
+
+    private void createGroupValidate(Member member) {
+
+        Long groupCreateMemberCount = groupCreateMemberCount(member);
+        if (groupCreateMemberCount >= 3) {
+            throw new GroupException(GROUP_MAXIMUM_EXCEEDED);
+        }
+    }
+
     private void withdrawGroupValidate(Member member, Group group, GroupJoinMember groupJoinMember) {
+
+        if (group.getGroupStatus() != GroupStatus.GROUP_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
+        }
+
         boolean existsGroupLeader =
                 groupCreateMemberRepository.existsByMemberAndGroup
                         (member, group);
@@ -152,6 +226,22 @@ public class GroupServiceImpl implements GroupService {
             throw new GroupException(GROUP_ALREADY_WITHDRAW);
         }
 
+    }
+    private void groupLikeValidate(Member member, Group group) {
+
+        if (group.getGroupStatus() != GroupStatus.GROUP_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        boolean existsByMember = groupJoinMemberRepository.existsByMember(member);
+        if (!existsByMember ) {
+            throw new GroupException(GROUP_NOT_FOUND_USER);
+        }
+
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member);
+        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_WITHDRAW);
+        }
     }
 
     private GroupJoinMember getGroupJoinMember(Member member) {

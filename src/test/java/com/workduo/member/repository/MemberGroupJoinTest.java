@@ -2,28 +2,21 @@ package com.workduo.member.repository;
 
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.configuration.jpa.JpaAuditingConfiguration;
-import com.workduo.group.group.type.GroupStatus;
-import com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus;
-import com.workduo.group.groupjoinmember.type.GroupRole;
+import com.workduo.group.group.type.GroupJoinMemberStatus;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.repository.GroupRepository;
-import com.workduo.group.groupjoinmember.entity.GroupJoinMember;
-import com.workduo.group.groupjoinmember.repository.GroupJoinMemberRepository;
+import com.workduo.group.group.entity.GroupJoinMember;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.member.member.entity.Member;
-import com.workduo.member.member.repository.MemberQueryRepository;
 import com.workduo.member.member.repository.MemberQueryRepositoryImpl;
 import com.workduo.member.member.repository.MemberRepository;
-import com.workduo.member.member.type.MemberStatus;
 import com.workduo.sport.sport.entity.Sport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +27,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 
 import static com.workduo.group.group.type.GroupStatus.*;
-import static com.workduo.group.groupjoinmember.type.GroupRole.GROUP_ROLE_NORMAL;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_NORMAL;
 import static com.workduo.member.member.type.MemberStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -110,7 +103,7 @@ public class MemberGroupJoinTest {
 //        Member findMember = memberRepository.findById(13L)
 //                .orElseThrow(() -> new UsernameNotFoundException("not found user"));
 //
-//        Group findGroup = groupRepository.findById(8L)
+//        GroupListResponse findGroup = groupRepository.findById(8L)
 //                .orElseThrow(() -> new IllegalStateException(""));
 //
 //        GroupJoinMember fineGroupJoinMember = groupJoinUserRepository.findById(5L)
