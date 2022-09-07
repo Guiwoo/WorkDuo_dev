@@ -1,4 +1,4 @@
-package com.workduo.group.groupjoinmember.entity;
+package com.workduo.group.group.entity;
 
 import lombok.*;
 

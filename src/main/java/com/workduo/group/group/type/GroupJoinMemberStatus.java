@@ -1,4 +1,4 @@
-package com.workduo.group.groupjoinmember.type;
+package com.workduo.group.group.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

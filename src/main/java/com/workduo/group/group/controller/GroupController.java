@@ -3,6 +3,8 @@ package com.workduo.group.group.controller;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.group.dto.CancelGroup;
 import com.workduo.group.group.dto.CreateGroup;
+import com.workduo.group.group.dto.DetailGroup;
+import com.workduo.group.group.dto.GroupListResponse;
 import com.workduo.group.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +39,10 @@ public class GroupController {
 
         groupService.createGroup(request);
 
-        return new ResponseEntity<>(CreateGroup.Response.from(), HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                CreateGroup.Response.from(),
+                HttpStatus.CREATED
+        );
     }
 
     /**
@@ -50,7 +55,10 @@ public class GroupController {
             @PathVariable("groupId") Long groupId) {
         groupService.deleteGroup(groupId);
 
-        return new ResponseEntity<>(CancelGroup.Response.from(), HttpStatus.OK);
+        return new ResponseEntity<>(
+                CancelGroup.Response.from(),
+                HttpStatus.OK
+        );
     }
 
     /**
@@ -63,6 +71,63 @@ public class GroupController {
             @PathVariable("groupId") Long groupId) {
         groupService.withdrawGroup(groupId);
 
-        return new ResponseEntity<>(CancelGroup.Response.from(), HttpStatus.OK);
+        return new ResponseEntity<>(
+                CancelGroup.Response.from()
+                , HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 상세
+     * @param groupId
+     * @return
+     */
+    @GetMapping("/{groupId}")
+    public ResponseEntity<?> detailGroup(
+            @PathVariable("groupId") Long groupId) {
+
+        return new ResponseEntity<>(
+                DetailGroup.Response.from(groupService.groupDetail(groupId))
+                , HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 리스트
+     */
+    @GetMapping("")
+    public ResponseEntity<?> groupList(
+            @RequestParam("page") int page,
+            @RequestParam("offset") int offset) {
+        return new ResponseEntity<>(
+                GroupListResponse.from(groupService.groupList(page, offset))
+                , HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 좋아요
+     * @param groupId
+     * @return
+     */
+    @PostMapping("/{groupId}/like")
+    public ResponseEntity<?> groupLike(
+            @PathVariable("groupId") Long groupId) {
+
+        groupService.groupLike(groupId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 그룹 좋아요 취소
+     * @param groupId
+     * @return
+     */
+    @DeleteMapping("/{groupId}/like")
+    public ResponseEntity<?> groupUnLike(
+            @PathVariable("groupId") Long groupId) {
+
+        groupService.groupUnLike(groupId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

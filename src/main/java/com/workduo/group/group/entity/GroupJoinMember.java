@@ -1,16 +1,15 @@
-package com.workduo.group.groupjoinmember.entity;
+package com.workduo.group.group.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
-import com.workduo.group.group.entity.Group;
-import com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus;
-import com.workduo.group.groupjoinmember.type.GroupRole;
+import com.workduo.group.group.type.GroupJoinMemberStatus;
+import com.workduo.group.group.type.GroupRole;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-import static com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_WITHDRAW;
+import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_WITHDRAW;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
