@@ -1,6 +1,8 @@
 package com.workduo.configuration.security;
 
 import com.workduo.configuration.jwt.JwtAuthenticationFilter;
+import com.workduo.configuration.security.error.CustomNotAuthentication;
+import com.workduo.configuration.security.error.CustomNotAuthorization;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +44,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        http.exceptionHandling().authenticationEntryPoint(new CustomNotAuthentication())
+                        .accessDeniedHandler(new CustomNotAuthorization());
+
         http
                 .httpBasic().disable()
                 .csrf().disable()
@@ -51,17 +56,24 @@ public class SecurityConfiguration {
                 .headers().frameOptions().sameOrigin().and()
                 .csrf().ignoringAntMatchers("/h2-console/**").disable();
 
-        http
-                .authorizeRequests()
-                .antMatchers(
-                        "/h2-console/**"
-                ).permitAll()
-                .and()
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http
-                .formLogin()
-                .successHandler(getSuccessHandler());
+        //접근 누구나 가능
+        http.authorizeRequests()
+                .antMatchers(
+                        "/h2-console/**","/api/v1/login"
+                ).permitAll();
+
+        http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+
+        // 로그인 된 유저(토큰 이 있는),권한 이 있는 접근
+        http.authorizeRequests()
+                .antMatchers("/api/v1/auth")
+                .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN");
+
+//        http
+//                .formLogin()
+//                .successHandler(getSuccessHandler());
 
         return http.build();
     }
