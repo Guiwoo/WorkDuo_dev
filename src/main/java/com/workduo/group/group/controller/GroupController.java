@@ -4,10 +4,11 @@ import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.group.dto.CancelGroup;
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.DetailGroup;
-import com.workduo.group.group.dto.GroupListResponse;
+import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -97,10 +98,10 @@ public class GroupController {
      */
     @GetMapping("")
     public ResponseEntity<?> groupList(
-            @RequestParam("page") int page,
-            @RequestParam("offset") int offset) {
+            Pageable pageable,
+            ListGroup.Request condition) {
         return new ResponseEntity<>(
-                GroupListResponse.from(groupService.groupList(page, offset))
+                ListGroup.Response.from(groupService.groupList(pageable, condition))
                 , HttpStatus.OK
         );
     }

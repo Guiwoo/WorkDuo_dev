@@ -597,10 +597,10 @@ public class GroupServiceTest {
     @DisplayName("그룹 상세 보기 성공")
     public void groupDetail() throws Exception {
         // given
-        doReturn(Optional.of(member)).when(memberRepository)
-                .findByEmail(anyString());
-        doReturn("rbsks147@naver.com").when(context)
-                .getMemberEmail();
+//        doReturn(Optional.of(member)).when(memberRepository)
+//                .findByEmail(anyString());
+//        doReturn("rbsks147@naver.com").when(context)
+//                .getMemberEmail();
         doReturn(Optional.of(groupDto)).when(groupQueryRepository)
                 .findById(anyLong());
 
@@ -611,32 +611,32 @@ public class GroupServiceTest {
         assertEquals(groupDto.getGroupId(), group.getId());
     }
 
-    @Test
-    @DisplayName("그룹 상세 보기 실패 - 해당 유저 없음")
-    public void groupDetailFailNotFoundUser() throws Exception {
-        // given
-        doReturn(Optional.empty()).when(memberRepository)
-                .findByEmail(anyString());
-        doReturn("").when(context)
-                .getMemberEmail();
-
-        // when
-        IllegalStateException groupException =
-                assertThrows(IllegalStateException.class,
-                        () -> groupService.groupDetail(1L));
-
-        // then
-        assertEquals(groupException.getMessage(), "user not found");
-    }
+//    @Test
+//    @DisplayName("그룹 상세 보기 실패 - 해당 유저 없음")
+//    public void groupDetailFailNotFoundUser() throws Exception {
+//        // given
+//        doReturn(Optional.empty()).when(memberRepository)
+//                .findByEmail(anyString());
+//        doReturn("").when(context)
+//                .getMemberEmail();
+//
+//        // when
+//        IllegalStateException groupException =
+//                assertThrows(IllegalStateException.class,
+//                        () -> groupService.groupDetail(1L));
+//
+//        // then
+//        assertEquals(groupException.getMessage(), "user not found");
+//    }
 
     @Test
     @DisplayName("그룹 상세 보기 실패 - 해당 그룹 없음")
     public void groupDetailFailNotFoundGroup() throws Exception {
         // given
-        doReturn(Optional.of(member)).when(memberRepository)
-                .findByEmail(anyString());
-        doReturn("rbsks147@naver.com").when(context)
-                .getMemberEmail();
+//        doReturn(Optional.of(member)).when(memberRepository)
+//                .findByEmail(anyString());
+//        doReturn("rbsks147@naver.com").when(context)
+//                .getMemberEmail();
         doReturn(Optional.empty()).when(groupQueryRepository)
                 .findById(anyLong());
 

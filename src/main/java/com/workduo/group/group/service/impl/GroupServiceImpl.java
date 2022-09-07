@@ -7,6 +7,7 @@ import com.workduo.error.group.exception.GroupException;
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.dto.GroupListDto;
+import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.entity.GroupLike;
 import com.workduo.group.group.repository.GroupLikeRepository;
@@ -26,6 +27,8 @@ import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,7 +150,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional(readOnly = true)
     public GroupDto groupDetail(Long groupId) {
-        getMember(context.getMemberEmail());
+//        getMember(context.getMemberEmail());
 
         return groupQueryRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
@@ -155,14 +158,14 @@ public class GroupServiceImpl implements GroupService {
 
     /**
      * 그룹 리스트
-     * @param page
-     * @param offset
+     *
      * @return
      */
     @Override
     @Transactional(readOnly = true)
-    public GroupListDto groupList(int page, int offset) {
-        return null;
+    public Page<GroupDto> groupList(Pageable pageable, ListGroup.Request condition) {
+
+        return groupQueryRepository.findByGroupList(pageable, condition);
     }
 
     /**

@@ -3,6 +3,9 @@ package com.workduo.group.group.service;
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.dto.GroupListDto;
+import com.workduo.group.group.dto.ListGroup;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface GroupService {
 
@@ -33,11 +36,9 @@ public interface GroupService {
 
     /**
      * 그룹 리스트
-     * @param page
-     * @param offset
      * @return
      */
-    GroupListDto groupList(int page, int offset);
+    Page<GroupDto> groupList(Pageable pageable, ListGroup.Request condition);
 
     /**
      * 그룹 좋아요

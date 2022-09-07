@@ -15,11 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import java.util.List;
 
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -104,4 +109,20 @@ public class GroupRepositoryTest {
         // then
         assertNotNull(groupDto);
     }
+
+    @Test
+    @DisplayName("그룹 리스트")
+    @Transactional
+    public void groupList() throws Exception {
+        // given
+        PageRequest pageRequest = PageRequest.of(0, 5);
+
+        // when
+        Page<GroupDto> groupDto = groupQueryRepository.findByGroupList(pageRequest, null);
+
+        // then
+        assertNotNull(groupDto);
+    }
+
+
 }

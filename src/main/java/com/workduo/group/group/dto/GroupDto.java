@@ -29,9 +29,10 @@ public class GroupDto {
     private String introduce;
     private String thumbnailPath;
     private Long participants;
+    private Long likes;
 
     @QueryProjection
-    public GroupDto(Long groupId, String name, Integer limitPerson, SiggArea siggArea, SidoArea sidoArea, Sport sport, SportCategory sportCategory, String introduce, String thumbnailPath, Long participants) {
+    public GroupDto(Long groupId, String name, Integer limitPerson, SiggArea siggArea, SidoArea sidoArea, Sport sport, SportCategory sportCategory, String introduce, String thumbnailPath, Long participants, Long likes) {
         this.groupId = groupId;
         this.name = name;
         this.limitPerson = limitPerson;
@@ -42,19 +43,20 @@ public class GroupDto {
         this.introduce = introduce;
         this.thumbnailPath = thumbnailPath;
         this.participants = participants;
+        this.likes = likes;
     }
 
-    public static GroupDto fromEntity(Group group) {
-        return GroupDto.builder()
-                .groupId(group.getId())
-                .name(group.getName())
-                .limitPerson(group.getLimitPerson())
-                .siggArea(SiggAreaDto.fromEntity(group.getSiggArea()))
-                .sidoArea(SidoAreaDto.fromEntity(group.getSiggArea().getSidoArea()))
-                .sport(SportDto.fromEntity(group.getSport()))
-                .sportCategory(SportCategoryDto.fromEntity(group.getSport().getSportCategory()))
-                .introduce(group.getIntroduce())
-                .thumbnailPath(group.getThumbnailPath())
-                .build();
-    }
+//    public static GroupDto fromEntity(Group group) {
+//        return GroupDto.builder()
+//                .groupId(group.getId())
+//                .name(group.getName())
+//                .limitPerson(group.getLimitPerson())
+//                .siggArea(SiggAreaDto.fromEntity(group.getSiggArea()))
+//                .sidoArea(SidoAreaDto.fromEntity(group.getSiggArea().getSidoArea()))
+//                .sport(SportDto.fromEntity(group.getSport()))
+//                .sportCategory(SportCategoryDto.fromEntity(group.getSport().getSportCategory()))
+//                .introduce(group.getIntroduce())
+//                .thumbnailPath(group.getThumbnailPath())
+//                .build();
+//    }
 }

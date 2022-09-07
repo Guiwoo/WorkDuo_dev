@@ -103,7 +103,7 @@ public class MemberGroupJoinTest {
 //        Member findMember = memberRepository.findById(13L)
 //                .orElseThrow(() -> new UsernameNotFoundException("not found user"));
 //
-//        GroupListResponse findGroup = groupRepository.findById(8L)
+//        ListGroup findGroup = groupRepository.findById(8L)
 //                .orElseThrow(() -> new IllegalStateException(""));
 //
 //        GroupJoinMember fineGroupJoinMember = groupJoinUserRepository.findById(5L)
