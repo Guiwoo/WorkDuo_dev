@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupException extends RuntimeException{
+public class GroupException extends RuntimeException {
     private GroupErrorCode errorCode;
     private String errorMessage;
 
