@@ -10,6 +10,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+import static com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_WITHDRAW;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -36,4 +38,9 @@ public class GroupJoinMember extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private GroupJoinMemberStatus groupJoinMemberStatus;
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
+
+    public void withdrawGroup() {
+        this.groupJoinMemberStatus = GROUP_JOIN_MEMBER_STATUS_WITHDRAW;
+        this.deletedAt = LocalDateTime.now();
+    }
 }

@@ -1,5 +1,6 @@
 package com.workduo.group.groupmeetingparticipant.entity;
 
+import com.workduo.group.group.entity.Group;
 import com.workduo.group.groupmetting.entity.GroupMeeting;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
@@ -17,6 +18,10 @@ public class GroupMeetingParticipant {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_meeting_participant_id")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
