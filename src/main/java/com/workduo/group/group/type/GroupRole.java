@@ -1,4 +1,4 @@
-package com.workduo.group.groupjoinmember.type;
+package com.workduo.group.group.type;
 
 public enum GroupRole {
     GROUP_ROLE_LEADER,

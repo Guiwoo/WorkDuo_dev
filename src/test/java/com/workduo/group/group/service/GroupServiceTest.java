@@ -1,28 +1,29 @@
 package com.workduo.group.group.service;
 
 import com.workduo.area.sidoarea.entity.SidoArea;
+import com.workduo.area.siggarea.dto.siggarea.SiggAreaDto;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jpa.JpaAuditingConfiguration;
 import com.workduo.error.group.exception.GroupException;
 import com.workduo.group.group.dto.CreateGroup;
+import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.entity.Group;
+import com.workduo.group.group.repository.GroupLikeRepository;
+import com.workduo.group.group.repository.query.GroupQueryRepository;
 import com.workduo.group.group.repository.GroupRepository;
 import com.workduo.group.group.service.impl.GroupServiceImpl;
 import com.workduo.group.group.type.GroupStatus;
 import com.workduo.group.groupcreatemember.entity.GroupCreateMember;
 import com.workduo.group.groupcreatemember.repository.GroupCreateMemberRepository;
-import com.workduo.group.groupjoinmember.entity.GroupJoinMember;
-import com.workduo.group.groupjoinmember.repository.GroupJoinMemberRepository;
-import com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus;
-import com.workduo.group.groupjoinmember.type.GroupRole;
-import com.workduo.group.groupmeetingparticipant.entity.GroupMeetingParticipant;
+import com.workduo.group.group.entity.GroupJoinMember;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
-import com.workduo.member.membercalendar.entity.MemberCalendar;
 import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
+import com.workduo.sport.sport.dto.SportDto;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import com.workduo.sport.sportcategory.entity.SportCategory;
@@ -38,17 +39,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Optional;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
-import static com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
-import static com.workduo.group.groupjoinmember.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_WITHDRAW;
-import static com.workduo.group.groupjoinmember.type.GroupRole.GROUP_ROLE_LEADER;
-import static com.workduo.group.groupjoinmember.type.GroupRole.GROUP_ROLE_NORMAL;
+import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_CANCEL;
+import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
+import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_WITHDRAW;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_LEADER;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_NORMAL;
 import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_ING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -78,6 +76,10 @@ public class GroupServiceTest {
     private GroupMeetingParticipantRepository groupMeetingParticipantRepository;
     @Mock
     private MemberCalendarRepository memberCalendarRepository;
+    @Mock
+    private GroupQueryRepository groupQueryRepository;
+    @Mock
+    private GroupLikeRepository groupLikeRepository;
 
     @Spy
     @InjectMocks
@@ -87,10 +89,12 @@ public class GroupServiceTest {
     Sport sport;
     SiggArea siggArea;
     Group group;
+    GroupDto groupDto;
     GroupCreateMember groupCreateMember;
     GroupJoinMember normal;
     GroupJoinMember leader;
     GroupJoinMember alreadyWithdrawMember;
+    Group deletedGroup;
     
     @BeforeEach
     public void init() {
@@ -136,6 +140,31 @@ public class GroupServiceTest {
                 .sport(sport)
                 .build();
 
+        groupDto = GroupDto.builder()
+                .groupId(1L)
+                .thumbnailPath("test")
+                .introduce("test")
+                .name("test")
+                .siggArea(SiggAreaDto.builder()
+                        .id(1)
+                        .cityId(1)
+                        .amdCd("test")
+                        .sggnm("test")
+                        .build())
+                .limitPerson(10)
+                .sport(SportDto.builder().build())
+                .build();
+
+        deletedGroup = Group.builder()
+                .id(1L)
+                .groupStatus(GROUP_STATUS_CANCEL)
+                .thumbnailPath("test")
+                .introduce("test")
+                .name("test")
+                .siggArea(siggArea)
+                .limitPerson(10)
+                .sport(sport)
+                .build();
 
         groupCreateMember = GroupCreateMember.builder()
                 .member(member)
@@ -562,5 +591,197 @@ public class GroupServiceTest {
 
         // then
         assertEquals(groupException.getErrorCode(), GROUP_ALREADY_WITHDRAW);
+    }
+
+    @Test
+    @DisplayName("그룹 상세 보기 성공")
+    public void groupDetail() throws Exception {
+        // given
+//        doReturn(Optional.of(member)).when(memberRepository)
+//                .findByEmail(anyString());
+//        doReturn("rbsks147@naver.com").when(context)
+//                .getMemberEmail();
+        doReturn(Optional.of(groupDto)).when(groupQueryRepository)
+                .findById(anyLong());
+
+        // when
+        GroupDto groupDto = groupService.groupDetail(1L);
+
+        // then
+        assertEquals(groupDto.getGroupId(), group.getId());
+    }
+
+//    @Test
+//    @DisplayName("그룹 상세 보기 실패 - 해당 유저 없음")
+//    public void groupDetailFailNotFoundUser() throws Exception {
+//        // given
+//        doReturn(Optional.empty()).when(memberRepository)
+//                .findByEmail(anyString());
+//        doReturn("").when(context)
+//                .getMemberEmail();
+//
+//        // when
+//        IllegalStateException groupException =
+//                assertThrows(IllegalStateException.class,
+//                        () -> groupService.groupDetail(1L));
+//
+//        // then
+//        assertEquals(groupException.getMessage(), "user not found");
+//    }
+
+    @Test
+    @DisplayName("그룹 상세 보기 실패 - 해당 그룹 없음")
+    public void groupDetailFailNotFoundGroup() throws Exception {
+        // given
+//        doReturn(Optional.of(member)).when(memberRepository)
+//                .findByEmail(anyString());
+//        doReturn("rbsks147@naver.com").when(context)
+//                .getMemberEmail();
+        doReturn(Optional.empty()).when(groupQueryRepository)
+                .findById(anyLong());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupDetail(1L));
+
+        // then
+        assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("success group like")
+    public void groupLike() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.of(group)).when(groupRepository)
+                .findById(anyLong());
+        doReturn(true).when(groupJoinMemberRepository)
+                .existsByMember(any());
+        doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                .findByMember(member);
+
+        // when
+        groupService.groupLike(1L);
+
+        // then
+        verify(memberRepository, times(1))
+                .findByEmail(any());
+
+        verify(groupRepository, times(1))
+                .findById(anyLong());
+
+        verify(groupJoinMemberRepository, times(1))
+                .existsByMember(any());
+
+        verify(groupJoinMemberRepository, times(1))
+                .findByMember(any());
+    }
+
+    @Test
+    @DisplayName("group like not found user")
+    public void groupLikeFailNotFoundUser() throws Exception {
+        // given
+        doReturn(Optional.empty()).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("").when(context)
+                .getMemberEmail();
+
+        // when
+        IllegalStateException groupException =
+                assertThrows(IllegalStateException.class,
+                        () -> groupService.groupUnLike(1L));
+
+        // then
+        assertEquals(groupException.getMessage(), "user not found");
+    }
+
+    @Test
+    @DisplayName("group like not found group")
+    public void groupLikeFailNotFoundGroup() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.empty()).when(groupRepository)
+                .findById(anyLong());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupUnLike(1L));
+
+        // then
+        assertEquals(groupException.getErrorCode(),  GROUP_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("group like already delete group")
+    public void groupLikeFailAlreadyDeleteGroup() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.of(deletedGroup)).when(groupRepository)
+                .findById(anyLong());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupUnLike(1L));
+
+        // then
+        assertEquals(groupException.getErrorCode(),  GROUP_ALREADY_DELETE_GROUP);
+    }
+
+    @Test
+    @DisplayName("group like group not found user")
+    public void groupLikeFailGroupNotFoundUser() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.of(group)).when(groupRepository)
+                .findById(anyLong());
+        doReturn(false).when(groupJoinMemberRepository)
+                .existsByMember(any());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupUnLike(1L));
+
+        // then
+        assertEquals(groupException.getErrorCode(),  GROUP_NOT_FOUND_USER);
+    }
+
+    @Test
+    @DisplayName("group like already withdraw group")
+    public void groupLikeFailAlreadyWithdrawGroup() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.of(group)).when(groupRepository)
+                .findById(anyLong());
+        doReturn(true).when(groupJoinMemberRepository)
+                .existsByMember(any());
+        doReturn(Optional.of(alreadyWithdrawMember)).when(groupJoinMemberRepository)
+                .findByMember(any());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupUnLike(1L));
+
+        // then
+        assertEquals(groupException.getErrorCode(),  GROUP_ALREADY_WITHDRAW);
     }
 }

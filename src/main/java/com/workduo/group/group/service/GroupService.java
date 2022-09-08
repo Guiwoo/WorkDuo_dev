@@ -1,6 +1,11 @@
 package com.workduo.group.group.service;
 
 import com.workduo.group.group.dto.CreateGroup;
+import com.workduo.group.group.dto.GroupDto;
+import com.workduo.group.group.dto.GroupListDto;
+import com.workduo.group.group.dto.ListGroup;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface GroupService {
 
@@ -21,4 +26,29 @@ public interface GroupService {
      * @param groupId
      */
     void withdrawGroup(Long groupId);
+
+    /**
+     * 그룹 상세
+     * @param groupId
+     * @return
+     */
+    GroupDto groupDetail(Long groupId);
+
+    /**
+     * 그룹 리스트
+     * @return
+     */
+    Page<GroupDto> groupList(Pageable pageable, ListGroup.Request condition);
+
+    /**
+     * 그룹 좋아요
+     * @param groupId
+     */
+    void groupLike(Long groupId);
+
+    /**
+     * 그룹 좋아요 취소
+     * @param groupId
+     */
+    void groupUnLike(Long groupId);
 }
