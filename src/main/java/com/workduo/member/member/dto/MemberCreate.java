@@ -1,11 +1,14 @@
 package com.workduo.member.member.dto;
 
+import com.workduo.group.group.dto.CancelGroup;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.Map;
 
-public class MemberCreateDto {
+public class MemberCreate {
     @Getter
     @Setter
     @NoArgsConstructor
@@ -24,9 +27,28 @@ public class MemberCreateDto {
         private String nickname; // 별명
         //지역3개
         @NotNull(message = "지역 은 최소 1개 이상 선택해야 합니다.")
-        private List<Integer> siggAreaIdList;
+        @Size(min = 1,max = 3)
+        private List<Integer> siggAreaList;
         //운동3게
         @NotNull(message = "스포츠 는 최소 1개 이상 선택해야 합니다.")
+        @Size(min = 1,max = 3)
         private List<Integer> sportList;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Response{
+        private String success;
+        private Map<String,String> result;
+
+        public static MemberCreate.Response from(){
+            return MemberCreate.Response.builder()
+                    .success("T")
+                    .result(null)
+                    .build();
+        }
     }
 }
