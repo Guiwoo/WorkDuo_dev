@@ -27,9 +27,10 @@ public class Member extends BaseEntity {
     private String status; // 상태메세지
 
     @Lob
-    private String profileImage; // 프로필이미지
+    private String profileImg; // 프로필이미지
 
     @Enumerated(EnumType.STRING)
     private MemberStatus memberStatus;
+
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
 }
