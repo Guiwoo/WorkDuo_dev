@@ -63,7 +63,7 @@ class SecurityConfigurationTest {
     @Test
     @DisplayName("Api 호출 실패 [로그인 안된 호출]")
     void failedAccessApiCallWithoutLogin() throws Exception {
-
+        //추후 권한 있는 테스트 에서 요청 주소 변경 할것
         mockMvc.perform(get("/api/v1/auth"))
                 .andDo(print())
                 .andExpect(status().is
@@ -79,7 +79,7 @@ class SecurityConfigurationTest {
     @DisplayName("Api 호출 실패 [로그인 했지만 권한 없음]")
     @WithMockUser(username="user",roles={})
     void failedAccessApiCallWithoutAuthorization() throws Exception {
-
+        //추후 권한 있는 테스트 에서 요청 주소 변경 할것
         mockMvc.perform(get("/api/v1/auth"))
                 .andDo(print())
                 .andExpect(status().is
