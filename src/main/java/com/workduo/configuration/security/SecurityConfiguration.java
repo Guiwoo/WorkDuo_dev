@@ -60,7 +60,7 @@ public class SecurityConfiguration {
         //접근 누구나 가능
         http.authorizeRequests()
                 .antMatchers(
-                        "/h2-console/**","/api/v1/member/login"
+                        "/h2-console/**","/api/v1/member/login","/api/v1/member"
                 ).permitAll();
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
