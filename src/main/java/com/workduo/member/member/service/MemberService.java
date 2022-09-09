@@ -1,11 +1,9 @@
 package com.workduo.member.member.service;
 
-import com.workduo.member.member.dto.MemberDto;
-import com.workduo.member.member.dto.createmember.CreateMember;
+import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
+import com.workduo.member.member.dto.MemberLoginDto;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface MemberService extends UserDetailsService {
-
-    MemberDto register(CreateMember.Request request);
-    MemberDto findMember(Long id);
+    MemberAuthenticateDto authenticateUser(MemberLoginDto.Request member);
 }
