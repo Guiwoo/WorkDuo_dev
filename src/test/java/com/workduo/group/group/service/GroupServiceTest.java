@@ -197,7 +197,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("success create group")
+    @DisplayName("그룹 생성 성공")
     @Transactional
     public void createGroup() throws Exception {
         // given
@@ -236,7 +236,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("create group not found user")
+    @DisplayName("그룹 생성 실패 - 유저 정보 없음")
     public void creatGroupFailNotFoundUser() throws Exception {
         // given
         given(memberRepository.findByEmail(anyString()))
@@ -262,7 +262,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("create group create maximum exceeded")
+    @DisplayName("그룹 생성 실패 - 그룹 생성 최대개수 초과")
     public void creatGroupFailGroupCreateMaximumExceeded() throws Exception {
         // given
         given(memberRepository.findByEmail(anyString()))
@@ -296,7 +296,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("create group create not found sigg area")
+    @DisplayName("그룹 생성 실패 - 지역 정보 없음")
     public void creatGroupFailNotFoundSiggArea() throws Exception {
         // given
         given(memberRepository.findByEmail(anyString()))
@@ -325,7 +325,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("create group create not found sport")
+    @DisplayName("그룹 생성 실패 - 운동 정보 없음")
     public void creatGroupFailNotFoundSport() throws Exception {
         // given
         given(memberRepository.findByEmail(anyString()))
@@ -356,7 +356,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("success delete group")
+    @DisplayName("그룹 삭제 성공")
     public void deleteGroup() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository).findByEmail(anyString());
@@ -401,7 +401,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("delete group create not found user")
+    @DisplayName("그룹 삭제 실패 - 유저 정보 없음")
     public void deleteGroupFailNotFoundUser() throws Exception {
         // given
         given(memberRepository.findByEmail(anyString()))
@@ -418,7 +418,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("delete group create not found group")
+    @DisplayName("그룹 삭제 실패 - 그룹 정보 없음")
     public void deleteGroupFailNotFoundGroup() throws Exception {
         // given
         given(memberRepository.findByEmail(anyString()))
@@ -438,7 +438,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("delete group create not leader")
+    @DisplayName("그룹 삭제 실패 - 그룹장이 아닌 경우 그룹 삭제 실패")
     public void deleteGroupFailNotLeader() throws Exception {
         // given
         given(memberRepository.findByEmail(anyString()))
@@ -461,7 +461,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("success withdraw group")
+    @DisplayName("그룹 탈퇴 성공")
     public void withdrawGroup() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository).findByEmail(anyString());
@@ -499,7 +499,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("withdraw group not found user")
+    @DisplayName("그룹 탈퇴 실패 - 유저 정보 없음")
     public void withdrawGroupFailNotFoundUser() throws Exception {
         // given
         doReturn(Optional.empty()).when(memberRepository).findByEmail(anyString());
@@ -516,7 +516,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("withdraw group not found group")
+    @DisplayName("그룹 탈퇴 실패 - 그룹 정보 없음")
     public void withdrawGroupFailNotFoundGroup() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository).findByEmail(anyString());
@@ -533,7 +533,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("withdraw group group not found group")
+    @DisplayName("그룹 탈퇴 실패 - 그룹 안에 유저 정보 없음")
     public void withdrawGroupFailGroupNotFoundGroup() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository).findByEmail(anyString());
@@ -552,7 +552,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("withdraw group leader not withdraw")
+    @DisplayName("그룹 탈퇴 실패 - 그룹장인 경우 그룹 탈퇴 실패")
     public void withdrawGroupFailLeaderNotWithdraw() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository).findByEmail(anyString());
@@ -573,7 +573,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("withdraw group already withdraw")
+    @DisplayName("그룹 탈퇴 실패 - 이미 탈퇴한 그룹")
     public void withdrawGroupFailAlreadyWithdraw() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository).findByEmail(anyString());
@@ -650,7 +650,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("success group like")
+    @DisplayName("그룹 좋아요 성공")
     public void groupLike() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository)
@@ -682,7 +682,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("group like not found user")
+    @DisplayName("그룹 좋아요 실패 - 유저 정보 없음")
     public void groupLikeFailNotFoundUser() throws Exception {
         // given
         doReturn(Optional.empty()).when(memberRepository)
@@ -700,7 +700,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("group like not found group")
+    @DisplayName("그룹 좋아요 실패 - 그룹 정보 없음")
     public void groupLikeFailNotFoundGroup() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository)
@@ -720,7 +720,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("group like already delete group")
+    @DisplayName("그룹 좋아요 실패 - 이미 삭제된 그룹")
     public void groupLikeFailAlreadyDeleteGroup() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository)
@@ -740,7 +740,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("group like group not found user")
+    @DisplayName("그룹 좋아요 실패 - 그룹 안에 유저 정보 없음")
     public void groupLikeFailGroupNotFoundUser() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository)
@@ -762,7 +762,7 @@ public class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("group like already withdraw group")
+    @DisplayName("그룹 좋아요 실패 - 이미 탈퇴한 그룹")
     public void groupLikeFailAlreadyWithdrawGroup() throws Exception {
         // given
         doReturn(Optional.of(member)).when(memberRepository)
@@ -783,5 +783,110 @@ public class GroupServiceTest {
 
         // then
         assertEquals(groupException.getErrorCode(),  GROUP_ALREADY_WITHDRAW);
+    }
+
+    @Test
+    @DisplayName("그룹 참여 성공")
+    public void groupParticipant() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.of(group)).when(groupRepository)
+                .findById(anyLong());
+        doReturn(1).when(groupJoinMemberRepository)
+                .countByGroup(any());
+
+        // when
+        groupService.groupParticipant(2L);
+
+        // then
+        verify(memberRepository, times(1))
+                .findByEmail(anyString());
+        verify(groupRepository, times(1))
+                .findById(anyLong());
+        verify(groupJoinMemberRepository, times(1))
+                .countByGroup(any());
+    }
+
+    @Test
+    @DisplayName("그룹 참여 실패 - 유저 정보 없음")
+    public void groupParticipantFailNotFoundUser() throws Exception {
+        // given
+        doReturn(Optional.empty()).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("").when(context)
+                .getMemberEmail();
+
+        // when
+        IllegalStateException groupException =
+                assertThrows(IllegalStateException.class,
+                        () -> groupService.groupParticipant(2L));
+
+        // then
+        assertEquals(groupException.getMessage(), "user not found");
+    }
+
+    @Test
+    @DisplayName("그룹 참여 실패 - 그룹 정보 없음")
+    public void groupParticipantFailNotFoundGroup() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.empty()).when(groupRepository)
+                .findById(anyLong());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupParticipant(2L));
+
+        // then
+        assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("그룹 참여 실패 - 이미 그룹이 삭제")
+    public void groupParticipantFailAlreadyDeleteGroup() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.of(deletedGroup)).when(groupRepository)
+                .findById(anyLong());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupParticipant(2L));
+
+        // then
+        assertEquals(groupException.getErrorCode(), GROUP_ALREADY_DELETE_GROUP);
+    }
+
+    @Test
+    @DisplayName("그룹 참여 실패 - 정원 초과")
+    public void groupParticipantFailGroupMaximumParticipant() throws Exception {
+        // given
+        doReturn(Optional.of(member)).when(memberRepository)
+                .findByEmail(anyString());
+        doReturn("rbsks147@naver.com").when(context)
+                .getMemberEmail();
+        doReturn(Optional.of(group)).when(groupRepository)
+                .findById(anyLong());
+        doReturn(10).when(groupJoinMemberRepository)
+                .countByGroup(any());
+
+        // when
+        GroupException groupException =
+                assertThrows(GroupException.class,
+                        () -> groupService.groupParticipant(2L));
+
+        // then
+        assertEquals(groupException.getErrorCode(), GROUP_MAXIMUM_PARTICIPANT);
     }
 }

@@ -5,9 +5,9 @@ import com.workduo.configuration.jpa.JpaAuditingConfiguration;
 import com.workduo.configuration.querydsl.QueryDslConfiguration;
 import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.entity.Group;
-import com.workduo.group.group.repository.query.impl.GroupQueryRepositoryImpl;
-import com.workduo.group.group.repository.GroupRepository;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
+import com.workduo.group.group.repository.GroupRepository;
+import com.workduo.group.group.repository.query.impl.GroupQueryRepositoryImpl;
 import com.workduo.sport.sport.entity.Sport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,18 +17,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import java.util.List;
-
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.doReturn;
 
 @DataJpaTest
 @Transactional
