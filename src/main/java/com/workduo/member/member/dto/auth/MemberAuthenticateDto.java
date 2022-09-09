@@ -1,4 +1,4 @@
-package com.workduo.member.member.dto;
+package com.workduo.member.member.dto.auth;
 
 import com.workduo.member.memberrole.dto.MemberRoleDto;
 import com.workduo.member.memberrole.entity.MemberRole;
@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 public class MemberAuthenticateDto {
     private String email;
     private List<MemberRoleDto> roles = new ArrayList<>();
+
+
 
     @Builder
     public MemberAuthenticateDto(String email, List<MemberRole> roles) {
