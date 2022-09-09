@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 public class MemberRefreshToken {
 
     @Id
-    private String memberId;
+    private String memberEmail;
 
     private String refreshToken;
-    private LocalDateTime expiredAt;
+    private LocalDateTime expireDate;
 
     public void updateExpireDate() {
-        this.expiredAt = LocalDateTime.now().plusYears(1);
+        this.expireDate = LocalDateTime.now().plusYears(1);
     }
 }

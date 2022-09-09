@@ -44,9 +44,6 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.exceptionHandling().authenticationEntryPoint(new CustomNotAuthentication())
-                        .accessDeniedHandler(new CustomNotAuthorization());
-
         http
                 .httpBasic().disable()
                 .csrf().disable()
@@ -56,11 +53,14 @@ public class SecurityConfiguration {
                 .headers().frameOptions().sameOrigin().and()
                 .csrf().ignoringAntMatchers("/h2-console/**").disable();
 
+        http.exceptionHandling().authenticationEntryPoint(new CustomNotAuthentication())
+                        .accessDeniedHandler(new CustomNotAuthorization());
+
 
         //접근 누구나 가능
         http.authorizeRequests()
                 .antMatchers(
-                        "/h2-console/**","/api/v1/login"
+                        "/h2-console/**","/api/v1/member/login"
                 ).permitAll();
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -70,10 +70,6 @@ public class SecurityConfiguration {
         http.authorizeRequests()
                 .antMatchers("/api/v1/auth")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN");
-
-//        http
-//                .formLogin()
-//                .successHandler(getSuccessHandler());
 
         return http.build();
     }

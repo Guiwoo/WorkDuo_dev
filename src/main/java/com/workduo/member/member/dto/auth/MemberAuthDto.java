@@ -1,5 +1,6 @@
-package com.workduo.member.member.dto.authDto;
+package com.workduo.member.member.dto.auth;
 
+import com.workduo.member.memberrole.dto.MemberRoleDto;
 import com.workduo.member.memberrole.entity.MemberRole;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +19,7 @@ public class MemberAuthDto {
 
     private String username;
     private String password;
-    private List<MemberRoleAuthDto> roles = new ArrayList<>();
+    private List<MemberRoleDto> roles = new ArrayList<>();
 
     @Builder
     public MemberAuthDto(Long id, String username, String password, List<MemberRole> roles) {
@@ -26,9 +27,8 @@ public class MemberAuthDto {
         this.username = username;
         this.password = password;
         this.roles = roles.stream()
-                .map(memberRole -> MemberRoleAuthDto.builder()
-                        .role(memberRole.getMemberRole())
-                        .id(memberRole.getId())
+                .map(role -> MemberRoleDto.builder()
+                        .role(role.getMemberRole())
                         .build())
                 .collect(Collectors.toList());
     }

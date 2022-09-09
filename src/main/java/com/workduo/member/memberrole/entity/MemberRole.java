@@ -1,10 +1,15 @@
 package com.workduo.member.memberrole.entity;
 
 import com.workduo.member.member.entity.Member;
-import com.workduo.member.member.type.MemberRoleType;
+import com.workduo.member.memberrole.type.MemberRoleType;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.workduo.member.memberrole.type.MemberRoleType.ROLE_ADMIN;
+import static com.workduo.member.memberrole.type.MemberRoleType.ROLE_MEMBER;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,4 +28,5 @@ public class MemberRole {
 
     @Enumerated(EnumType.STRING)
     private MemberRoleType memberRole; // 권한
+
 }

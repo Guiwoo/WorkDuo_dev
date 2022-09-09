@@ -125,11 +125,11 @@ class JwtAuthenticationFilterTest {
         req.addHeader("Authorization","Bearer amIToken");
         var s = mock(SecurityContextHolder.getContext().getClass());
         when(tokenProvider.validateToken(any())).thenReturn(true);
-        when(tokenProvider.getUsername(any())).thenReturn("email");
+        when(tokenProvider.getEmail(any())).thenReturn("email");
         jwt.doFilter(req,res,chain);
 
         verify(tokenProvider,times(1)).validateToken("amIToken");
-        verify(tokenProvider,times(1)).getUsername("amIToken");
+        verify(tokenProvider,times(1)).getEmail("amIToken");
         verify(context,times(1)).setMemberEmail("email");
         verify(chain,times(1)).doFilter(req,res);
     }

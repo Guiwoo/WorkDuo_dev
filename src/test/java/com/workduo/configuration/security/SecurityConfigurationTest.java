@@ -1,18 +1,23 @@
 package com.workduo.configuration.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.workduo.error.global.type.GlobalExceptionType;
+import com.workduo.error.member.type.MemberErrorCode;
+import com.workduo.member.member.dto.MemberLoginDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,14 +34,31 @@ class SecurityConfigurationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("권한 없이 모두 접근 가능")
+    @DisplayName("권한 없이 모두 포스트 가능")
     void canAccessPageWithoutAuthorization() throws Exception {
+        MemberLoginDto.Request reqeust = MemberLoginDto.Request.builder()
+                .email("abc")
+                .password("1q2w3e4r@")
+                .build();
 
-        mockMvc.perform(get("/api/v1/login"))
+        mockMvc.perform(post("/api/v1/member/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                reqeust
+                        ))
+                )
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().is(MemberErrorCode.MEMBER_EMAIL_ERROR.getHttpStatus().value()))
+                .andExpect(jsonPath("$.success")
+                        .value("F"))
+                .andExpect(jsonPath("$.errorCode")
+                        .value(MemberErrorCode.MEMBER_EMAIL_ERROR.toString()))
+                .andExpect(jsonPath("$.errorMessage")
+                        .value(MemberErrorCode.MEMBER_EMAIL_ERROR.getMessage()));
     }
 
     @Test
