@@ -20,7 +20,7 @@ public interface GroupJoinMemberRepository extends JpaRepository<GroupJoinMember
             "gjm.deletedAt = current_timestamp " +
             "where gjm.group = :group")
     void updateGroupJoinMemberStatusCancel(@Param("group") Group group);
-    Optional<GroupJoinMember> findByMember(Member member);
+    Optional<GroupJoinMember> findByMemberAndGroup(Member member, Group group);
     boolean existsByMember(Member member);
     Integer countByGroup(Group group);
 }

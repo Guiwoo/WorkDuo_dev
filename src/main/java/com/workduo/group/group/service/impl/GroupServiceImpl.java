@@ -131,7 +131,7 @@ public class GroupServiceImpl implements GroupService {
     public void withdrawGroup(Long groupId) {
         Member member = getMember(context.getMemberEmail());
         Group group = getGroup(groupId);
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member);
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
 
         withdrawGroupValidate(member, group, groupJoinMember);
 
@@ -234,7 +234,7 @@ public class GroupServiceImpl implements GroupService {
     public Page<GroupParticipantsDto> groupParticipantList(Pageable pageable, Long groupId) {
         Member member = getMember(context.getMemberEmail());
         Group group = getGroup(groupId);
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member);
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
 
         groupParticipantValidate(member, group, groupJoinMember);
         return groupQueryRepository.findByGroupParticipantList(pageable, groupId);
@@ -306,14 +306,14 @@ public class GroupServiceImpl implements GroupService {
             throw new GroupException(GROUP_NOT_FOUND_USER);
         }
 
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member);
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
         if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
             throw new GroupException(GROUP_ALREADY_WITHDRAW);
         }
     }
 
-    private GroupJoinMember getGroupJoinMember(Member member) {
-        return groupJoinMemberRepository.findByMember(member)
+    private GroupJoinMember getGroupJoinMember(Member member, Group group) {
+        return groupJoinMemberRepository.findByMemberAndGroup(member, group)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_USER));
     }
 

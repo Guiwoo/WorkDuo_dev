@@ -467,7 +467,8 @@ public class GroupServiceTest {
         doReturn(Optional.of(member)).when(memberRepository).findByEmail(anyString());
         doReturn("rbsks147@naver.com").when(context).getMemberEmail();
         doReturn(Optional.of(group)).when(groupRepository).findById(anyLong());
-        doReturn(Optional.of(normal)).when(groupJoinMemberRepository).findByMember(any());
+        doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                .findByMemberAndGroup(any(), any());
         doReturn(false).when(groupCreateMemberRepository)
                 .existsByMemberAndGroup(member, group);
         doNothing().when(groupMeetingParticipantRepository)
@@ -486,7 +487,7 @@ public class GroupServiceTest {
                 .findById(anyLong());
 
         verify(groupJoinMemberRepository, times(1))
-                .findByMember(any());
+                .findByMemberAndGroup(any(), any());
 
         verify(groupCreateMemberRepository, times(1))
                 .existsByMemberAndGroup(member, group);
@@ -540,7 +541,7 @@ public class GroupServiceTest {
         doReturn("rbsks147@naver.com").when(context).getMemberEmail();
         doReturn(Optional.of(group)).when(groupRepository).findById(anyLong());
         doReturn(Optional.empty()).when(groupJoinMemberRepository)
-                .findByMember(any());
+                .findByMemberAndGroup(any(), any());
 
         // when
         GroupException groupException =
@@ -559,7 +560,7 @@ public class GroupServiceTest {
         doReturn("rbsks147@naver.com").when(context).getMemberEmail();
         doReturn(Optional.of(group)).when(groupRepository).findById(anyLong());
         doReturn(Optional.of(leader)).when(groupJoinMemberRepository)
-                .findByMember(any());
+                .findByMemberAndGroup(any(), any());
         doReturn(true).when(groupCreateMemberRepository)
                 .existsByMemberAndGroup(any(), any());
 
@@ -580,7 +581,7 @@ public class GroupServiceTest {
         doReturn("rbsks147@naver.com").when(context).getMemberEmail();
         doReturn(Optional.of(group)).when(groupRepository).findById(anyLong());
         doReturn(Optional.of(alreadyWithdrawMember)).when(groupJoinMemberRepository)
-                .findByMember(any());
+                .findByMemberAndGroup(any(), any());
         doReturn(false).when(groupCreateMemberRepository)
                 .existsByMemberAndGroup(any(), any());
 
@@ -662,7 +663,7 @@ public class GroupServiceTest {
         doReturn(true).when(groupJoinMemberRepository)
                 .existsByMember(any());
         doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
-                .findByMember(member);
+                .findByMemberAndGroup(any(), any());
 
         // when
         groupService.groupLike(1L);
@@ -678,7 +679,7 @@ public class GroupServiceTest {
                 .existsByMember(any());
 
         verify(groupJoinMemberRepository, times(1))
-                .findByMember(any());
+                .findByMemberAndGroup(any(), any());
     }
 
     @Test
@@ -774,7 +775,7 @@ public class GroupServiceTest {
         doReturn(true).when(groupJoinMemberRepository)
                 .existsByMember(any());
         doReturn(Optional.of(alreadyWithdrawMember)).when(groupJoinMemberRepository)
-                .findByMember(any());
+                .findByMemberAndGroup(any(), any());
 
         // when
         GroupException groupException =
