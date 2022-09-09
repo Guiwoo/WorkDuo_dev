@@ -1,9 +1,6 @@
 package com.workduo.group.group.service;
 
-import com.workduo.group.group.dto.CreateGroup;
-import com.workduo.group.group.dto.GroupDto;
-import com.workduo.group.group.dto.GroupListDto;
-import com.workduo.group.group.dto.ListGroup;
+import com.workduo.group.group.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -51,4 +48,18 @@ public interface GroupService {
      * @param groupId
      */
     void groupUnLike(Long groupId);
+
+    /**
+     * 그룹 참여
+     * @param groupId
+     */
+    void groupParticipant(Long groupId);
+
+    /**
+     * 그룹 참여자 리스트
+     * @param pageable
+     * @param groupId
+     * @return
+     */
+    Page<GroupParticipantsDto> groupParticipantList(Pageable pageable, Long groupId);
 }

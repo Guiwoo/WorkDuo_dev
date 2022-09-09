@@ -1,10 +1,7 @@
 package com.workduo.group.group.controller;
 
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
-import com.workduo.group.group.dto.CancelGroup;
-import com.workduo.group.group.dto.CreateGroup;
-import com.workduo.group.group.dto.DetailGroup;
-import com.workduo.group.group.dto.ListGroup;
+import com.workduo.group.group.dto.*;
 import com.workduo.group.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -130,5 +127,35 @@ public class GroupController {
 
         groupService.groupUnLike(groupId);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 그룹 참여
+     * @param groupId
+     * @return
+     */
+    @PostMapping("participant/{groupId}")
+    public ResponseEntity<?> groupParticipant(
+            @PathVariable("groupId") Long groupId) {
+
+        groupService.groupParticipant(groupId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 그룹 참여자 리스트
+     * @param pageable
+     * @return
+     */
+    @GetMapping("participant/{groupId}")
+    public ResponseEntity<?> groupParticipantList(
+            Pageable pageable,
+            @PathVariable("groupId") Long groupId) {
+
+        return new ResponseEntity<>(
+                ParticipantGroup.Response.from(
+                        groupService.groupParticipantList(pageable, groupId)
+                ),
+                HttpStatus.OK);
     }
 }
