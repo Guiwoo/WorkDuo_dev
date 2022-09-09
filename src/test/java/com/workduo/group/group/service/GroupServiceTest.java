@@ -7,6 +7,8 @@ import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jpa.JpaAuditingConfiguration;
 import com.workduo.error.group.exception.GroupException;
+import com.workduo.error.member.exception.MemberException;
+import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.entity.Group;
@@ -42,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
+import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_CANCEL;
 import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
 import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_WITHDRAW;
@@ -252,13 +255,12 @@ public class GroupServiceTest {
                 .build();
 
         // when
-        IllegalStateException userNotFoundException =
-                assertThrows(IllegalStateException.class,
+        MemberException memberException =
+                assertThrows(MemberException.class,
                         () -> groupService.createGroup(request));
 
         // then
-        System.out.println(userNotFoundException.getMessage());
-        assertEquals(userNotFoundException.getMessage(), "user not found");
+        assertEquals(memberException.getErrorCode(), MEMBER_EMAIL_ERROR);
     }
 
     @Test
@@ -409,12 +411,12 @@ public class GroupServiceTest {
         doReturn("").when(context).getMemberEmail();
 
         // when
-        IllegalStateException groupException =
-                assertThrows(IllegalStateException.class,
+        MemberException memberException =
+                assertThrows(MemberException.class,
                 () -> groupService.deleteGroup(1L));
 
         // then
-        assertEquals(groupException.getMessage(), "user not found");
+        assertEquals(memberException.getErrorCode(), MEMBER_EMAIL_ERROR);
     }
 
     @Test
@@ -508,12 +510,12 @@ public class GroupServiceTest {
 
 
         // when
-        IllegalStateException groupException =
-                assertThrows(IllegalStateException.class,
+        MemberException memberException =
+                assertThrows(MemberException.class,
                         () -> groupService.withdrawGroup(1L));
 
         // then
-        assertEquals(groupException.getMessage(), "user not found");
+        assertEquals(memberException.getErrorCode(), MEMBER_EMAIL_ERROR);
     }
 
     @Test
@@ -692,12 +694,12 @@ public class GroupServiceTest {
                 .getMemberEmail();
 
         // when
-        IllegalStateException groupException =
-                assertThrows(IllegalStateException.class,
+        MemberException memberException =
+                assertThrows(MemberException.class,
                         () -> groupService.groupUnLike(1L));
 
         // then
-        assertEquals(groupException.getMessage(), "user not found");
+        assertEquals(memberException.getErrorCode(), MEMBER_EMAIL_ERROR);
     }
 
     @Test
@@ -821,12 +823,12 @@ public class GroupServiceTest {
                 .getMemberEmail();
 
         // when
-        IllegalStateException groupException =
-                assertThrows(IllegalStateException.class,
+        MemberException memberException =
+                assertThrows(MemberException.class,
                         () -> groupService.groupParticipant(2L));
 
         // then
-        assertEquals(groupException.getMessage(), "user not found");
+        assertEquals(memberException.getErrorCode(), MEMBER_EMAIL_ERROR);
     }
 
     @Test

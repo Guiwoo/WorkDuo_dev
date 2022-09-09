@@ -4,18 +4,21 @@ import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.error.group.exception.GroupException;
-import com.workduo.group.group.dto.*;
+import com.workduo.error.member.exception.MemberException;
+import com.workduo.group.group.dto.GroupDto;
+import com.workduo.group.group.dto.GroupParticipantsDto;
+import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.entity.Group;
+import com.workduo.group.group.entity.GroupJoinMember;
 import com.workduo.group.group.entity.GroupLike;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.repository.GroupLikeRepository;
-import com.workduo.group.group.repository.query.GroupQueryRepository;
 import com.workduo.group.group.repository.GroupRepository;
+import com.workduo.group.group.repository.query.GroupQueryRepository;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.group.group.type.GroupStatus;
 import com.workduo.group.groupcreatemember.entity.GroupCreateMember;
 import com.workduo.group.groupcreatemember.repository.GroupCreateMemberRepository;
-import com.workduo.group.group.entity.GroupJoinMember;
-import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
@@ -30,10 +33,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
-import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_NORMAL;
-import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
+import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
+import static com.workduo.group.group.dto.CreateGroup.Request;
 import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
 import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_LEADER;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_NORMAL;
+import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
 
 @Slf4j
 @Service
@@ -58,7 +63,7 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     @Transactional
-    public void createGroup(CreateGroup.Request request) {
+    public void createGroup(Request request) {
         Member member = getMember(context.getMemberEmail());
 
         SiggArea siggArea = getSiggArea(request.getSiggAreaId());
@@ -319,7 +324,7 @@ public class GroupServiceImpl implements GroupService {
 
     private Member getMember(String email) {
         return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("user not found"));
+                .orElseThrow(() -> new MemberException(MEMBER_EMAIL_ERROR));
     }
 
     private Group getGroup(Long groupId) {

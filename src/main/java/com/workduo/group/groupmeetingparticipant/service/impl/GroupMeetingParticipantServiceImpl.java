@@ -1,6 +1,8 @@
 package com.workduo.group.groupmeetingparticipant.service.impl;
 
 import com.workduo.configuration.aop.groupmeeting.GroupMeetingLock;
+import com.workduo.error.member.exception.MemberException;
+import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.repository.GroupRepository;
 import com.workduo.group.groupmeetingparticipant.dto.createGroupMeetingParticipant.CreateParticipant;
@@ -16,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
 
 @Slf4j
 @Service
@@ -66,7 +70,7 @@ public class GroupMeetingParticipantServiceImpl implements GroupMeetingParticipa
 
     private Member getMember(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalStateException("user not found"));
+                .orElseThrow(() -> new MemberException(MEMBER_EMAIL_ERROR));
     }
 
     private Group getGroup(Long groupId) {
