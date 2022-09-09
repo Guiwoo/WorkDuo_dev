@@ -1,14 +1,14 @@
 package com.workduo.configuration.jwt;
 
-import com.workduo.member.member.dto.authDto.MemberRoleAuthDto;
 import com.workduo.member.member.service.MemberService;
+import com.workduo.member.memberrole.dto.MemberRoleDto;
+import com.workduo.member.memberrole.entity.MemberRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,8 +29,8 @@ public class TokenProvider {
     private final MemberService memberService;
 
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    public String generateToken(String username, List<MemberRoleAuthDto> roles) {
-        Claims claims = Jwts.claims().setSubject(username);
+    public String generateToken(String email, List<MemberRoleDto> roles) {
+        Claims claims = Jwts.claims().setSubject(email);
         claims.put(KEY_ROLES, roles);
 
         var now = new Date();
@@ -46,12 +46,12 @@ public class TokenProvider {
 
     // jwt token으로 부터 인증 정보를 가져오는 메소드
     public Authentication getAuthentication(String jwt) {
-        UserDetails userDetails = memberService.loadUserByUsername(getUsername(jwt));
+        UserDetails userDetails = memberService.loadUserByUsername(getEmail(jwt));
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    public String getUsername(String token) {
+    public String getEmail(String token) {
         return this.parseClaims(token).getSubject();
     }
 
@@ -64,7 +64,7 @@ public class TokenProvider {
         return !claims.getExpiration().before(new Date());
     }
 
-    public List<MemberRoleAuthDto> getKeyRoles(String token){
+    public List<MemberRoleDto> getKeyRoles(String token){
         return this.parseClaims(token).get(KEY_ROLES, List.class);
     }
     public Claims parseClaims(String token) {

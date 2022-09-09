@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // request scope을 이용하여 전역으로 memberEmail을 쓸 수 있게 활용
-            String memberEmail = tokenProvider.getUsername(token);
+            String memberEmail = tokenProvider.getEmail(token);
             context.setMemberEmail(memberEmail);
         }
 

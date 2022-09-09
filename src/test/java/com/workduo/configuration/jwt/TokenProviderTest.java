@@ -1,7 +1,8 @@
 package com.workduo.configuration.jwt;
 
-import com.workduo.member.member.dto.authDto.MemberRoleAuthDto;
 import com.workduo.member.member.service.MemberService;
+import com.workduo.member.memberrole.dto.MemberRoleDto;
+import com.workduo.member.memberrole.entity.MemberRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +37,7 @@ class TokenProviderTest {
     @Test
     @DisplayName("토큰생성 성공/정확한 유저 이름")
     void successGenerateToken(){
-        List<MemberRoleAuthDto> list = new ArrayList<>();
+        List<MemberRoleDto> list = new ArrayList<>();
         var now = new Date();
 
         String algo = "eyJhbGciOiJIUzI1NiJ9";
@@ -47,11 +48,11 @@ class TokenProviderTest {
     @Test
     @DisplayName("유저의 인증정보를 가져오는 메서드 확인")
     void getUserAuthenticationTest(){
-        doReturn("abc").when(tokenProvider).getUsername(any());
+        doReturn("abc").when(tokenProvider).getEmail(any());
         when(memberService.loadUserByUsername("abc")).thenReturn(mock(UserDetails.class));
 
         tokenProvider.getAuthentication(any());
-        verify(tokenProvider,times(1)).getUsername(any());
+        verify(tokenProvider,times(1)).getEmail(any());
         verify(tokenProvider,times(1)).getAuthentication(any());
     }
 
@@ -61,7 +62,7 @@ class TokenProviderTest {
         Claims c = Jwts.claims().setSubject("abc");
 
         doReturn(c).when(tokenProvider).parseClaims(any());
-        String name = tokenProvider.getUsername("abc");
+        String name = tokenProvider.getEmail("abc");
 
         assertEquals(name, "abc");
     }
