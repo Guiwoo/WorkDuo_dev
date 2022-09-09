@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
@@ -23,7 +24,7 @@ public class ValidErrorResult {
        return ValidErrorResult.builder()
                .success("F")
                .messages(bindingResult.getAllErrors().stream()
-                       .map(error -> error.getDefaultMessage())
+                       .map(DefaultMessageSourceResolvable::getDefaultMessage)
                        .collect(Collectors.toList()))
                .build();
    }
