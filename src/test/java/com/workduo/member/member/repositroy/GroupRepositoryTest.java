@@ -1,4 +1,4 @@
-package com.workduo.group.group.repositroy;
+package com.workduo.member.member.repositroy;
 
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.configuration.jpa.JpaAuditingConfiguration;
