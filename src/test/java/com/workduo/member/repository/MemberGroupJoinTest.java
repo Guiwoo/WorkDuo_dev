@@ -1,5 +1,6 @@
 package com.workduo.member.repository;
 
+import com.workduo.area.sidoarea.entity.SidoArea;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.configuration.jpa.JpaAuditingConfiguration;
 import com.workduo.group.group.type.GroupJoinMemberStatus;
@@ -68,7 +69,14 @@ public class MemberGroupJoinTest {
                 .build();
 
         SiggArea siggArea = SiggArea.builder()
-                .id(1)
+                .sgg("11110")
+                .sidonm("11")
+                .sggnm("종로구")
+                .sidonm("서울특별시")
+                .sidoArea(SidoArea.builder()
+                        .sido("11")
+                        .sidonm("서울특별시")
+                        .build())
                 .build();
         Sport sport = Sport.builder()
                 .id(1)

@@ -1,5 +1,6 @@
 package com.workduo.group.group.repositroy;
 
+import com.workduo.area.sidoarea.entity.SidoArea;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.configuration.jpa.JpaAuditingConfiguration;
 import com.workduo.configuration.querydsl.QueryDslConfiguration;
@@ -52,7 +53,16 @@ public class GroupRepositoryTest {
     public void groupSave() throws Exception {
         // given
         Group group = Group.builder()
-                .siggArea(SiggArea.builder().id(1).build())
+                .siggArea(SiggArea.builder()
+                        .sgg("11110")
+                        .sidonm("11")
+                        .sggnm("종로구")
+                        .sidonm("서울특별시")
+                        .sidoArea(SidoArea.builder()
+                                .sido("11")
+                                .sidonm("서울특별시")
+                                .build())
+                        .build())
                 .sport(Sport.builder().id(1).build())
                 .name("test")
                 .limitPerson(10)
@@ -74,7 +84,16 @@ public class GroupRepositoryTest {
         // given
         Group group = Group.builder()
                 .id(2L)
-                .siggArea(SiggArea.builder().id(1).build())
+                .siggArea(SiggArea.builder()
+                        .sgg("11110")
+                        .sidonm("11")
+                        .sggnm("종로구")
+                        .sidonm("서울특별시")
+                        .sidoArea(SidoArea.builder()
+                                .sido("11")
+                                .sidonm("서울특별시")
+                                .build())
+                        .build())
                 .sport(Sport.builder().id(1).build())
                 .name("test")
                 .limitPerson(10)
