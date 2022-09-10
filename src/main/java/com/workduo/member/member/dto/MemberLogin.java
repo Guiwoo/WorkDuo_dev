@@ -1,11 +1,12 @@
 package com.workduo.member.member.dto;
 
+import com.workduo.group.group.dto.CreateGroup;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
 
-public class MemberLoginDto {
+public class MemberLogin {
 
     @Getter
     @Setter
