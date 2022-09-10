@@ -21,8 +21,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +31,7 @@ import static com.workduo.member.member.type.MemberStatus.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
@@ -54,21 +55,16 @@ public class MemberServiceImpl implements MemberService {
         return new PrincipalDetails(authDto);
     }
 
-    //authentication 구현 다시
-    @Transactional
+    @Transactional(readOnly = true)
     public MemberAuthenticateDto authenticateUser(MemberLogin.Request member){
-        //이메일검증
         Member oM = memberRepository.findByEmail(member.getEmail()).
                 orElseThrow(()->new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));
-        //정지된 회원
         if(oM.getMemberStatus() == MEMBER_STATUS_STOP){
             throw new MemberException(MemberErrorCode.MEMBER_STOP_ERROR);
         }
-        // 탈퇴한 회원
         if(oM.getMemberStatus() == MEMBER_STATUS_WITHDRAW){
             throw new MemberException(MemberErrorCode.MEMBER_WITHDRAW_ERROR);
         }
-//        // 패스워드검증
         if (!passwordEncoder.matches(member.getPassword(), oM.getPassword())) {
             throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_ERROR);
         }
@@ -79,7 +75,6 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @Transactional
     public void createUser(MemberCreate.Request create) {
         validationCreateData(create);
         // For Member Table
@@ -120,34 +115,35 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
         }
     }
-    private boolean sportsCheck(List<Integer> sportList){
+
+    public boolean sportsCheck(List<Integer> sportList){
         if(sportList == null) return false;
         for (int integer : sportList) {
             if(!sportRepository.existsById(integer)) return false;
         }
         return true;
     }
-    private boolean siggCheck(List<Integer> siggCheck){
+    public boolean siggCheck(List<Integer> siggCheck){
         if(siggCheck == null) return false;
         for (int integer : siggCheck) {
             if(!siggAreaRepository.existsById(integer)) return false;
         }
         return true;
     }
-    private boolean passwordPolicyCheck(String password){
+    public boolean passwordPolicyCheck(String password){
         final String reg = "^(?=.*[0-9])(?=.*[a-zA-z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$";
         Pattern p = Pattern.compile(reg);
         Matcher m = p.matcher(password);
         return m.matches();
     }
-    private boolean phoneNumberDuplicateCheck(String phoneNumber){
+    public boolean phoneNumberDuplicateCheck(String phoneNumber){
         //01012341234 형태로 들어올시
         return memberRepository.existsByPhoneNumber(phoneNumber);
     }
-    private boolean nickNameDuplicateCheck(String nickname){
+    public boolean nickNameDuplicateCheck(String nickname){
         return memberRepository.existsByNickname(nickname);
     }
-    private boolean emailDuplicateCheck(String email){
+    public boolean emailDuplicateCheck(String email){
         final String reg = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
         Pattern p = Pattern.compile(reg);
         Matcher m = p.matcher(email);
