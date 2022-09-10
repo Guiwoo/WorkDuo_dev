@@ -23,6 +23,6 @@ public class MemberActiveArea {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sigg_area_id")
+    @JoinColumn(name = "sgg")
     private SiggArea siggArea;
 }

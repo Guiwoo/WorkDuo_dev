@@ -25,8 +25,8 @@ public class CreateGroup {
         @Min(value = 1, message = "운동은 필수 선택 사항입니다.")
         private int sportId;
 
-        @Min(value = 1, message = "지역은 필수 선택 사항입니다.")
-        private int siggAreaId;
+        @NotNull(message = "지역은 필수 선택 사항입니다.")
+        private String sgg;
 
         @NotNull(message = "그룹 소개글은 필수 입력 사항입니다.")
         private String introduce;

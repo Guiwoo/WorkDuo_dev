@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GroupLikeRepository extends JpaRepository<GroupLike, Long> {
 
+    boolean existsByGroupAndMember(Group group, Member member);
     void deleteByGroupAndMember(Group group, Member member);
 }

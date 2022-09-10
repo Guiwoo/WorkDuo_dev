@@ -113,7 +113,10 @@ public class GroupController {
             @PathVariable("groupId") Long groupId) {
 
         groupService.groupLike(groupId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
     }
 
     /**
@@ -126,7 +129,10 @@ public class GroupController {
             @PathVariable("groupId") Long groupId) {
 
         groupService.groupUnLike(groupId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
     }
 
     /**
@@ -139,7 +145,10 @@ public class GroupController {
             @PathVariable("groupId") Long groupId) {
 
         groupService.groupParticipant(groupId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
     }
 
     /**

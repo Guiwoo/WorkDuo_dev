@@ -11,6 +11,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class GroupCreateMemberId implements Serializable {
-    private Member member;
-    private Group group;
+    private Long member;
+    private Long group;
 }
