@@ -3,6 +3,7 @@ package com.workduo.configuration.security;
 import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import com.workduo.configuration.security.error.CustomNotAuthentication;
 import com.workduo.configuration.security.error.CustomNotAuthorization;
+import com.workduo.configuration.security.handler.LogoutSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +26,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter authenticationFilter;
 
-
+    @Bean
+    public LogoutSuccessHandler getLogoutHandler(){
+        return new LogoutSuccessHandler(200);
+    }
     @Bean
     public PasswordEncoder gertPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -52,11 +56,11 @@ public class SecurityConfiguration {
         http.exceptionHandling().authenticationEntryPoint(new CustomNotAuthentication())
                         .accessDeniedHandler(new CustomNotAuthorization());
 
-
         //접근 누구나 가능
         http.authorizeRequests()
                 .antMatchers(
-                        "/h2-console/**","/api/v1/member/login","/api/v1/member"
+                        "/h2-console/**","/api/v1/member/login","/api/v1/member/logout",
+                        "/api/v1/member"
                 ).permitAll();
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -66,6 +70,11 @@ public class SecurityConfiguration {
         http.authorizeRequests()
                 .antMatchers("/api/v1/auth")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN");
+
+        http.logout()
+                .logoutUrl("/api/v1/member/logout")
+                .permitAll()
+                .logoutSuccessHandler(getLogoutHandler());
 
         return http.build();
     }
