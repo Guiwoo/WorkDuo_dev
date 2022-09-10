@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -44,16 +41,14 @@ public class MemberController {
         if(bindingResult.hasErrors()){
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
-        // Authenticate user here with email and password
         MemberAuthenticateDto m = memberService.authenticateUser(req);
-        //token 도 만들고
         String token = tokenProvider.generateToken(m.getEmail(),m.getRoles());
-        //refresh token 확인 하고 없으면 만들어주고, 있으면 넘어가고 기한 넘으면 업데이트
         refreshService.validateRefreshToken(m);
-        //history 저장
         loginHistoryService.saveLoginHistory(m.getEmail(),request);
+
         Map<String,String> map = new HashMap<>();
         map.put("token",token);
+
         return new ResponseEntity<>(MemberLogin.Response.builder()
                         .success("T")
                         .result(map)
@@ -71,7 +66,7 @@ public class MemberController {
         memberService.createUser(req);
         return new ResponseEntity<>(MemberCreate.Response.from(), HttpStatus.OK);
     }
-    //로그아웃
+
     //회원정보수정
     //비밀번호 변경
     //회원탈퇴

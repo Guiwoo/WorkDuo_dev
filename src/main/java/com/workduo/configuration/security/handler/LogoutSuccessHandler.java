@@ -1,6 +1,6 @@
-package com.workduo.configuration.security;
+package com.workduo.configuration.security.handler;
 
-import com.workduo.error.global.type.GlobalExceptionType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
@@ -11,15 +11,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.workduo.error.global.type.GlobalExceptionType.responseJsonString;
-
 public class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
-
-    private String logoutUrl;
     private int statusCode;
 
-    public LogoutSuccessHandler(String logoutUrl, int statusCode) {
-        this.logoutUrl = logoutUrl;
+    public LogoutSuccessHandler(int statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -27,11 +22,13 @@ public class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
                                 Authentication authentication) throws IOException, ServletException {
 
+        response.setStatus(this.statusCode);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         Map<String,Object> map = new HashMap<>();
         map.put("success","T");
-        response.getWriter().println(map);
+        ObjectMapper o = new ObjectMapper();
+        response.getWriter().println(o.writeValueAsString(map));
     }
 
 }
