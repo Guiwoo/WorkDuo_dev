@@ -104,7 +104,7 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
                 .join(sport.sportCategory, sportCategory)
                 .where(
                         groupStatusIng(),
-                        siggAreaEq(condition.getSiggAreaId()),
+                        siggAreaEq(condition.getSgg()),
                         sportEq(condition.getSportId())
                 )
                 .offset(pageable.getOffset())
@@ -118,7 +118,7 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
                 .from(group)
                 .where(
                         groupStatusIng(),
-                        siggAreaEq(condition.getSiggAreaId()),
+                        siggAreaEq(condition.getSgg()),
                         sportEq(condition.getSportId())
                 );
 
@@ -170,8 +170,8 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
         return group.groupStatus.eq(GROUP_STATUS_ING);
     }
 
-    private BooleanExpression siggAreaEq(Integer siggAreaid) {
-        return siggAreaid == null ? null : siggArea.id.eq(siggAreaid);
+    private BooleanExpression siggAreaEq(String sgg) {
+        return sgg == null ? null : siggArea.sgg.eq(sgg);
     }
 
     private BooleanExpression sportEq(Integer sportId) {

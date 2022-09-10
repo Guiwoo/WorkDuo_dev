@@ -14,6 +14,8 @@ public enum GroupErrorCode {
     GROUP_LEADER_NOT_WITHDRAW(HttpStatus.BAD_REQUEST, "그룹장은 그룹을 탈퇴할 수 없습니다."),
     GROUP_ALREADY_WITHDRAW(HttpStatus.BAD_REQUEST, "이미 탈퇴한 그룹입니다."),
     GROUP_ALREADY_DELETE_GROUP(HttpStatus.BAD_REQUEST, "이미 삭제된 그룹입니다."),
+    GROUP_ALREADY_PARTICIPANT(HttpStatus.BAD_REQUEST, "이미 가입된 그룹입니다."),
+    GROUP_ALREADY_LIKE(HttpStatus.BAD_REQUEST, "이미 좋아요를 누르셨습니다."),
     GROUP_NOT_LEADER(HttpStatus.BAD_REQUEST, "그룹의 생성자가 아니므로 해제 권한이 없습니다.");
 
     private final HttpStatus httpStatus;

@@ -27,7 +27,7 @@ public class Group extends BaseEntity {
     private Integer limitPerson;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sigg_area_id")
+    @JoinColumn(name = "sgg")
     private SiggArea siggArea;
 
     @ManyToOne(fetch = FetchType.LAZY)

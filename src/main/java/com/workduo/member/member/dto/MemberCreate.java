@@ -29,7 +29,7 @@ public class MemberCreate {
         //지역3개
         @NotNull(message = "지역 은 최소 1개 이상 선택해야 합니다.")
         @Size(min = 1,max = 3)
-        private List<Integer> siggAreaList;
+        private List<String> siggAreaList;
         //운동3게
         @NotNull(message = "스포츠 는 최소 1개 이상 선택해야 합니다.")
         @Size(min = 1,max = 3)
