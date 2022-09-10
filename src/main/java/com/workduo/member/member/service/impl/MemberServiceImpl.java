@@ -1,11 +1,14 @@
 package com.workduo.member.member.service.impl;
 
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
+import com.workduo.common.CommonRequestContext;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
+import com.workduo.member.area.repository.MemberActiveAreaRepository;
 import com.workduo.member.existmember.entity.ExistMember;
 import com.workduo.member.existmember.repository.ExistMemberRepository;
 import com.workduo.member.member.dto.MemberCreate;
+import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.dto.auth.MemberAuthDto;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
@@ -40,6 +43,8 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final SportRepository sportRepository;
     private final SiggAreaRepository siggAreaRepository;
+    private final CommonRequestContext commonRequestContext;
+    private final MemberActiveAreaRepository memberActiveAreaRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -77,24 +82,44 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void createUser(MemberCreate.Request create) {
         validationCreateData(create);
-        // For Member Table
+        // Need to add aws s3 img file path ,or default path should be added
         Member m = Member.builder()
                 .email(create.getEmail())
                 .password(passwordEncoder.encode(create.getPassword()))
                 .username(create.getUsername())
                 .nickname(create.getNickname())
                 .phoneNumber(create.getPhoneNumber())
+                .profileImg(create.getProfileImg())
                 .memberStatus(MEMBER_STATUS_ING)
                 .build();
         memberRepository.save(m);
 
-        // For Exist Member Table
         ExistMember e = ExistMember.builder()
                 .memberEmail(create.getEmail())
                 .build();
         existMemberRepository.save(e);
+        //시도 저장
+
+        //운동 저장
+    }
+
+    @Override
+    public void editUser(MemberEdit.Request edit) {
+        validationEditDate(edit);
+        Member m = memberRepository.findByEmail(commonRequestContext.getMemberEmail())
+                .orElseThrow(()->new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));
+
+        m.setUsername(edit.getUsername());
+        m.setNickname(edit.getNickname());
+        m.setPhoneNumber(edit.getPhoneNumber());
+        m.setProfileImg(edit.getProfileImg());
+
+        memberRepository.save(m);
+        //지역 변경 해줘야함 테이블에서 찾아서 지울꺼 지우고 업데이트할꺼 하고
+
 
     }
+
     private void  validationCreateData(MemberCreate.Request create) {
         if(emailDuplicateCheck(create.getEmail())){
             throw new MemberException(MemberErrorCode.MEMBER_EMAIL_DUPLICATE);
@@ -112,6 +137,20 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);
         }
         if(!sportsCheck(create.getSportList())){
+            throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
+        }
+    }
+    private void validationEditDate(MemberEdit.Request edit){
+        if(nickNameDuplicateCheck(edit.getNickname())){
+            throw new MemberException(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE);
+        }
+        if(phoneNumberDuplicateCheck(edit.getPhoneNumber())){
+            throw new MemberException(MemberErrorCode.MEMBER_PHONE_DUPLICATE);
+        }
+        if(!siggCheck(edit.getSiggAreaList())){
+            throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);
+        }
+        if(!sportsCheck(edit.getSportList())){
             throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
         }
     }
