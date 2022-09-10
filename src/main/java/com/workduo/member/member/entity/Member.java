@@ -19,11 +19,11 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
-    private String username; // 유저 이름
     private String email; // 유저 이메일 (실제 사용되는 id)
-    private String phoneNumber; // 핸드폰
     private String password; // 비밀번호
+    private String username; // 유저 이름
     private String nickname; // 별명
+    private String phoneNumber; // 핸드폰
     private String status; // 상태메세지
 
     @Lob

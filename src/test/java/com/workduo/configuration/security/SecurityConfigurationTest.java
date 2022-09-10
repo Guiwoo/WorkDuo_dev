@@ -1,10 +1,9 @@
 package com.workduo.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 import com.workduo.error.global.type.GlobalExceptionType;
 import com.workduo.error.member.type.MemberErrorCode;
-import com.workduo.member.member.dto.MemberLoginDto;
+import com.workduo.member.member.dto.MemberLogin;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,7 @@ class SecurityConfigurationTest {
     @Test
     @DisplayName("권한 없이 모두 포스트 가능")
     void canAccessPageWithoutAuthorization() throws Exception {
-        MemberLoginDto.Request reqeust = MemberLoginDto.Request.builder()
+        MemberLogin.Request reqeust = MemberLogin.Request.builder()
                 .email("abc")
                 .password("1q2w3e4r@")
                 .build();
@@ -64,7 +63,7 @@ class SecurityConfigurationTest {
     @Test
     @DisplayName("Api 호출 실패 [로그인 안된 호출]")
     void failedAccessApiCallWithoutLogin() throws Exception {
-
+        //추후 권한 있는 테스트 에서 요청 주소 변경 할것
         mockMvc.perform(get("/api/v1/auth"))
                 .andDo(print())
                 .andExpect(status().is
@@ -80,7 +79,7 @@ class SecurityConfigurationTest {
     @DisplayName("Api 호출 실패 [로그인 했지만 권한 없음]")
     @WithMockUser(username="user",roles={})
     void failedAccessApiCallWithoutAuthorization() throws Exception {
-
+        //추후 권한 있는 테스트 에서 요청 주소 변경 할것
         mockMvc.perform(get("/api/v1/auth"))
                 .andDo(print())
                 .andExpect(status().is
