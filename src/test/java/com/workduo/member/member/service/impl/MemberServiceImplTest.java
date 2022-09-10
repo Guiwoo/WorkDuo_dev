@@ -146,16 +146,17 @@ class MemberServiceImplTest {
 
     @Nested
     class TestSignInMethod{
-        List<Integer> createList = new ArrayList<>(List.of(1));
+        List<String> sggList = new ArrayList<>(List.of("1"));
+        List<Integer> sportList = new ArrayList<>(List.of(1));
         MemberCreate.Request createReqeust = MemberCreate.Request
                 .builder()
                 .email("test@test.com")
                 .password("12345abc@")
                 .username("test")
                 .phoneNumber("1")
-                .siggAreaList(createList)
+                .siggAreaList(sggList)
                 .nickname("feelingGood")
-                .sportList(createList)
+                .sportList(sportList)
                 .build();
 
         @Test
@@ -265,7 +266,7 @@ class MemberServiceImplTest {
         @Test
         @DisplayName("회원가입 실패[지역 이 데이터 상에 없는경우]")
         void siggCheckFail(){
-            doReturn(false).when(siggAreaRepository).existsById(any());
+            doReturn(false).when(siggAreaRepository).existsBySgg(anyString());
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
@@ -278,7 +279,7 @@ class MemberServiceImplTest {
         @Test
         @DisplayName("회원가입 실패[운동 이 데이터 상에 없는경우]")
         void sportCheckFail(){
-            doReturn(true).when(siggAreaRepository).existsById(any());
+            doReturn(true).when(siggAreaRepository).existsBySgg(anyString());
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
@@ -291,7 +292,7 @@ class MemberServiceImplTest {
         @Test
         @DisplayName("회원가입 성공")
         void successSignIn(){
-            doReturn(true).when(siggAreaRepository).existsById(any());
+            doReturn(true).when(siggAreaRepository).existsBySgg(anyString());
             doReturn(true).when(sportRepository).existsById(any());
             ExistMember e = ExistMember.builder()
                     .memberEmail(createReqeust.getEmail())

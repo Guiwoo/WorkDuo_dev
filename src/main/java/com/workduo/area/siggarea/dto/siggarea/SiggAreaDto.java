@@ -10,17 +10,15 @@ import lombok.*;
 @Builder
 public class SiggAreaDto {
 
-    private Integer id;
-    private Integer cityId;
-    private String amdCd;
+    private String sgg;
+    private String sidonm;
     private String sggnm;
 
 
     public static SiggAreaDto fromEntity(SiggArea siggArea) {
         return SiggAreaDto.builder()
-                .id(siggArea.getId())
-                .cityId(siggArea.getCityId())
-                .amdCd(siggArea.getAmdCd())
+                .sgg(siggArea.getSgg())
+                .sidonm(siggArea.getSidonm())
                 .sggnm(siggArea.getSggnm())
                 .build();
     }

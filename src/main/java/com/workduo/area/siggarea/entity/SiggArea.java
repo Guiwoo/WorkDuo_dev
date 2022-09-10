@@ -14,14 +14,13 @@ import javax.persistence.*;
 public class SiggArea {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "sigg_area_id")
-    private Integer id;
+    @Column(name = "sgg")
+    private String sgg;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sido_area_id")
+    @JoinColumn(name = "sido")
     private SidoArea sidoArea;
 
-    private Integer cityId;
-    private String amdCd;
+    private String sidonm;
     private String sggnm;
 }

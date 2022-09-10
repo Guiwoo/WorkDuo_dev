@@ -123,10 +123,10 @@ public class MemberServiceImpl implements MemberService {
         }
         return true;
     }
-    public boolean siggCheck(List<Integer> siggCheck){
+    private boolean siggCheck(List<String> siggCheck){
         if(siggCheck == null) return false;
-        for (int integer : siggCheck) {
-            if(!siggAreaRepository.existsById(integer)) return false;
+        for (String sgg : siggCheck) {
+            if(!siggAreaRepository.existsBySgg(sgg)) return false;
         }
         return true;
     }

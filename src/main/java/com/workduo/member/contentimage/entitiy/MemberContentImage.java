@@ -22,5 +22,5 @@ public class MemberContentImage {
     private MemberContent memberContent;
 
     @Lob
-    private String imagePath;
+    private String imgPath;
 }

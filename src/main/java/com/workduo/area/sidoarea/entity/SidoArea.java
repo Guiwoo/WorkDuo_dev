@@ -12,10 +12,9 @@ import javax.persistence.*;
 @Table(name = "sido_area")
 public class SidoArea {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "sido_area_id")
-    private Integer id;
+    @Id
+    @Column(name = "sido")
+    private String sido;
 
-    private String admCd;
     private String sidonm;
 }

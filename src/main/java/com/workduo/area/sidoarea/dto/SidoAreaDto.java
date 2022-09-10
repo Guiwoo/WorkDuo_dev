@@ -10,14 +10,12 @@ import lombok.*;
 @Builder
 public class SidoAreaDto {
 
-    private Integer id;
-    private String admcd;
+    private String sido;
     private String sidonm;
 
     public static SidoAreaDto fromEntity(SidoArea sidoArea) {
         return SidoAreaDto.builder()
-                .id(sidoArea.getId())
-                .admcd(sidoArea.getAdmCd())
+                .sido(sidoArea.getSido())
                 .sidonm(sidoArea.getSidonm())
                 .build();
     }

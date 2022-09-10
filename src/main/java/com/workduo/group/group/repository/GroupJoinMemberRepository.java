@@ -21,6 +21,6 @@ public interface GroupJoinMemberRepository extends JpaRepository<GroupJoinMember
             "where gjm.group = :group")
     void updateGroupJoinMemberStatusCancel(@Param("group") Group group);
     Optional<GroupJoinMember> findByMemberAndGroup(Member member, Group group);
-    boolean existsByMember(Member member);
+    boolean existsByGroupAndMember(Group group, Member member);
     Integer countByGroup(Group group);
 }

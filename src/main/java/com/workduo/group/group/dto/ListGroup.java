@@ -9,7 +9,7 @@ public class ListGroup {
     @Getter
     @Setter
     public static class Request {
-        private Integer siggAreaId;
+        private String sgg;
         private Integer sportId;
     }
 

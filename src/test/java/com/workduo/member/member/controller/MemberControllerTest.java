@@ -156,16 +156,17 @@ class MemberControllerTest {
     @Test
     @DisplayName("계정 생성 성공")
     void createSuccess() throws Exception {
-        List<Integer> list = new ArrayList<>(List.of(1,2));
+        List<String> sggList = new ArrayList<>(List.of("1"));
+        List<Integer> sportList = new ArrayList<>(List.of(1));
         MemberCreate.Request reqeust = MemberCreate.Request
                 .builder()
                 .email("test@test.com")
                 .password("1")
                 .username("test")
                 .phoneNumber("1")
-                .siggAreaList(list)
+                .siggAreaList(sggList)
                 .nickname("feelingGood")
-                .sportList(list)
+                .sportList(sportList)
                 .build();
         doNothing().when(memberService).createUser(reqeust);
         mockMvc.perform(post("/api/v1/member")

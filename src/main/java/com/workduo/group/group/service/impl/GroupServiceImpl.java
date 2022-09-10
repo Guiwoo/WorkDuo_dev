@@ -66,7 +66,7 @@ public class GroupServiceImpl implements GroupService {
     public void createGroup(Request request) {
         Member member = getMember(context.getMemberEmail());
 
-        SiggArea siggArea = getSiggArea(request.getSiggAreaId());
+        SiggArea siggArea = getSiggArea(request.getSgg());
 
         Sport sport = getSport(request.getSportId());
 
@@ -155,6 +155,11 @@ public class GroupServiceImpl implements GroupService {
     public GroupDto groupDetail(Long groupId) {
 //        getMember(context.getMemberEmail());
 
+        Group group = getGroup(groupId);
+        if (group.getGroupStatus() != GROUP_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
+        }
+
         return groupQueryRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
     }
@@ -201,7 +206,7 @@ public class GroupServiceImpl implements GroupService {
         Member member = getMember(context.getMemberEmail());
         Group group = getGroup(groupId);
 
-        groupLikeValidate(member, group);
+        groupUnLikeValidate(member, group);
 
         groupLikeRepository.deleteByGroupAndMember(group, member);
     }
@@ -216,7 +221,7 @@ public class GroupServiceImpl implements GroupService {
         Member member = getMember(context.getMemberEmail());
         Group group = getGroup(groupId);
 
-        groupJoinValidate(group);
+        groupJoinValidate(member, group);
 
         GroupJoinMember groupJoinMember = GroupJoinMember.builder()
                 .group(group)
@@ -250,7 +255,7 @@ public class GroupServiceImpl implements GroupService {
             throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
         }
 
-        boolean existsByMember = groupJoinMemberRepository.existsByMember(member);
+        boolean existsByMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);
         if (!existsByMember) {
             throw new GroupException(GROUP_NOT_FOUND_USER);
         }
@@ -260,7 +265,12 @@ public class GroupServiceImpl implements GroupService {
         }
     }
 
-    private void groupJoinValidate(Group group) {
+    private void groupJoinValidate(Member member, Group group) {
+
+        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
+        if (exists) {
+            throw new GroupException(GROUP_ALREADY_PARTICIPANT) ;
+        }
 
         if (group.getGroupStatus() != GROUP_STATUS_ING) {
             throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
@@ -302,11 +312,33 @@ public class GroupServiceImpl implements GroupService {
 
     private void groupLikeValidate(Member member, Group group) {
 
+        boolean exists = groupLikeRepository.existsByGroupAndMember(group, member);
+        if (exists) {
+            throw new GroupException(GROUP_ALREADY_LIKE);
+        }
+
         if (group.getGroupStatus() != GroupStatus.GROUP_STATUS_ING) {
             throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
         }
 
-        boolean existsByMember = groupJoinMemberRepository.existsByMember(member);
+        boolean existsByMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);
+        if (!existsByMember ) {
+            throw new GroupException(GROUP_NOT_FOUND_USER);
+        }
+
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
+        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_WITHDRAW);
+        }
+    }
+
+    private void groupUnLikeValidate(Member member, Group group) {
+
+        if (group.getGroupStatus() != GroupStatus.GROUP_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        boolean existsByMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);
         if (!existsByMember ) {
             throw new GroupException(GROUP_NOT_FOUND_USER);
         }
@@ -341,8 +373,8 @@ public class GroupServiceImpl implements GroupService {
                 .orElseThrow(() -> new IllegalStateException("해당 운동은 없는 운동입니다."));
     }
 
-    private SiggArea getSiggArea(Integer id) {
-        return siggAreaRepository.findById(id)
+    private SiggArea getSiggArea(String sgg) {
+        return siggAreaRepository.findBySgg(sgg)
                 .orElseThrow(() -> new IllegalStateException("해당 지역은 없는 지역입니다."));
     }
 }
