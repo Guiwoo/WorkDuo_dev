@@ -9,6 +9,5 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public interface MemberService extends UserDetailsService {
     MemberAuthenticateDto authenticateUser(MemberLogin.Request member);
     void createUser(MemberCreate.Request create);
-
     void editUser(MemberEdit.Request req);
 }
