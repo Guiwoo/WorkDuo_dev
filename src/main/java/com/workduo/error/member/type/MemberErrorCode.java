@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum MemberErrorCode {
     //일반 에러
+    MEMBER_ERROR_NEED_LOGIN(HttpStatus.FORBIDDEN,"❌ 로그인 이 필요 합니다.(사용자 이메일이 다릅니다.)"),
     MEMBER_EMAIL_ERROR(HttpStatus.FORBIDDEN,"❌ 이메일 계정 이 존재하지 않습니다."),
     MEMBER_EMAIL_FORM(HttpStatus.FORBIDDEN,"❌ 이메일 형태가 아닙니다."),
     MEMBER_PASSWORD_ERROR(HttpStatus.FORBIDDEN,"❌ 패스워드 가 일치하지 않습니다."),
