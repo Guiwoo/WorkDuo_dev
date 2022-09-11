@@ -78,8 +78,7 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.editUser(req);
-        return null;
-//        return new ResponseEntity<>(MemberCreate.Response.from(), HttpStatus.OK);
+        return new ResponseEntity<>(MemberEdit.Response.from(), HttpStatus.OK);
     }
     //비밀번호 변경
     //회원탈퇴
