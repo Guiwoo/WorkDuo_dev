@@ -1,6 +1,13 @@
 package com.workduo.member.member.dto;
 
+import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.group.group.dto.CancelGroup;
+import com.workduo.member.area.entity.MemberActiveArea;
+import com.workduo.member.existmember.entity.ExistMember;
+import com.workduo.member.member.entity.Member;
+import com.workduo.member.member.type.MemberStatus;
+import com.workduo.member.memberrole.entity.MemberRole;
+import com.workduo.member.memberrole.type.MemberRoleType;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -51,5 +58,24 @@ public class MemberCreate {
                     .result(null)
                     .build();
         }
+    }
+    public static Member createReqToMember(Request req) {
+        return Member.builder()
+                .email(req.getEmail())
+                .username(req.getUsername())
+                .nickname(req.getNickname())
+                .phoneNumber(req.getPhoneNumber())
+                .profileImg(req.getProfileImg())
+                .memberStatus(MemberStatus.MEMBER_STATUS_ING)
+                .build();
+    }
+    public static MemberRole createReqToMemberRole(Member m, MemberRoleType t){
+        return MemberRole.builder()
+                .member(m)
+                .memberRole(t)
+                .build();
+    }
+    public static ExistMember createReqToExistMember(String email){
+        return ExistMember.builder().memberEmail(email).build();
     }
 }

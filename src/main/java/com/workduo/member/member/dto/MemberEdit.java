@@ -1,5 +1,6 @@
 package com.workduo.member.member.dto;
 
+import com.workduo.member.member.entity.Member;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -29,7 +30,7 @@ public class MemberEdit {
         //지역3개
         @NotNull(message = "지역 은 최소 1개 이상 선택해야 합니다.")
         @Size(min = 1,max = 3)
-        private List<Integer> siggAreaList;
+        private List<String> siggAreaList;
         //운동3게
         @NotNull(message = "스포츠 는 최소 1개 이상 선택해야 합니다.")
         @Size(min = 1,max = 3)
@@ -51,5 +52,13 @@ public class MemberEdit {
                     .result(null)
                     .build();
         }
+    }
+
+    public static void editReqToUpdateMember(Request req, Member m){
+        m.setUsername(req.getUsername());
+        m.setNickname(req.getNickname());
+        m.setPhoneNumber(req.getPhoneNumber());
+        m.setProfileImg(req.getProfileImg());
+        m.setStatus(req.getStatus());
     }
 }
