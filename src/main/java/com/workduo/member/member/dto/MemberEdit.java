@@ -55,10 +55,10 @@ public class MemberEdit {
     }
 
     public static void editReqToUpdateMember(Request req, Member m){
-        m.setUsername(req.getUsername());
-        m.setNickname(req.getNickname());
-        m.setPhoneNumber(req.getPhoneNumber());
-        m.setProfileImg(req.getProfileImg());
-        m.setStatus(req.getStatus());
+        m.updateUsername(req.getUsername());
+        m.updateNickname(req.getNickname());
+        m.updatePhoneNumber(req.getPhoneNumber());
+        m.updateProfileImg(req.getProfileImg());
+        m.updateStatus(req.getStatus());
     }
 }

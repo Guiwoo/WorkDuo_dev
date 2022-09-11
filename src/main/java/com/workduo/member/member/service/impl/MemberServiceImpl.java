@@ -94,7 +94,7 @@ public class MemberServiceImpl implements MemberService {
         validationCreateData(create);
         // Need to add aws s3 img file path ,or default path should be added
         Member m = MemberCreate.createReqToMember(create);
-        m.setPassword(passwordEncoder.encode(create.getPassword()));
+        m.updatePassword(passwordEncoder.encode(create.getPassword()));
         memberRepository.save(m);
         // 롤 저장
         MemberRole r = MemberCreate.createReqToMemberRole(m,MemberRoleType.ROLE_MEMBER);
@@ -117,7 +117,6 @@ public class MemberServiceImpl implements MemberService {
         }
         validationEditDate(edit,m);
         MemberEdit.editReqToUpdateMember(edit,m);
-        memberRepository.save(m);
         //지역 변경 해줘야함 테이블에서 찾아서 지울꺼 지우고 업데이트할꺼 하고
         updateActiveArea(m,edit.getSiggAreaList());
         //운동 변경
