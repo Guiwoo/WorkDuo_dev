@@ -17,6 +17,7 @@ public enum MemberErrorCode {
     MEMBER_EMAIL_DUPLICATE(HttpStatus.FORBIDDEN,"❌ 이미 존재하는 이메일 입니다."),
     MEMBER_NICKNAME_DUPLICATE(HttpStatus.FORBIDDEN,"❌ 이미 존재하는 닉네임 입니다."),
     MEMBER_PHONE_DUPLICATE(HttpStatus.FORBIDDEN,"❌ 이미 존재하는 전화번호 입니다."),
+    MEMBER_PASSWORD_DUPLICATE(HttpStatus.FORBIDDEN,"❌ 이전 비밀번호 와 동일합니다."),
     // 삭제예정
     MEMBER_SIGG_ERROR(HttpStatus.FORBIDDEN,"❌ 삭제예정."),
     MEMBER_SPORT_ERROR(HttpStatus.FORBIDDEN,"❌ 삭제예정."),
