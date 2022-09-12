@@ -483,9 +483,9 @@ public class GroupServiceTest {
             doReturn(false).when(groupCreateMemberRepository)
                     .existsByMemberAndGroup(member, group);
             doNothing().when(groupMeetingParticipantRepository)
-                    .deleteByMember(member);
+                    .deleteByGroupAndMember(group, member);
             doNothing().when(memberCalendarRepository).
-                    updateMemberCalendarMemberWithdraw(member);
+                    updateMemberCalendarMemberAndGroupWithdraw(member, group);
 
             // when
             groupService.withdrawGroup(1L);
@@ -504,10 +504,10 @@ public class GroupServiceTest {
                     .existsByMemberAndGroup(member, group);
 
             verify(groupMeetingParticipantRepository, times(1))
-                    .deleteByMember(member);
+                    .deleteByGroupAndMember(group, member);
 
             verify(memberCalendarRepository, times(1))
-                    .updateMemberCalendarMemberWithdraw(member);
+                    .updateMemberCalendarMemberAndGroupWithdraw(member, group);
         }
 
         @Test
