@@ -65,7 +65,6 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public void createGroup(Request request) {
         Member member = getMember(context.getMemberEmail());
-
         SiggArea siggArea = getSiggArea(request.getSgg());
 
         Sport sport = getSport(request.getSportId());
@@ -113,8 +112,7 @@ public class GroupServiceImpl implements GroupService {
         Group group = getGroup(groupId);
 
         boolean existsGroupLeader =
-                groupCreateMemberRepository.existsByMemberAndGroup
-                        (member, group);
+                groupCreateMemberRepository.existsByMemberAndGroup(member, group);
 
         if (!existsGroupLeader) {
             throw new GroupException(GROUP_NOT_LEADER);
@@ -140,8 +138,8 @@ public class GroupServiceImpl implements GroupService {
 
         withdrawGroupValidate(member, group, groupJoinMember);
 
-        groupMeetingParticipantRepository.deleteByMember(member);
-        memberCalendarRepository.updateMemberCalendarMemberWithdraw(member);
+        groupMeetingParticipantRepository.deleteByGroupAndMember(group, member);
+        memberCalendarRepository.updateMemberCalendarMemberAndGroupWithdraw(member, group);
         groupJoinMember.withdrawGroup();
     }
 

@@ -74,11 +74,19 @@ public class SecurityConfiguration {
                 .antMatchers(HttpMethod.POST,"/api/v1/member")
                 .permitAll();
 
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.GET,
+                        "/api/v1/group",
+                        "/api/v1/group/{groupId}"
+                ).permitAll();
+
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 
         // 로그인 된 유저(토큰 이 있는),권한 이 있는 접근
         http.authorizeRequests()
+                .antMatchers( "/api/v1/group/**")
+                .hasAnyAuthority("ROLE_MEMBER", "ROLE_ADMIN")
                 .antMatchers(HttpMethod.PATCH,"/api/v1/member")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")
                 .antMatchers("/api/v1/member")
