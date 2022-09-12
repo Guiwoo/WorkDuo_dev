@@ -89,7 +89,9 @@ public class SecurityConfiguration {
                 .hasAnyAuthority("ROLE_MEMBER", "ROLE_ADMIN")
                 .antMatchers(HttpMethod.PATCH,"/api/v1/member")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")
-                .antMatchers("/api/v1/member")
+                .antMatchers("/api/v1/member/password")
+                .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/api/v1/member")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN");
 
         http.logout()
