@@ -6,6 +6,7 @@ import com.workduo.configuration.security.error.CustomNotAuthorization;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -59,12 +60,18 @@ public class SecurityConfiguration {
                         "/h2-console/**","/api/v1/member/login","/api/v1/member"
                 ).permitAll();
 
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.GET,
+                        "/api/v1/group",
+                        "/api/v1/group/{groupId}"
+                ).permitAll();
+
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 
         // 로그인 된 유저(토큰 이 있는),권한 이 있는 접근
         http.authorizeRequests()
-                .antMatchers("/api/v1/auth")
+                .antMatchers("/api/v1/auth", "/api/v1/group/**")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN");
 
         return http.build();
