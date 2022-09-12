@@ -36,8 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // request scope을 이용하여 전역으로 memberEmail을 쓸 수 있게 활용
             String memberEmail = tokenProvider.getEmail(token);
             context.setMemberEmail(memberEmail);
         }

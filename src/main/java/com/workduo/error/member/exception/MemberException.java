@@ -20,18 +20,18 @@ public class MemberException extends RuntimeException{
     public MemberException(String message, MemberErrorCode errorCode, String errorMessage) {
         super(message);
         this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
+        this.errorMessage = errorCode.getMessage();
     }
 
     public MemberException(String message, Throwable cause, MemberErrorCode errorCode, String errorMessage) {
         super(message, cause);
         this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
+        this.errorMessage = errorCode.getMessage();
     }
 
     public MemberException(Throwable cause, MemberErrorCode errorCode, String errorMessage) {
         super(cause);
         this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
+        this.errorMessage = errorCode.getMessage();
     }
 }
