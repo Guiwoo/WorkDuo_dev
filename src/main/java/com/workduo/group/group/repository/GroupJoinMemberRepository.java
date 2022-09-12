@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,4 +24,5 @@ public interface GroupJoinMemberRepository extends JpaRepository<GroupJoinMember
     Optional<GroupJoinMember> findByMemberAndGroup(Member member, Group group);
     boolean existsByGroupAndMember(Group group, Member member);
     Integer countByGroup(Group group);
+    List<GroupJoinMember> findAllByMember(Member m);
 }

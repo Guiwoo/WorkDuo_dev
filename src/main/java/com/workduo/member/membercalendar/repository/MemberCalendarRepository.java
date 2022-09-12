@@ -32,4 +32,6 @@ public interface MemberCalendarRepository extends JpaRepository<MemberCalendar, 
     void updateMemberCalendarMemberAndGroupWithdraw(
             @Param("member") Member member,
             @Param("group") Group group);
+
+    void deleteByMember(Member m);
 }

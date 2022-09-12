@@ -10,4 +10,5 @@ import java.util.Optional;
 
 public interface MemberActiveAreaRepository extends JpaRepository<MemberActiveArea,Long> {
     List<MemberActiveArea> findAllByMember(Member m);
+    void deleteByMember(Member m);
 }
