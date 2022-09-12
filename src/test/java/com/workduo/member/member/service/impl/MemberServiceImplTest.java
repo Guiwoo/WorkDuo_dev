@@ -1,16 +1,21 @@
 package com.workduo.member.member.service.impl;
 
+import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
+import com.workduo.common.CommonRequestContext;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
-import com.workduo.member.existmember.entity.ExistMember;
+import com.workduo.member.area.repository.MemberActiveAreaRepository;
 import com.workduo.member.existmember.repository.ExistMemberRepository;
+import com.workduo.member.interestedsport.repository.InterestedSportRepository;
 import com.workduo.member.member.dto.MemberCreate;
+import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.member.type.MemberStatus;
 import com.workduo.member.memberrole.repository.MemberRoleRepository;
+import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_ING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +38,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("MEMBER SERVICE 테스트")
 class MemberServiceImplTest {
 
     @Mock
@@ -44,17 +49,23 @@ class MemberServiceImplTest {
     private MemberRoleRepository memberRoleRepository;
 
     @Mock
-    private SiggAreaRepository siggAreaRepository;
+    private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private CommonRequestContext commonRequestContext;
+    @Mock
+    private MemberActiveAreaRepository memberActiveAreaRepository;
+    @Mock
+    private SiggAreaRepository siggAreaRepository;
+    @Mock
+    private InterestedSportRepository interestedSportRepository;
     @Mock
     private SportRepository sportRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     MemberServiceImpl memberService;
     @Nested
+    @DisplayName("로그인 메서드 테스트")
     class TestLoginMethod{
         @Test
         @DisplayName("유저 검증 [메일이 없는경우]")
@@ -145,6 +156,7 @@ class MemberServiceImplTest {
     }
 
     @Nested
+    @DisplayName("회원가입 메서드 테스트")
     class TestSignInMethod{
         List<String> sggList = new ArrayList<>(List.of("1"));
         List<Integer> sportList = new ArrayList<>(List.of(1));
@@ -266,7 +278,7 @@ class MemberServiceImplTest {
         @Test
         @DisplayName("회원가입 실패[지역 이 데이터 상에 없는경우]")
         void siggCheckFail(){
-            doReturn(false).when(siggAreaRepository).existsBySgg(anyString());
+            given(siggAreaRepository.existsBySgg(any())).willReturn(false);
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
@@ -279,7 +291,7 @@ class MemberServiceImplTest {
         @Test
         @DisplayName("회원가입 실패[운동 이 데이터 상에 없는경우]")
         void sportCheckFail(){
-            doReturn(true).when(siggAreaRepository).existsBySgg(anyString());
+            given(siggAreaRepository.existsBySgg(any())).willReturn(true);
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
@@ -292,16 +304,138 @@ class MemberServiceImplTest {
         @Test
         @DisplayName("회원가입 성공")
         void successSignIn(){
-            doReturn(true).when(siggAreaRepository).existsBySgg(anyString());
-            doReturn(true).when(sportRepository).existsById(any());
-            ExistMember e = ExistMember.builder()
-                    .memberEmail(createReqeust.getEmail())
-                    .build();
+            given(siggAreaRepository.existsBySgg(any())).willReturn(true);
+            given(siggAreaRepository.findBySgg(any())).willReturn(Optional.of(SiggArea.builder().build()));
+            given(sportRepository.existsById(any())).willReturn(true);
+            given(sportRepository.findById(any())).willReturn(Optional.of(Sport.builder().build()));
             //when
             memberService.createUser(createReqeust);
             //then
             verify(memberRepository,times(1)).save(any());
             verify(existMemberRepository,times(1)).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원정보 수정 메서드 테스트")
+    class TestEditMethod{
+        List<String> sggList = new ArrayList<>(List.of("1"));
+        List<Integer> sportList = new ArrayList<>(List.of(1));
+        MemberEdit.Request editRequest = MemberEdit.Request
+                .builder()
+                .username("test")
+                .phoneNumber("1")
+                .siggAreaList(sggList)
+                .nickname("feelingGood")
+                .sportList(sportList)
+                .build();
+        @Test
+        @DisplayName("회원정보 수정 실패[이메일 이 없는경우]")
+        void emailDoesNotExist(){
+            given(commonRequestContext.getMemberEmail()).willReturn("");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.editUser(editRequest)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("회원정보 수정 실패[토큰 과 이메일 정보 다른경우]")
+        void tokenMailDoesNotEqualMemberEmail(){
+            Member m = Member.builder().build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.editUser(editRequest)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
+        }
+        @Test
+        @DisplayName("회원정보 수정 실패[닉네임 중복된 경우]")
+        void nicknameDuplicateCheckFail(){
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            doReturn(true).when(memberRepository).existsByNickname(any());
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.editUser(editRequest)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("회원정보 수정 실패[전화번호 중복된 경우]")
+        void phoneNumberDuplicateCheckFail(){
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            doReturn(true).when(memberRepository).existsByPhoneNumber(any());
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.editUser(editRequest)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_PHONE_DUPLICATE,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("회원정보 수정 실패[수정 지역이 데이터에 없는 경우]")
+        void doesNotExistSiggData(){
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            given(siggAreaRepository.existsBySgg(any())).willReturn(false);
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.editUser(editRequest)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_SIGG_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("회원정보 수정 실패[수정 운동이 데이터에 없는 경우]")
+        void doesNotExistSportData(){
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            given(siggAreaRepository.existsBySgg(any())).willReturn(true);
+
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.editUser(editRequest)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_SPORT_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("회원정보 수정 성공")
+        void successEditProfile(){
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            given(siggAreaRepository.existsBySgg(any())).willReturn(true);
+            given(siggAreaRepository.findBySgg(any())).willReturn(Optional.of(SiggArea.builder().build()));
+            given(sportRepository.existsById(any())).willReturn(true);
+            given(sportRepository.findById(any())).willReturn(Optional.of(Sport.builder().build()));
+            memberService.editUser(editRequest);
+            //then
+            verify(memberRepository,times(1)).save(any());
+            verify(sportRepository,times(sportList.size())).findById(any());
+            verify(siggAreaRepository,times(sggList.size())).findBySgg(any());
         }
     }
 }

@@ -5,6 +5,7 @@ import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshSer
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.member.history.service.LoginHistoryService;
 import com.workduo.member.member.dto.MemberCreate;
+import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
 import com.workduo.member.member.service.MemberService;
@@ -68,6 +69,17 @@ public class MemberController {
     }
 
     //회원정보수정
+    @PatchMapping("")
+    public ResponseEntity<?> apiEdit(
+            @RequestBody @Validated MemberEdit.Request req,
+            BindingResult bindingResult
+    ){
+        if(bindingResult.hasErrors()){
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+        memberService.editUser(req);
+        return new ResponseEntity<>(MemberEdit.Response.from(), HttpStatus.OK);
+    }
     //비밀번호 변경
     //회원탈퇴
 }

@@ -33,4 +33,32 @@ public class Member extends BaseEntity {
     private MemberStatus memberStatus;
 
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateUsername(String username) {
+        this.username = username;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void updateStatus(String status) {
+        this.status = status;
+    }
+
+    public void updateProfileImg(String profileImg) {
+        this.profileImg = profileImg;
+    }
+
+    public void updateMemberStatus(MemberStatus memberStatus) {
+        this.memberStatus = memberStatus;
+    }
 }

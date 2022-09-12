@@ -17,10 +17,10 @@ public class MemberDto {
     private Long id;
     private String email;
     private String username;
-//    private String phoneNumber;
+    private String phoneNumber;
     private String password;
-//    private String nickname;
-//    private String status;
+    private String nickname;
+    private String status;
     private String profileImg;
     private MemberStatus memberStatus;
     private LocalDateTime createdAt;
