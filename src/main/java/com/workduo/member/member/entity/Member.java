@@ -1,6 +1,7 @@
 package com.workduo.member.member.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
+import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.type.MemberStatus;
 import lombok.*;
 
@@ -37,28 +38,22 @@ public class Member extends BaseEntity {
     public void updatePassword(String password) {
         this.password = password;
     }
-
-    public void updateUsername(String username) {
-        this.username = username;
+    public void updateUserInfo(MemberEdit.Request edit){
+        this.username = edit.getUsername();
+        this.nickname = edit.getNickname();
+        this.phoneNumber = edit.getPhoneNumber();
+        this.status = edit.getStatus();
+        this.profileImg = edit.getProfileImg();
     }
-
-    public void updateNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    public void updatePhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public void updateStatus(String status) {
-        this.status = status;
-    }
-
-    public void updateProfileImg(String profileImg) {
-        this.profileImg = profileImg;
-    }
-
-    public void updateMemberStatus(MemberStatus memberStatus) {
-        this.memberStatus = memberStatus;
+    public void terminate(){
+        this.email = "";
+        this.username = "";
+        this.password = "";
+        this.status = "";
+        this.nickname = "";
+        this.phoneNumber = "";
+        this.profileImg = "";
+        this.memberStatus = MemberStatus.MEMBER_STATUS_WITHDRAW;
+        this.deletedAt = LocalDateTime.now();
     }
 }

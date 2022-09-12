@@ -46,19 +46,11 @@ public class MemberEdit {
         private String success;
         private Map<String,String> result;
 
-        public static MemberCreate.Response from(){
-            return MemberCreate.Response.builder()
+        public static Response from(){
+            return Response.builder()
                     .success("T")
                     .result(null)
                     .build();
         }
-    }
-
-    public static void editReqToUpdateMember(Request req, Member m){
-        m.updateUsername(req.getUsername());
-        m.updateNickname(req.getNickname());
-        m.updatePhoneNumber(req.getPhoneNumber());
-        m.updateProfileImg(req.getProfileImg());
-        m.updateStatus(req.getStatus());
     }
 }

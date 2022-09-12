@@ -20,7 +20,6 @@ public class MemberLogin {
         private String password;
     }
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
