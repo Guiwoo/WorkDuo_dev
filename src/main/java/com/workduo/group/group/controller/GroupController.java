@@ -140,7 +140,7 @@ public class GroupController {
      * @param groupId
      * @return
      */
-    @PostMapping("participant/{groupId}")
+    @PostMapping("/{groupId}/participant")
     public ResponseEntity<?> groupParticipant(
             @PathVariable("groupId") Long groupId) {
 

@@ -14,7 +14,7 @@ public interface MemberCalendarRepository extends JpaRepository<MemberCalendar, 
 
     @Modifying
     @Query("update MemberCalendar  mc " +
-            "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_GROUP_CANCEL' " +
+            "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_GROUP_LEADER_WITHDRAW' " +
             "where mc.group = :group")
     void updateMemberCalendarMeetingActiveStatusGroupCancel(@Param("group") Group group);
 
@@ -23,4 +23,13 @@ public interface MemberCalendarRepository extends JpaRepository<MemberCalendar, 
             "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_CANCEL' " +
             "where mc.member = :member")
     void updateMemberCalendarMemberWithdraw(@Param("member") Member member);
+
+    @Modifying
+    @Query("update MemberCalendar  mc " +
+            "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_CANCEL' " +
+            "where mc.member = :member " +
+            "and mc.group = :group")
+    void updateMemberCalendarMemberAndGroupWithdraw(
+            @Param("member") Member member,
+            @Param("group") Group group);
 }
