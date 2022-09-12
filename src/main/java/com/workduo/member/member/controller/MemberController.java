@@ -3,10 +3,9 @@ package com.workduo.member.member.controller;
 import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshService;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
+import com.workduo.group.group.service.GroupService;
 import com.workduo.member.history.service.LoginHistoryService;
-import com.workduo.member.member.dto.MemberCreate;
-import com.workduo.member.member.dto.MemberEdit;
-import com.workduo.member.member.dto.MemberLogin;
+import com.workduo.member.member.dto.*;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
 import com.workduo.member.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +31,7 @@ public class MemberController {
     private final TokenProvider tokenProvider;
     private final MemberRefreshService refreshService;
     private final LoginHistoryService loginHistoryService;
+    private final GroupService groupService;
     //로그인
     @PostMapping("/login")
     public ResponseEntity<?> apiLogin(
@@ -65,7 +65,7 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.createUser(req);
-        return new ResponseEntity<>(MemberCreate.Response.from(), HttpStatus.OK);
+        return new ResponseEntity<>(MemberCreate.Response.from(), HttpStatus.CREATED);
     }
 
     //회원정보수정
@@ -81,5 +81,21 @@ public class MemberController {
         return new ResponseEntity<>(MemberEdit.Response.from(), HttpStatus.OK);
     }
     //비밀번호 변경
+    @PatchMapping("/password")
+    public ResponseEntity<?> apiPasswordEdit(
+            @RequestBody @Validated MemberChangePassword.Request req,
+            BindingResult bindingResult
+    ){
+        if(bindingResult.hasErrors()){
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+        memberService.changePassword(req);
+        return new ResponseEntity<>(MemberChangePassword.Response.from(), HttpStatus.OK);
+    }
     //회원탈퇴
+    @DeleteMapping("")
+    public ResponseEntity<?> apiDelete(){
+        memberService.withdraw(groupService);
+        return new ResponseEntity<>(MemberWithdraw.Response.from(),HttpStatus.OK);
+    }
 }
