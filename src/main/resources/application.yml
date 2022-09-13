@@ -23,7 +23,9 @@ spring:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 1000
-      dialect: org.hibernate.dialect.MySQL57InnoDBDialect
+        jdbc.batch_size: 1000
+        dialect: org.hibernate.dialect.MySQL57InnoDBDialect
+    database: mysql
 #      h2 DB Setting for local
 #    h2:
 #      console:
