@@ -1,9 +1,11 @@
-package com.workduo.group.groupcontentimage.entity;
+package com.workduo.group.gropcontent.entity;
 
 import com.workduo.group.gropcontent.entity.GroupContent;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,4 +25,22 @@ public class GroupContentImage {
 
     @Lob
     private String imagePath;
+
+    public void addGroupContent(GroupContent groupContent) {
+        this.groupContent = groupContent;
+    }
+
+    public static List<GroupContentImage> createGroupContentImage(
+            GroupContent groupContent,
+            List<String> groupContentImages) {
+        List<GroupContentImage> groupContentImageList = new ArrayList<>();
+        for (String groupContentImage : groupContentImages) {
+            groupContentImageList.add(GroupContentImage.builder()
+                    .groupContent(groupContent)
+                    .imagePath(groupContentImage)
+                    .build());
+        }
+
+        return groupContentImageList;
+    }
 }

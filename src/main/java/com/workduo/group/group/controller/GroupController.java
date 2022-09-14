@@ -1,5 +1,6 @@
 package com.workduo.group.group.controller;
 
+import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.group.dto.*;
 import com.workduo.group.group.service.GroupService;
