@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Table(name = "sigg_area")
 public class SiggArea {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     @Column(name = "sgg")
     private String sgg;
 

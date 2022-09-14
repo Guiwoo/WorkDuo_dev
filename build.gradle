@@ -40,6 +40,7 @@ dependencies {
     implementation 'org.redisson:redisson-spring-boot-starter:3.17.5'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.10duke.client.jwt:jjwt:1.1.0'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
     implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
     compileOnly 'org.projectlombok:lombok'
