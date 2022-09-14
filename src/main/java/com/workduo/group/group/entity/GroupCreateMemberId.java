@@ -1,4 +1,4 @@
-package com.workduo.group.groupcreatemember.entity;
+package com.workduo.group.group.entity;
 
 import com.workduo.group.group.entity.Group;
 import com.workduo.member.member.entity.Member;

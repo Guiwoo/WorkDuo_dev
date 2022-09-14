@@ -1,6 +1,7 @@
 package com.workduo.area.common.controller;
 
 import com.workduo.area.common.service.AreaService;
+import com.workduo.common.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,10 +25,7 @@ public class AreaController {
         areaService.insertArea();
 
         return new ResponseEntity<>(
-                new HashMap<>(){{
-                    put("success", "T");
-                    put("result", null);
-                }},
+                CommonResponse.from(),
                 HttpStatus.CREATED
         );
     }
