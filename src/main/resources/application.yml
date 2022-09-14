@@ -14,6 +14,11 @@ spring:
     port: ${REDIS_PORT}
     host: ${REDIS_HOST}
 
+  data:
+    redis:
+      repositories:
+        enabled: false
+
   jwt:
     secret: ${JWT_SECRET}
 
@@ -26,6 +31,11 @@ spring:
         jdbc.batch_size: 1000
         dialect: org.hibernate.dialect.MySQL57InnoDBDialect
     database: mysql
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 #      h2 DB Setting for local
 #    h2:
 #      console:
@@ -36,5 +46,25 @@ spring:
 #        username: sa
 #        password:
 #        driver-class-name: org.h2.Driver
-logging.level:
-  org.hibernate.SQL: debug
+logging:
+  level:
+    org.hibernate.SQL: debug
+    com.amazonaws.util.EC2MetadataUtils: ERROR
+
+
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    s3:
+      bucket: workduo
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+property:
+  s3-base-url: ${S3_BASIC_KEY}
