@@ -1,12 +1,11 @@
 package com.workduo.member.member.dto;
 
-import com.workduo.group.group.dto.CreateGroup;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
 
-public class MemberLogin {
+public class MemberChangePassword {
 
     @Getter
     @Setter
@@ -14,11 +13,10 @@ public class MemberLogin {
     @AllArgsConstructor
     @Builder
     public static class Request {
-        @NotNull(message = "이메일 은 필수 입력 사항 입니다.")
-        private String email;
         @NotNull(message = "비밀번호 는 필수 입력 사항 입니다.")
         private String password;
     }
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -26,5 +24,12 @@ public class MemberLogin {
     public static class Response{
         private String success;
         private Map<String,String> result;
+
+        public static Response from(){
+            return Response.builder()
+                    .success("T")
+                    .result(null)
+                    .build();
+        }
     }
 }

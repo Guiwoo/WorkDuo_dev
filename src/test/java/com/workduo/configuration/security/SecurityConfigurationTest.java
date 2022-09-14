@@ -15,8 +15,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,9 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @AutoConfigureMockMvc
 class SecurityConfigurationTest {
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,7 +60,7 @@ class SecurityConfigurationTest {
     @DisplayName("Api 호출 실패 [로그인 안된 호출]")
     void failedAccessApiCallWithoutLogin() throws Exception {
         //추후 권한 있는 테스트 에서 요청 주소 변경 할것
-        mockMvc.perform(get("/api/v1/auth"))
+        mockMvc.perform(patch("/api/v1/member"))
                 .andDo(print())
                 .andExpect(status().is
                         (GlobalExceptionType.LOGIN_ERROR.getHttpStatus().value())
@@ -80,7 +76,7 @@ class SecurityConfigurationTest {
     @WithMockUser(username="user",roles={})
     void failedAccessApiCallWithoutAuthorization() throws Exception {
         //추후 권한 있는 테스트 에서 요청 주소 변경 할것
-        mockMvc.perform(get("/api/v1/auth"))
+        mockMvc.perform(patch("/api/v1/member"))
                 .andDo(print())
                 .andExpect(status().is
                         (GlobalExceptionType.AUTHORIZATION_ERROR.getHttpStatus().value())

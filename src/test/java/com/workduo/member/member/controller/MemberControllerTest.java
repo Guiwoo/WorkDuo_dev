@@ -1,26 +1,30 @@
 package com.workduo.member.member.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshService;
 import com.workduo.error.member.exception.MemberException;
-import com.workduo.error.member.type.MemberErrorCode;
+import com.workduo.group.group.service.GroupService;
+import com.workduo.group.group.service.impl.GroupServiceImpl;
 import com.workduo.member.history.service.LoginHistoryService;
+import com.workduo.member.member.dto.MemberChangePassword;
 import com.workduo.member.member.dto.MemberCreate;
 import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
+import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.member.service.MemberService;
 import org.junit.jupiter.api.*;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.validation.ConstraintViolation;
@@ -36,14 +40,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberController.class)
 @Import(
-        {TokenProvider.class, CommonRequestContext.class, JwtAuthenticationFilter.class,MemberException.class}
+        {TokenProvider.class, CommonRequestContext.class,
+                MemberRepository.class,
+                JwtAuthenticationFilter.class,MemberException.class}
 )
 @AutoConfigureMockMvc(addFilters = false)
 @DisplayName("MEMBER API 테스트")
@@ -51,7 +57,10 @@ class MemberControllerTest {
 
     @MockBean
     private MemberService memberService;
-
+    @MockBean
+    private GroupService groupService;
+    @MockBean
+    private MemberRepository memberRepository;
     @MockBean
     private TokenProvider tokenProvider;
     @MockBean
@@ -179,7 +188,7 @@ class MemberControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(reqeust))
                     )
-                    .andExpect(status().isOk())
+                    .andExpect(status().isCreated())
                     .andDo(print());
         }
     }
@@ -197,7 +206,7 @@ class MemberControllerTest {
                             "지역 은 최소 1개 이상 선택해야 합니다.",
                             "스포츠 는 최소 1개 이상 선택해야 합니다.",
                             "닉네임 은 필수 입력 사항 입니다."
-                            ));
+                    ));
             //given
             MemberEdit.Request reqeust = MemberEdit.Request
                     .builder()
@@ -232,6 +241,71 @@ class MemberControllerTest {
                     )
                     .andExpect(status().isOk())
                     .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("비밀번호 수정 API 테스트")
+    class changePassword {
+        @Test
+        @DisplayName("비밀번호 수정 실패[리퀘스트 검증 테스트]")
+        void editFailDoesNotExistData() throws Exception {
+            List<String> errors = new ArrayList<>(
+                    List.of(
+                            "비밀번호 는 필수 입력 사항 입니다."
+                    ));
+            //given
+            MemberChangePassword.Request reqeust = MemberChangePassword.Request
+                    .builder()
+                    .build();
+            Set<ConstraintViolation<MemberChangePassword.Request>> violations
+                    = validator.validate(reqeust);
+            violations.forEach(
+                    (error) -> {
+                        System.out.println(error.getMessage());
+                        assertThat(error.getMessage()).isIn(errors);
+                    }
+            );
+        }
+
+        @Test
+        @DisplayName("비밀번호 수정 성공")
+        void successChangePassword() throws Exception {
+            //given
+            MemberChangePassword.Request reqeust = MemberChangePassword.Request
+                    .builder()
+                    .password("123")
+                    .build();
+            //when
+            doNothing().when(memberService).changePassword(reqeust);
+            //then
+            mockMvc.perform(patch("/api/v1/member/password")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(reqeust))
+            )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andDo(print());
+            ;
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 탈퇴 API 테스트")
+    class withDrawMember{
+        @Test
+        void successMemberWithdraw() throws Exception {
+            //given
+            //when
+            doNothing().when(memberService).withdraw(groupService);
+            //then
+            mockMvc.perform(delete("/api/v1/member")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andDo(print());
+            ;
         }
     }
 }

@@ -3,14 +3,23 @@ package com.workduo.member.member.service.impl;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
+import com.workduo.configuration.jwt.memberrefreshtoken.repository.MemberRefreshTokenRepository;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
+import com.workduo.group.group.entity.GroupJoinMember;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
+import com.workduo.group.group.service.GroupService;
+import com.workduo.group.group.service.impl.GroupServiceImpl;
+import com.workduo.group.group.type.GroupRole;
+import com.workduo.group.groupmeetingparticipant.entity.GroupMeetingParticipant;
+import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.area.entity.MemberActiveArea;
 import com.workduo.member.area.repository.MemberActiveAreaRepository;
 import com.workduo.member.existmember.entity.ExistMember;
 import com.workduo.member.existmember.repository.ExistMemberRepository;
 import com.workduo.member.interestedsport.entity.MemberInterestedSport;
 import com.workduo.member.interestedsport.repository.InterestedSportRepository;
+import com.workduo.member.member.dto.MemberChangePassword;
 import com.workduo.member.member.dto.MemberCreate;
 import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.dto.MemberLogin;
@@ -20,6 +29,7 @@ import com.workduo.member.member.dto.auth.PrincipalDetails;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.member.service.MemberService;
+import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import com.workduo.member.memberrole.entity.MemberRole;
 import com.workduo.member.memberrole.repository.MemberRoleRepository;
 import com.workduo.member.memberrole.type.MemberRoleType;
@@ -55,6 +65,11 @@ public class MemberServiceImpl implements MemberService {
     private final SiggAreaRepository siggAreaRepository;
     private final InterestedSportRepository interestedSportRepository;
     private final SportRepository sportRepository;
+    private final MemberRefreshTokenRepository memberRefreshTokenRepository;
+    private final MemberCalendarRepository memberCalendarRepository;
+    private final GroupJoinMemberRepository groupJoinMemberRepository;
+    private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
+
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -69,26 +84,19 @@ public class MemberServiceImpl implements MemberService {
 
         return new PrincipalDetails(authDto);
     }
-
     @Transactional(readOnly = true)
     public MemberAuthenticateDto authenticateUser(MemberLogin.Request member){
-        Member oM = memberRepository.findByEmail(member.getEmail()).
+        Member m = memberRepository.findByEmail(member.getEmail()).
                 orElseThrow(()->new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));
-        if(oM.getMemberStatus() == MEMBER_STATUS_STOP){
-            throw new MemberException(MemberErrorCode.MEMBER_STOP_ERROR);
-        }
-        if(oM.getMemberStatus() == MEMBER_STATUS_WITHDRAW){
-            throw new MemberException(MemberErrorCode.MEMBER_WITHDRAW_ERROR);
-        }
-        if (!passwordEncoder.matches(member.getPassword(), oM.getPassword())) {
+        validCheckActiveMember(m);
+        if (!passwordEncoder.matches(member.getPassword(), m.getPassword())) {
             throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_ERROR);
         }
 
-        List<MemberRole> all = memberRoleRepository.findByMember(oM);
+        List<MemberRole> all = memberRoleRepository.findByMember(m);
 
-        return MemberAuthenticateDto.builder().email(oM.getEmail()).roles(all).build();
+        return MemberAuthenticateDto.builder().email(m.getEmail()).roles(all).build();
     }
-
     @Override
     public void createUser(MemberCreate.Request create) {
         validationCreateData(create);
@@ -107,20 +115,114 @@ public class MemberServiceImpl implements MemberService {
         //운동 저장
         saveInterestedSport(m,create.getSportList());
     }
-
     @Override
     public void editUser(MemberEdit.Request edit) {
+        Member m = validCheckLoggedInUser();
+        validationEditDate(edit,m);
+        m.updateUserInfo(edit);
+        //지역 변경 해줘야함 테이블에서 찾아서 지울꺼 지우고 업데이트할꺼 하고
+        updateActiveArea(m,edit.getSiggAreaList());
+        //운동 변경
+        updateInterestedSport(m,edit.getSportList());
+    }
+    @Override
+    public void changePassword(MemberChangePassword.Request req) {
+        Member m  = validCheckLoggedInUser();
+        if(passwordEncoder.matches(req.getPassword(),m.getPassword())){
+            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_DUPLICATE);
+        }
+        if(!passwordPolicyCheck(req.getPassword())){
+            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_POLICY);
+        }
+        m.updatePassword(passwordEncoder.encode(req.getPassword()));
+    }
+
+    @Override
+    public void withdraw(GroupService groupService) {
+        Member m = validCheckLoggedInUser();
+        validCheckActiveMember(m);
+        //리프레시 토큰 테이블
+        memberRefreshTokenRepository.deleteById(m.getEmail());
+        //멤버 이메일 중복체크 테이블
+        existMemberRepository.deleteById(m.getEmail());
+        // 멤버 롤 테이블
+        memberRoleRepository.deleteByMember(m);
+        // 멤버 활동 지역 테이블
+        memberActiveAreaRepository.deleteByMember(m);
+        // 멤버 관심 운동 테이블
+        interestedSportRepository.deleteByMember(m);
+
+        //그룹 쪽 지우러 가보자
+        List<GroupJoinMember> groupJoinMemberList = groupJoinMemberRepository.findAllByMember(m);
+        groupJoinMemberList.forEach(
+                (groupJoinMember) -> {
+                    if(groupJoinMember.getGroupRole() == GroupRole.GROUP_ROLE_LEADER){
+                        groupService.deleteGroup(groupJoinMember.getGroup().getId());
+                    }
+                }
+        );
+        groupMeetingParticipantRepository.deleteByMember(m);
+        memberCalendarRepository.deleteByMember(m);
+        m.terminate();
+    }
+
+    @Transactional(readOnly = true)
+    public void validCheckActiveMember(Member m){
+        if(m.getMemberStatus() == MEMBER_STATUS_STOP){
+            // Member who already got stooped by admin
+            throw new MemberException(MemberErrorCode.MEMBER_STOP_ERROR);
+        }
+        if(m.getMemberStatus() == MEMBER_STATUS_WITHDRAW){
+            // Member who already got withdraw
+            throw new MemberException(MemberErrorCode.MEMBER_WITHDRAW_ERROR);
+        }
+    }
+    @Transactional(readOnly = true)
+    public Member validCheckLoggedInUser(){
         Member m = memberRepository.findByEmail(commonRequestContext.getMemberEmail())
                 .orElseThrow(()->new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));
         if(!Objects.equals(commonRequestContext.getMemberEmail(), m.getEmail())){
             throw new MemberException(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN);
         }
-        validationEditDate(edit,m);
-        MemberEdit.editReqToUpdateMember(edit,m);
-        //지역 변경 해줘야함 테이블에서 찾아서 지울꺼 지우고 업데이트할꺼 하고
-        updateActiveArea(m,edit.getSiggAreaList());
-        //운동 변경
-        updateInterestedSport(m,edit.getSportList());
+        return m;
+    }
+    @Transactional(readOnly = true)
+    public void  validationCreateData(MemberCreate.Request create) {
+        if(emailDuplicateCheck(create.getEmail())){
+            throw new MemberException(MemberErrorCode.MEMBER_EMAIL_DUPLICATE);
+        }
+        if(nickNameDuplicateCheck(create.getNickname())){
+            throw new MemberException(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE);
+        }
+        if(phoneNumberDuplicateCheck(create.getPhoneNumber())){
+            throw new MemberException(MemberErrorCode.MEMBER_PHONE_DUPLICATE);
+        }
+        if(!passwordPolicyCheck(create.getPassword())){
+            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_POLICY);
+        }
+        if(!siggCheck(create.getSiggAreaList())){
+            throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);
+        }
+        if(!sportsCheck(create.getSportList())){
+            throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
+        }
+    }
+    @Transactional(readOnly = true)
+    public void validationEditDate(MemberEdit.Request edit,Member m){
+        if(!edit.getNickname().equals(m.getNickname())
+                && nickNameDuplicateCheck(edit.getNickname())){
+            throw new MemberException(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE);
+        }
+        if(!edit.getPhoneNumber().equals(m.getPhoneNumber())
+                && phoneNumberDuplicateCheck(edit.getPhoneNumber())){
+            throw new MemberException(MemberErrorCode.MEMBER_PHONE_DUPLICATE);
+        }
+        if(!siggCheck(edit.getSiggAreaList())){
+            throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);
+        }
+        if(!sportsCheck(edit.getSportList())){
+            throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
+        }
     }
 
     private void saveActiveArea(Member m, List<String> siggList){
@@ -212,42 +314,6 @@ public class MemberServiceImpl implements MemberService {
             if(!siggAreaRepository.existsBySgg(sgg)) return false;
         }
         return true;
-    }
-    private void  validationCreateData(MemberCreate.Request create) {
-        if(emailDuplicateCheck(create.getEmail())){
-            throw new MemberException(MemberErrorCode.MEMBER_EMAIL_DUPLICATE);
-        }
-        if(nickNameDuplicateCheck(create.getNickname())){
-            throw new MemberException(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE);
-        }
-        if(phoneNumberDuplicateCheck(create.getPhoneNumber())){
-            throw new MemberException(MemberErrorCode.MEMBER_PHONE_DUPLICATE);
-        }
-        if(!passwordPolicyCheck(create.getPassword())){
-            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_POLICY);
-        }
-        if(!siggCheck(create.getSiggAreaList())){
-            throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);
-        }
-        if(!sportsCheck(create.getSportList())){
-            throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
-        }
-    }
-    private void validationEditDate(MemberEdit.Request edit,Member m){
-        if(!edit.getNickname().equals(m.getNickname())
-                && nickNameDuplicateCheck(edit.getNickname())){
-            throw new MemberException(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE);
-        }
-        if(!edit.getPhoneNumber().equals(m.getPhoneNumber())
-                && phoneNumberDuplicateCheck(edit.getPhoneNumber())){
-            throw new MemberException(MemberErrorCode.MEMBER_PHONE_DUPLICATE);
-        }
-        if(!siggCheck(edit.getSiggAreaList())){
-            throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);
-        }
-        if(!sportsCheck(edit.getSportList())){
-            throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
-        }
     }
     private boolean passwordPolicyCheck(String password){
         final String reg = "^(?=.*[0-9])(?=.*[a-zA-z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$";

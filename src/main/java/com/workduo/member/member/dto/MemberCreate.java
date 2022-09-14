@@ -44,7 +44,6 @@ public class MemberCreate {
     }
 
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

@@ -3,17 +3,23 @@ package com.workduo.member.member.service.impl;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
+import com.workduo.configuration.jwt.memberrefreshtoken.repository.MemberRefreshTokenRepository;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
+import com.workduo.group.group.service.GroupService;
+import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.area.repository.MemberActiveAreaRepository;
 import com.workduo.member.existmember.repository.ExistMemberRepository;
 import com.workduo.member.interestedsport.repository.InterestedSportRepository;
+import com.workduo.member.member.dto.MemberChangePassword;
 import com.workduo.member.member.dto.MemberCreate;
 import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.member.type.MemberStatus;
+import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import com.workduo.member.memberrole.repository.MemberRoleRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
@@ -40,17 +46,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MEMBER SERVICE 테스트")
 class MemberServiceImplTest {
-
     @Mock
     private MemberRepository memberRepository;
     @Mock
     private ExistMemberRepository existMemberRepository;
     @Mock
     private MemberRoleRepository memberRoleRepository;
-
     @Mock
     private PasswordEncoder passwordEncoder;
-
     @Mock
     private CommonRequestContext commonRequestContext;
     @Mock
@@ -61,7 +64,16 @@ class MemberServiceImplTest {
     private InterestedSportRepository interestedSportRepository;
     @Mock
     private SportRepository sportRepository;
-
+    @Mock
+    private GroupService groupService;
+    @Mock
+    private MemberRefreshTokenRepository memberRefreshTokenRepository;
+    @Mock
+    private MemberCalendarRepository memberCalendarRepository;
+    @Mock
+    private GroupJoinMemberRepository groupJoinMemberRepository;
+    @Mock
+    private GroupMeetingParticipantRepository groupMeetingParticipantRepository;
     @InjectMocks
     MemberServiceImpl memberService;
     @Nested
@@ -433,9 +445,200 @@ class MemberServiceImplTest {
             given(sportRepository.findById(any())).willReturn(Optional.of(Sport.builder().build()));
             memberService.editUser(editRequest);
             //then
-            verify(memberRepository,times(1)).save(any());
             verify(sportRepository,times(sportList.size())).findById(any());
             verify(siggAreaRepository,times(sggList.size())).findBySgg(any());
         }
+    }
+    @Nested
+    @DisplayName("비밀번호 수정 메서드 테스트")
+    class updatePassword{
+        MemberChangePassword.Request req = MemberChangePassword.Request
+                .builder()
+                .password("123")
+                .build();
+        @Test
+        @DisplayName("비밀번호 수정 실패 [토큰 과 이메일 정보 다른경우]")
+        void failChangePasswordTokenDiff(){
+            Member m = Member.builder().build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.changePassword(req)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("비밀번호 수정 실패 [이전 비밀번호 와 동일한 경우]")
+        void failChangePasswordServeSamePassword(){
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            given(passwordEncoder.matches(any(),any())).willReturn(true);
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.changePassword(req)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_PASSWORD_DUPLICATE,exception.getErrorCode());
+        }
+
+
+        @Test
+        @DisplayName("회원가입 실패[비밀번호 정책 위반] [패스워드 길이]")
+        void passwordPolicyCheckFail(){
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()->memberService.changePassword(req)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("비밀번호 수정 실패[비밀번호 정책 위반] [문자 만 있는경우]")
+        void passwordPolicyCheckFailOnlyLetters(){
+            req.setPassword("aaaaaaaaaaa");
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()->memberService.changePassword(req)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("비밀번호 수정 실패[비밀번호 정책 위반] [숫자 만 있는경우]")
+        void passwordPolicyCheckFailOnlyNumbers(){
+            req.setPassword("123123123123");
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()->memberService.changePassword(req)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("비밀번호 수정 실패[비밀번호 정책 위반] [특수문자가 없는 경우]")
+        void passwordPolicyCheckFailWithoutSpecialCharacter(){
+            req.setPassword("abcd1234");
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()->memberService.changePassword(req)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("비밀번호 성공")
+        void successChangePassword(){
+            req.setPassword("abcd1234@");
+            Member m = Member.builder().email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            //when
+            memberService.changePassword(req);
+            //then
+            verify(passwordEncoder,times(1)).matches(any(),any());
+            verify(passwordEncoder,times(1)).encode(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원탈퇴 매서드 테스트")
+    class withdraw{
+        @Test
+        @DisplayName("회원탈퇴 실패 [토큰과 이메일 정보 다른경우]")
+        void failToWithdrawDiffEmail(){
+            Member m = Member.builder().build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.withdraw(groupService)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
+        }
+        @Test
+        @DisplayName("회원탈퇴 실패 [이미 정지된 회원]")
+        void failToWithdrawAlreadyStop(){
+            //given
+            Member m = Member.builder()
+                    .memberStatus(MemberStatus.MEMBER_STATUS_STOP)
+                    .email("abc")
+                    .build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("abc");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.withdraw(groupService)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_STOP_ERROR,exception.getErrorCode());
+        }
+        @Test
+        @DisplayName("회원탈퇴 실패 [이미 탈퇴 회원]")
+        void failToWithdrawAlreadyWithdraw(){
+            //given
+            Member m = Member.builder()
+                    .memberStatus(MemberStatus.MEMBER_STATUS_STOP)
+                    .email("abc")
+                    .build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("abc");
+            //when
+            MemberException exception = assertThrows(
+                    MemberException.class,
+                    ()-> memberService.withdraw(groupService)
+            );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_STOP_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("회원 탈퇴 성공")
+        void successWithdrawMember(){
+            //given
+            Member m = Member.builder().email("abc").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("abc");
+            //when
+            memberService.withdraw(groupService);
+            //then
+            verify(memberRefreshTokenRepository,times(1))
+                    .deleteById(any());
+            verify(existMemberRepository,times(1))
+                    .deleteById(any());
+            verify(memberCalendarRepository,times(1))
+                    .deleteByMember(any());
+            verify(groupMeetingParticipantRepository,times(1))
+                    .deleteByMember(any());
+        }
+
     }
 }

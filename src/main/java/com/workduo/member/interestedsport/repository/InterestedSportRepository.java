@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface InterestedSportRepository extends JpaRepository<MemberInterestedSport,Long> {
-    void deleteAllByMember(Member m);
-
     List<MemberInterestedSport> findAllByMember(Member m);
+    void deleteByMember(Member m);
 }
