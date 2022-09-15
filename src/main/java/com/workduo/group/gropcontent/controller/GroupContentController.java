@@ -1,0 +1,65 @@
+package com.workduo.group.gropcontent.controller;
+
+import com.workduo.common.CommonResponse;
+import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
+import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContent;
+import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.gropcontent.service.GroupContentService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/v1/group")
+@RequiredArgsConstructor
+public class GroupContentController {
+
+    private final GroupContentService groupContentService;
+
+    /**
+     * 그룹 피드 생성
+     * @param groupId
+     * @param request
+     * @param bindingResult
+     * @return
+     */
+    @PostMapping("/{groupId}/content")
+    public ResponseEntity<?> createGroupContent(
+            @PathVariable("groupId") Long groupId,
+            List<MultipartFile> multipartFiles,
+            @Validated CreateGroupContent.Request request,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+
+        groupContentService.createGroupContent(groupId, request, multipartFiles);
+        return new ResponseEntity<>(
+                CommonResponse.from()
+                ,HttpStatus.CREATED
+        );
+    }
+
+    @GetMapping("/{groupId}/content/{contentId}")
+    public ResponseEntity<?> detailGroupContent(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId) {
+
+        return new ResponseEntity<>(
+                DetailGroupContent.Response.from(
+                        groupContentService.detailGroupContent(contentId)
+                ),
+                HttpStatus.OK
+        );
+    }
+}

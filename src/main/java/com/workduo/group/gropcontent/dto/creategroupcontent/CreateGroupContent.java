@@ -1,9 +1,15 @@
 package com.workduo.group.gropcontent.dto.creategroupcontent;
 
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreateGroupContent {
 
@@ -13,18 +19,16 @@ public class CreateGroupContent {
     @AllArgsConstructor
     @Builder
     public static class Request {
-        @NotNull
-        private Long groupId;
-
-        @NotNull
+        @NotNull(message = "제목은 필수 입력 사항입니다.")
         private String title;
 
-        @NotNull
+        @NotNull(message = "내용은 필수 입력 사항입니다.")
         private String content;
 
-        private int maxParticipant;
-        private LocalDateTime meetingDate;
-        private String location;
+        private boolean noticeYn;
+
+        @Min(value = 0, message = "정렬값은 최소 0 입니다.")
+        private int sortValue;
     }
 
     @Getter

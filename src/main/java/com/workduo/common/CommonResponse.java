@@ -1,4 +1,4 @@
-package com.workduo.group.group.dto;
+package com.workduo.common;
 
 import lombok.*;
 
