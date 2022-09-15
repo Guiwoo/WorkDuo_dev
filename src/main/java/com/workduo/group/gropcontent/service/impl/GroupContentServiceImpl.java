@@ -127,15 +127,15 @@ public class GroupContentServiceImpl implements GroupContentService {
 
         detailGroupContentValidate(member, group, groupContent);
 
-        GroupContentDto groupContentDto = groupContentQueryRepository.findByGroupContent(groupContentId)
+        GroupContentDto groupContentDto = groupContentQueryRepository.findByGroupContent(groupId, groupContentId)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_CONTENT));
 
         List<GroupContentImageDto> groupContentImages =
-                groupContentQueryRepository.findByGroupContentImage(groupContentId);
+                groupContentQueryRepository.findByGroupContentImage(groupId, groupContentId);
 
         PageRequest pageRequest = PageRequest.of(0, 10);
         Page<GroupContentCommentDto> groupContentComments =
-                groupContentQueryRepository.findByGroupContentComments(pageRequest, groupContentId);
+                groupContentQueryRepository.findByGroupContentComments(pageRequest, groupId, groupContentId);
 
         return DetailGroupContentDto.from(
                 groupContentDto,
@@ -222,7 +222,7 @@ public class GroupContentServiceImpl implements GroupContentService {
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_CONTENT));
     }
 
-    private String generatePath(Long groupId, Long groupContentId) {
+    public String generatePath(Long groupId, Long groupContentId) {
         return "group/" + groupId + "/content/" + groupContentId + "/";
     }
 }

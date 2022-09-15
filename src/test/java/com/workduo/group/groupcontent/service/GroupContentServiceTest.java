@@ -1,4 +1,4 @@
-package com.workduo.group.groupcontent;
+package com.workduo.group.groupcontent.service;
 
 import com.workduo.area.sidoarea.entity.SidoArea;
 import com.workduo.area.siggarea.entity.SiggArea;
@@ -7,6 +7,8 @@ import com.workduo.configuration.jpa.JpaAuditingConfiguration;
 import com.workduo.error.group.exception.GroupException;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
+import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.gropcontent.repository.GroupContentImageRepository;
 import com.workduo.group.gropcontent.repository.GroupContentLikeRepository;
 import com.workduo.group.gropcontent.repository.GroupContentRepository;
 import com.workduo.group.gropcontent.service.impl.GroupContentServiceImpl;
@@ -19,6 +21,7 @@ import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sportcategory.entity.SportCategory;
+import com.workduo.util.AwsS3Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,8 +32,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
@@ -57,11 +64,17 @@ public class GroupContentServiceTest {
     @Mock
     private GroupJoinMemberRepository groupJoinMemberRepository;
     @Mock
+    private GroupContentImageRepository groupContentImageRepository;
+    @Mock
     private MemberRepository memberRepository;
     @Mock
     private GroupRepository groupRepository;
     @Mock
     private CommonRequestContext context;
+    @Mock
+    private AwsS3Utils awsS3Utils;
+    @Mock
+    private EntityManager entityManager;
 
     @Spy
     @InjectMocks
@@ -74,9 +87,18 @@ public class GroupContentServiceTest {
     GroupJoinMember normal;
     Group deletedGroup;
     GroupJoinMember alreadyWithdrawMember;
+    GroupContent groupContent;
+    List<MultipartFile> image = new ArrayList<>();
 
     @BeforeEach
     public void init() {
+        image.add(new MockMultipartFile(
+                "multipartFiles",
+                "imagefile.jpeg",
+                "image/jpeg",
+                "<<jpeg data>>".getBytes()
+        ));
+
         member = Member.builder()
                 .id(1L)
                 .username("한규빈")
@@ -144,6 +166,16 @@ public class GroupContentServiceTest {
                 .groupRole(GROUP_ROLE_LEADER)
                 .id(3L)
                 .build();
+
+        groupContent = GroupContent.builder()
+                .title("test")
+                .content("test")
+                .group(group)
+                .member(member)
+                .deletedYn(false)
+                .sortValue(0)
+                .noticeYn(false)
+                .build();
     }
 
     @Nested
@@ -163,17 +195,21 @@ public class GroupContentServiceTest {
                     .existsByGroupAndMember(any(), any());
             doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
                     .findByMemberAndGroup(any(), any());
+            doReturn(groupContent).when(groupContentRepository)
+                    .save(any());
+            groupContentService.generatePath(anyLong(), anyLong());
+            doReturn(new ArrayList<>(List.of("test"))).when(awsS3Utils)
+                    .uploadFile(any(), anyString());
 
             CreateGroupContent.Request request = CreateGroupContent.Request.builder()
                     .title("test")
                     .content("test")
                     .noticeYn(false)
                     .sortValue(0)
-//                    .files(new ArrayList<>())
                     .build();
 
             // when
-            groupContentService.createGroupContent(1L, request, null);
+            groupContentService.createGroupContent(1L, request, image);
 
             // then
             verify(memberRepository, times(1))
@@ -186,6 +222,8 @@ public class GroupContentServiceTest {
                     .findByMemberAndGroup(any(), any());
             verify(groupContentRepository, times(1))
                     .save(any());
+            verify(groupContentImageRepository, times(1))
+                    .saveAll(any());
         }
 
         @Test
@@ -207,7 +245,7 @@ public class GroupContentServiceTest {
             // when
             MemberException groupContentException =
                     assertThrows(MemberException.class,
-                            () -> groupContentService.createGroupContent(1L, request, null));
+                            () -> groupContentService.createGroupContent(1L, request, image));
 
             // then
             assertEquals(groupContentException.getErrorMessage(), MEMBER_EMAIL_ERROR.getMessage());
@@ -234,7 +272,7 @@ public class GroupContentServiceTest {
             // when
             GroupException groupContentException =
                     assertThrows(GroupException.class,
-                            () -> groupContentService.createGroupContent(1L, request, null));
+                            () -> groupContentService.createGroupContent(1L, request, image));
 
             // then
             assertEquals(groupContentException.getErrorMessage(), GROUP_NOT_FOUND.getMessage());
@@ -261,7 +299,7 @@ public class GroupContentServiceTest {
             // when
             GroupException groupContentException =
                     assertThrows(GroupException.class,
-                            () -> groupContentService.createGroupContent(1L, request, null));
+                            () -> groupContentService.createGroupContent(1L, request, image));
 
             // then
             assertEquals(groupContentException.getErrorMessage(), GROUP_ALREADY_DELETE_GROUP.getMessage());
@@ -291,7 +329,7 @@ public class GroupContentServiceTest {
             // when
             GroupException groupContentException =
                     assertThrows(GroupException.class,
-                            () -> groupContentService.createGroupContent(1L, request, null));
+                            () -> groupContentService.createGroupContent(1L, request, image));
 
             // then
             assertEquals(groupContentException.getErrorMessage(), GROUP_NOT_FOUND_USER.getMessage());
@@ -323,7 +361,7 @@ public class GroupContentServiceTest {
             // when
             GroupException groupContentException =
                     assertThrows(GroupException.class,
-                            () -> groupContentService.createGroupContent(1L, request, null));
+                            () -> groupContentService.createGroupContent(1L, request, image));
 
             // then
             assertEquals(groupContentException.getErrorMessage(), GROUP_ALREADY_WITHDRAW.getMessage());

@@ -94,7 +94,7 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
     }
 
     @Override
-    public Optional<GroupContentDto> findByGroupContent(Long groupContentId) {
+    public Optional<GroupContentDto> findByGroupContent(Long groupId, Long groupContentId) {
         return Optional.ofNullable(jpaQueryFactory
                 .select(
                         new QGroupContentDto(
@@ -122,13 +122,16 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                 .distinct()
                 .from(groupContent)
                 .join(groupContent.member, member)
-                .where(groupContent.id.eq(groupContentId))
+                .where(
+                        groupContentEq(groupContentId),
+                        groupEq(groupId)
+                )
                 .fetchOne()
         );
     }
 
     @Override
-    public List<GroupContentImageDto> findByGroupContentImage(Long groupContentId) {
+    public List<GroupContentImageDto> findByGroupContentImage(Long groupId, Long groupContentId) {
         return jpaQueryFactory
                 .select(
                         new QGroupContentImageDto(
@@ -137,13 +140,17 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                         )
                 )
                 .from(groupContentImage)
-                .where(groupContentImage.groupContent.id.eq(groupContentId))
+                .where(
+                        groupContentImage.groupContent.id.eq(groupContentId),
+                        groupEq(groupId)
+                )
                 .fetch();
     }
 
     @Override
     public Page<GroupContentCommentDto> findByGroupContentComments(
             Pageable pageable,
+            Long groupId,
             Long groupContentId) {
         List<GroupContentCommentDto> content = jpaQueryFactory
                 .select(
@@ -174,6 +181,7 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                 .join(groupContentComment.groupContent, groupContent)
                 .where(
                         commentUsDelYn(),
+                        groupEq(groupId),
                         groupContentEq(groupContentId)
                 )
                 .offset(pageable.getOffset())
@@ -187,6 +195,7 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                 .from(groupContentComment)
                 .where(
                         commentUsDelYn(),
+                        groupEq(groupId),
                         groupContentEq(groupContentId)
                 );
 

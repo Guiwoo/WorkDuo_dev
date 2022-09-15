@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface GroupContentQueryRepository {
 
     Page<GroupContentDto> findByGroupContentList(Pageable pageable, Long groupId);
-    Optional<GroupContentDto> findByGroupContent(Long groupContentId);
-    List<GroupContentImageDto> findByGroupContentImage(Long groupContentId);
-    Page<GroupContentCommentDto> findByGroupContentComments(Pageable pageable, Long groupContentId);
+    Optional<GroupContentDto> findByGroupContent(Long groupId, Long groupContentId);
+    List<GroupContentImageDto> findByGroupContentImage(Long groupId, Long groupContentId);
+    Page<GroupContentCommentDto> findByGroupContentComments(Pageable pageable, Long groupId, Long groupContentId);
 }
