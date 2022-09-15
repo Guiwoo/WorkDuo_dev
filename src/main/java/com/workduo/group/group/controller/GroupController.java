@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,14 +32,19 @@ public class GroupController {
      */
     @PostMapping("")
     public ResponseEntity<?> createGroup(
-            @RequestBody @Validated CreateGroup.Request request,
+            List<MultipartFile> multipartFiles,
+            @Validated CreateGroup.Request request,
             BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
 
-        groupService.createGroup(request);
+        if (multipartFiles == null || multipartFiles.size() <= 0) {
+            throw new RuntimeException("그룹 썸네일은 필수 입력 사항입니다.");
+        }
+
+        groupService.createGroup(request, multipartFiles);
 
         return new ResponseEntity<>(
                 CreateGroup.Response.from(),

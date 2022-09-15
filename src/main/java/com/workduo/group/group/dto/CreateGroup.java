@@ -31,8 +31,8 @@ public class CreateGroup {
         @NotNull(message = "그룹 소개글은 필수 입력 사항입니다.")
         private String introduce;
 
-        @NotNull(message = "그룹 썸네일은 필수 입력 사항입니다.")
-        private String thumbnailPath;
+//        @NotNull(message = "그룹 썸네일은 필수 입력 사항입니다.")
+//        private String thumbnailPath;
 
     }
 

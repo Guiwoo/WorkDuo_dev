@@ -3,6 +3,9 @@ package com.workduo.group.group.service;
 import com.workduo.group.group.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface GroupService {
 
@@ -10,7 +13,7 @@ public interface GroupService {
      * 그룹 생성
      * @param request
      */
-    void createGroup(CreateGroup.Request request);
+    void createGroup(CreateGroup.Request request, List<MultipartFile> multipartFiles);
 
     /**
      * 그룹 해지 - 그룹장만 가능

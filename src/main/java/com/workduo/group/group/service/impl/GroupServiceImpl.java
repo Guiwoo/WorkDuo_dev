@@ -25,12 +25,18 @@ import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
+import com.workduo.util.AwsS3Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.persistence.EntityManager;
+
+import java.util.List;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
 import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
@@ -56,6 +62,8 @@ public class GroupServiceImpl implements GroupService {
     private final SportRepository sportRepository;
     private final SiggAreaRepository siggAreaRepository;
     private final CommonRequestContext context;
+    private final AwsS3Utils awsS3Utils;
+    private final EntityManager entityManager;
 
     /**
      * 그룹 생성
@@ -63,7 +71,7 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     @Transactional
-    public void createGroup(Request request) {
+    public void createGroup(Request request, List<MultipartFile> multipartFiles) {
         Member member = getMember(context.getMemberEmail());
         SiggArea siggArea = getSiggArea(request.getSgg());
 
@@ -77,11 +85,15 @@ public class GroupServiceImpl implements GroupService {
                 .name(request.getName())
                 .limitPerson(request.getLimitPerson())
                 .introduce(request.getIntroduce())
-                .thumbnailPath(request.getThumbnailPath())
                 .groupStatus(GROUP_STATUS_ING)
                 .build();
 
         groupRepository.save(group);
+        entityManager.flush();
+
+        String path = generatePath(group.getId());
+        List<String> files = awsS3Utils.uploadFile(multipartFiles, path);
+        group.updateThumbnail(files.get(0));
 
         GroupJoinMember groupJoinMember = GroupJoinMember.builder()
                 .member(member)
@@ -374,5 +386,9 @@ public class GroupServiceImpl implements GroupService {
     private SiggArea getSiggArea(String sgg) {
         return siggAreaRepository.findBySgg(sgg)
                 .orElseThrow(() -> new IllegalStateException("해당 지역은 없는 지역입니다."));
+    }
+
+    public String generatePath(Long groupId) {
+        return "group/" + groupId + "/";
     }
 }
