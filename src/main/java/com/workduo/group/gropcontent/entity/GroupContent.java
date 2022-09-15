@@ -7,6 +7,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -28,8 +30,8 @@ public class GroupContent extends BaseEntity {
     @JoinColumn(name = "group_id")
     private Group group;
 
-//    @OneToMany(mappedBy = "groupContent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private List<GroupContentImage> groupContentImages = new ArrayList<>();
+    @OneToMany(mappedBy = "groupContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<GroupContentImage> groupContentImages = new ArrayList<>();
 
     private String title;
 

@@ -102,12 +102,14 @@ public class GroupContentServiceImpl implements GroupContentService {
         groupContentRepository.save(groupContent);
         entityManager.flush();
 
-        String path = generatePath(groupId, groupContent.getId());
-        List<String> files = awsS3Utils.uploadFile(multipartFiles, path);
-        List<GroupContentImage> groupContentImages =
-                GroupContentImage.createGroupContentImage(groupContent, files);
+        if (multipartFiles != null) {
+            String path = generatePath(groupId, groupContent.getId());
+            List<String> files = awsS3Utils.uploadFile(multipartFiles, path);
+            List<GroupContentImage> groupContentImages =
+                    GroupContentImage.createGroupContentImage(groupContent, files);
 
-        groupContentImageRepository.saveAll(groupContentImages);
+            groupContentImageRepository.saveAll(groupContentImages);
+        }
     }
 
     /**
@@ -126,7 +128,7 @@ public class GroupContentServiceImpl implements GroupContentService {
         detailGroupContentValidate(member, group, groupContent);
 
         GroupContentDto groupContentDto = groupContentQueryRepository.findByGroupContent(groupContentId)
-                .orElseThrow(() -> new IllegalStateException("not found group content"));
+                .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_CONTENT));
 
         List<GroupContentImageDto> groupContentImages =
                 groupContentQueryRepository.findByGroupContentImage(groupContentId);

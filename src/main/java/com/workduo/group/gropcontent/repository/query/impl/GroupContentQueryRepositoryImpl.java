@@ -66,12 +66,13 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                 )
                 .distinct()
                 .from(groupContent)
-                .join(groupContent.groupContentImages, groupContentImage)
                 .join(groupContent.member, member)
                 .where(
                         contentIsDelYn(),
                         groupEq(groupId)
                 )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .orderBy(findByGroupContentListSort(pageable).stream()
                         .toArray(OrderSpecifier[]::new))
                 .fetch();
@@ -120,7 +121,6 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                 )
                 .distinct()
                 .from(groupContent)
-                .join(groupContent.groupContentImages, groupContentImage)
                 .join(groupContent.member, member)
                 .where(groupContent.id.eq(groupContentId))
                 .fetchOne()
