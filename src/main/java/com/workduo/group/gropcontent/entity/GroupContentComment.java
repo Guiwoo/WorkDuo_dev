@@ -1,4 +1,4 @@
-package com.workduo.group.groupcontentcomment.entity;
+package com.workduo.group.gropcontent.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
 import com.workduo.group.gropcontent.entity.GroupContent;

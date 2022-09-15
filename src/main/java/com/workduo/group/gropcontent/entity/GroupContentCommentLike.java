@@ -1,6 +1,6 @@
-package com.workduo.group.groupcontentcommentlike.entity;
+package com.workduo.group.gropcontent.entity;
 
-import com.workduo.group.groupcontentcomment.entity.GroupContentComment;
+import com.workduo.group.gropcontent.entity.GroupContentComment;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
 

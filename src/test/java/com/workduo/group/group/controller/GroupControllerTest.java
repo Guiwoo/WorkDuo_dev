@@ -73,10 +73,6 @@ public class GroupControllerTest {
     private GroupService groupService;
     @MockBean
     private TokenProvider tokenProvider;
-    @MockBean
-    private MemberException memberException;
-    @MockBean
-    private GroupException groupException;
 
     @Autowired
     private MockMvc mockMvc;
@@ -173,7 +169,7 @@ public class GroupControllerTest {
     @Nested
     public class createGroup {
         @Test
-        @DisplayName("그룹 생성 성공 - 리퀘스트 파라미터 검증 실패")
+        @DisplayName("그룹 생성 - 리퀘스트 파라미터 검증 실패")
         public void createGroupRequestFail() throws Exception {
             // given
             List<String> errors = new ArrayList<>(List.of(

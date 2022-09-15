@@ -1,15 +1,12 @@
 package com.workduo.group.gropcontent.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
-import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.group.entity.Group;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
