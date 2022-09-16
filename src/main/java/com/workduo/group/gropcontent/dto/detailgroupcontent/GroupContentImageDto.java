@@ -7,6 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
 public class GroupContentImageDto {
 
     private Long id;

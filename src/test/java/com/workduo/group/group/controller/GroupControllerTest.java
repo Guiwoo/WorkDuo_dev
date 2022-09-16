@@ -1019,12 +1019,6 @@ public class GroupControllerTest {
             SportCategoryDto sportCategoryDto = SportCategoryDto.fromEntity(sportCategory);
             SportDto sportDto = SportDto.fromEntity(sport);
 
-            ListGroup.Request condition = ListGroup.Request.builder()
-                    .sgg(null)
-                    .sportId(null)
-                    .build();
-
-            PageRequest pageRequest = PageRequest.of(0, 5);
             GroupDto groupDto = GroupDto.builder()
                     .groupId(1L)
                     .sidoArea(sidoAreaDto)
@@ -1064,7 +1058,6 @@ public class GroupControllerTest {
             @DisplayName("그룹 참여자 리스트 성공")
             public void groupParticipantList() throws Exception {
                 // given
-                PageRequest pageRequest = PageRequest.of(0, 5);
                 GroupParticipantsDto groupParticipantsDto = GroupParticipantsDto.builder()
                         .userId(1L)
                         .username("test")
