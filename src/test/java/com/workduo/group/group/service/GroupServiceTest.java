@@ -28,6 +28,7 @@ import com.workduo.sport.sport.dto.SportDto;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import com.workduo.sport.sportcategory.entity.SportCategory;
+import com.workduo.util.AwsS3Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,8 +40,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
@@ -83,6 +89,10 @@ public class GroupServiceTest {
     private GroupQueryRepository groupQueryRepository;
     @Mock
     private GroupLikeRepository groupLikeRepository;
+    @Mock
+    private EntityManager entityManager;
+    @Mock
+    private AwsS3Utils awsS3Utils;
 
     @Spy
     @InjectMocks
@@ -98,9 +108,17 @@ public class GroupServiceTest {
     GroupJoinMember leader;
     GroupJoinMember alreadyWithdrawMember;
     Group deletedGroup;
+    List<MultipartFile> image = new ArrayList<>();
     
     @BeforeEach
     public void init() {
+        image.add(new MockMultipartFile(
+                "multipartFiles",
+                "imagefile.jpeg",
+                "image/jpeg",
+                "<<jpeg data>>".getBytes()
+        ));
+
         member = Member.builder()
                 .id(1L)
                 .username("한규빈")
@@ -122,7 +140,6 @@ public class GroupServiceTest {
 
         siggArea = SiggArea.builder()
                 .sgg("11110")
-                .sidonm("11")
                 .sggnm("종로구")
                 .sidonm("서울특별시")
                 .sidoArea(SidoArea.builder()
@@ -205,38 +222,44 @@ public class GroupServiceTest {
         @Transactional
         public void createGroup() throws Exception {
             // given
-            given(memberRepository.findByEmail(anyString()))
-                    .willReturn(Optional.of(member));
-            given(sportRepository.findById(anyInt()))
-                    .willReturn(Optional.of(sport));
-            given(siggAreaRepository.findBySgg(anyString()))
-                    .willReturn(Optional.of(siggArea));
-
-            doReturn("rbsks147@naver.com").when(context).getMemberEmail();
-            given(groupRepository.save(any()))
-                    .willReturn(Group.builder()
-                            .id(1L)
-                            .sport(sport)
-                            .build());
-
-            // when
             CreateGroup.Request request = CreateGroup.Request.builder()
                     .name("수정구 풋살 모임")
                     .limitPerson(30)
                     .sportId(1)
                     .sgg("11110")
                     .introduce("경기도 성남시 수정구 아재들의 풋살, 축구 모임입니다. 많은 참여 부탁드립니다.")
-                    .thumbnailPath("https://블라블라~~~.com")
                     .build();
 
-            ArgumentCaptor<Group> groupArgumentCaptor =
-                    ArgumentCaptor.forClass(Group.class);
+            doReturn(Optional.of(member)).when(memberRepository)
+                            .findByEmail(anyString());
+            doReturn("rbsks147@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(siggArea)).when(siggAreaRepository)
+                            .findBySgg(anyString());
+            doReturn(Optional.of(sport)).when(sportRepository)
+                            .findById(anyInt());
+            doReturn(group).when(groupRepository)
+                    .save(any());
+            groupService.generatePath(1L);
+            doReturn(new ArrayList<>(List.of("test"))).when(awsS3Utils)
+                            .uploadFile(any(), anyString());
 
-            groupService.createGroup(request);
+            // when
+            groupService.createGroup(request, image);
 
             // then
+            verify(memberRepository, times(1))
+                    .findByEmail(anyString());
+            verify(siggAreaRepository, times(1))
+                    .findBySgg(anyString());
+            verify(sportRepository, times(1))
+                    .findById(anyInt());
             verify(groupRepository, times(1))
-                    .save(groupArgumentCaptor.capture());
+                    .save(any());
+            verify(groupJoinMemberRepository, times(1))
+                    .save(any());
+            verify(groupCreateMemberRepository, times(1))
+                    .save(any());
         }
 
         @Test
@@ -252,13 +275,13 @@ public class GroupServiceTest {
                     .sportId(1)
                     .sgg("11110")
                     .introduce("경기도 성남시 수정구 아재들의 풋살, 축구 모임입니다. 많은 참여 부탁드립니다.")
-                    .thumbnailPath("https://블라블라~~~.com")
+//                    .thumbnailPath("https://블라블라~~~.com")
                     .build();
 
             // when
             MemberException memberException =
                     assertThrows(MemberException.class,
-                            () -> groupService.createGroup(request));
+                            () -> groupService.createGroup(request, image));
 
             // then
             assertEquals(memberException.getErrorCode(), MEMBER_EMAIL_ERROR);
@@ -286,13 +309,13 @@ public class GroupServiceTest {
                     .sportId(1)
                     .sgg("11110")
                     .introduce("경기도 성남시 수정구 아재들의 풋살, 축구 모임입니다. 많은 참여 부탁드립니다.")
-                    .thumbnailPath("https://블라블라~~~.com")
+//                    .thumbnailPath("https://블라블라~~~.com")
                     .build();
 
             // when
             GroupException groupException =
                     assertThrows(GroupException.class,
-                            () -> groupService.createGroup(request));
+                            () -> groupService.createGroup(request, null));
 
             // then
             assertEquals(groupException.getErrorCode(), GROUP_MAXIMUM_EXCEEDED);
@@ -315,13 +338,13 @@ public class GroupServiceTest {
                     .sportId(1)
                     .sgg("11110")
                     .introduce("경기도 성남시 수정구 아재들의 풋살, 축구 모임입니다. 많은 참여 부탁드립니다.")
-                    .thumbnailPath("https://블라블라~~~.com")
+//                    .thumbnailPath("https://블라블라~~~.com")
                     .build();
 
             // when
             IllegalStateException groupException =
                     assertThrows(IllegalStateException.class,
-                            () -> groupService.createGroup(request));
+                            () -> groupService.createGroup(request, null));
 
             // then
             assertEquals(groupException.getMessage(), "해당 지역은 없는 지역입니다.");
@@ -346,13 +369,13 @@ public class GroupServiceTest {
                     .sportId(1)
                     .sgg("11110")
                     .introduce("경기도 성남시 수정구 아재들의 풋살, 축구 모임입니다. 많은 참여 부탁드립니다.")
-                    .thumbnailPath("https://블라블라~~~.com")
+//                    .thumbnailPath("https://블라블라~~~.com")
                     .build();
 
             // when
             IllegalStateException groupException =
                     assertThrows(IllegalStateException.class,
-                            () -> groupService.createGroup(request));
+                            () -> groupService.createGroup(request, null));
 
             // then
             assertEquals(groupException.getMessage(), "해당 운동은 없는 운동입니다.");

@@ -48,4 +48,8 @@ public class Group extends BaseEntity {
         this.groupStatus = GROUP_STATUS_CANCEL;
         this.deletedAt = LocalDateTime.now();
     }
+
+    public void updateThumbnail(String filePath) {
+        this.thumbnailPath = filePath;
+    }
 }

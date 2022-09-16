@@ -1,7 +1,6 @@
 package com.workduo.group.gropcontent.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
-import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.group.entity.Group;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
@@ -31,8 +30,8 @@ public class GroupContent extends BaseEntity {
     @JoinColumn(name = "group_id")
     private Group group;
 
-//    @OneToMany(mappedBy = "groupContent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private List<GroupContentImage> groupContentImages = new ArrayList<>();
+    @OneToMany(mappedBy = "groupContent", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<GroupContentImage> groupContentImages = new ArrayList<>();
 
     private String title;
 

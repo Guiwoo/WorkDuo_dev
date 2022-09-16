@@ -30,6 +30,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -73,10 +74,6 @@ public class GroupControllerTest {
     private GroupService groupService;
     @MockBean
     private TokenProvider tokenProvider;
-    @MockBean
-    private MemberException memberException;
-    @MockBean
-    private GroupException groupException;
 
     @Autowired
     private MockMvc mockMvc;
@@ -92,6 +89,7 @@ public class GroupControllerTest {
     static SiggArea siggArea;
     static Group group;
     static GroupDto groupDto;
+    static MockMultipartFile image;
 
     @BeforeEach
     public void setup() {
@@ -109,6 +107,13 @@ public class GroupControllerTest {
 
     @BeforeAll
     public static void init() {
+        image = new MockMultipartFile(
+                "multipartFiles",
+                "imagefile.jpeg",
+                "image/jpeg",
+                "<<jpeg data>>".getBytes()
+        );
+
         factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
         sport = Sport.builder()
@@ -173,7 +178,7 @@ public class GroupControllerTest {
     @Nested
     public class createGroup {
         @Test
-        @DisplayName("그룹 생성 성공 - 리퀘스트 파라미터 검증 실패")
+        @DisplayName("그룹 생성 - 리퀘스트 파라미터 검증 실패")
         public void createGroupRequestFail() throws Exception {
             // given
             List<String> errors = new ArrayList<>(List.of(
@@ -182,8 +187,7 @@ public class GroupControllerTest {
                     "그룹 인원은 최대 200명입니다.",
                     "운동은 필수 선택 사항입니다.",
                     "지역은 필수 선택 사항입니다.",
-                    "그룹 소개글은 필수 입력 사항입니다.",
-                    "그룹 썸네일은 필수 입력 사항입니다."
+                    "그룹 소개글은 필수 입력 사항입니다."
             ));
 
             CreateGroup.Request request = CreateGroup.Request.builder().build();
@@ -201,21 +205,21 @@ public class GroupControllerTest {
         @DisplayName("그룹 생성 성공")
         public void createGroup() throws Exception {
             // given
-            CreateGroup.Request request = CreateGroup.Request.builder()
-                    .name("test")
-                    .limitPerson(10)
-                    .sportId(1)
-                    .sgg("11110")
-                    .introduce("test")
-                    .thumbnailPath("test")
-                    .build();
 
             // when
 
             // then
-            mockMvc.perform(post("/api/v1/group")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(multipart("/api/v1/group")
+                            .file(image)
+                            .param("name", "test")
+                            .param("limitPerson", "10")
+                            .param("sportId", "1")
+                            .param("sgg", "11110")
+                            .param("introduce", "test")
+                            .with(request -> {
+                                request.setMethod("POST");
+                                return request;
+                            })
                     )
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.success").value("T"))
@@ -223,30 +227,30 @@ public class GroupControllerTest {
                     .andDo(print());
 
             verify(groupService, times(1))
-                    .createGroup(any());
+                    .createGroup(any(), any());
         }
 
         @Test
         @DisplayName("그룹 생성 실패 - 유저 정보 없음")
         public void createGroupFailNotFoundUser() throws Exception {
             // given
-            CreateGroup.Request request = CreateGroup.Request.builder()
-                    .name("test")
-                    .limitPerson(10)
-                    .sportId(1)
-                    .sgg("11110")
-                    .introduce("test")
-                    .thumbnailPath("test")
-                    .build();
 
             // when
             doThrow(new MemberException(MEMBER_EMAIL_ERROR)).when(groupService)
-                    .createGroup(any());
+                    .createGroup(any(), any());
 
             // then
-            mockMvc.perform(post("/api/v1/group")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(multipart("/api/v1/group")
+                            .file(image)
+                            .param("name", "test")
+                            .param("limitPerson", "10")
+                            .param("sportId", "1")
+                            .param("sgg", "11110")
+                            .param("introduce", "test")
+                            .with(request -> {
+                                request.setMethod("POST");
+                                return request;
+                            })
                     )
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.success").value("F"))
@@ -258,23 +262,23 @@ public class GroupControllerTest {
         @DisplayName("그룹 생성 실패 - 지역 정보 없음")
         public void createGroupFailNotFoundSigg() throws Exception {
             // given
-            CreateGroup.Request request = CreateGroup.Request.builder()
-                    .name("test")
-                    .limitPerson(10)
-                    .sportId(1)
-                    .sgg("11110")
-                    .introduce("test")
-                    .thumbnailPath("test")
-                    .build();
 
             // when
             doThrow(new IllegalStateException("해당 지역은 없는 지역입니다.")).when(groupService)
-                    .createGroup(any());
+                    .createGroup(any(), any());
 
             // then
-            mockMvc.perform(post("/api/v1/group")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(multipart("/api/v1/group")
+                            .file(image)
+                            .param("name", "test")
+                            .param("limitPerson", "10")
+                            .param("sportId", "1")
+                            .param("sgg", "11110")
+                            .param("introduce", "test")
+                            .with(request -> {
+                                request.setMethod("POST");
+                                return request;
+                            })
                     )
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.success").value("F"))
@@ -286,23 +290,23 @@ public class GroupControllerTest {
         @DisplayName("그룹 생성 실패 - 운동 정보 없음")
         public void createGroupFailNotFoundSport() throws Exception {
             // given
-            CreateGroup.Request request = CreateGroup.Request.builder()
-                    .name("test")
-                    .limitPerson(10)
-                    .sportId(1)
-                    .sgg("11110")
-                    .introduce("test")
-                    .thumbnailPath("test")
-                    .build();
 
             // when
             doThrow(new IllegalStateException("해당 운동은 없는 운동입니다.")).when(groupService)
-                    .createGroup(any());
+                    .createGroup(any(), any());
 
             // then
-            mockMvc.perform(post("/api/v1/group")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(multipart("/api/v1/group")
+                            .file(image)
+                            .param("name", "test")
+                            .param("limitPerson", "10")
+                            .param("sportId", "1")
+                            .param("sgg", "11110")
+                            .param("introduce", "test")
+                            .with(request -> {
+                                request.setMethod("POST");
+                                return request;
+                            })
                     )
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.success").value("F"))
@@ -314,23 +318,23 @@ public class GroupControllerTest {
         @DisplayName("그룹 생성 실패 - 그룹 생성 최대개수 초과")
         public void createGroupFailMaximumExceeded() throws Exception {
             // given
-            CreateGroup.Request request = CreateGroup.Request.builder()
-                    .name("test")
-                    .limitPerson(10)
-                    .sportId(1)
-                    .sgg("11110")
-                    .introduce("test")
-                    .thumbnailPath("test")
-                    .build();
 
             // when
             doThrow(new GroupException(GROUP_MAXIMUM_EXCEEDED)).when(groupService)
-                    .createGroup(any());
+                    .createGroup(any(), any());
 
             // then
-            mockMvc.perform(post("/api/v1/group")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(multipart("/api/v1/group")
+                            .file(image)
+                            .param("name", "test")
+                            .param("limitPerson", "10")
+                            .param("sportId", "1")
+                            .param("sgg", "11110")
+                            .param("introduce", "test")
+                            .with(request -> {
+                                request.setMethod("POST");
+                                return request;
+                            })
                     )
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value("F"))
