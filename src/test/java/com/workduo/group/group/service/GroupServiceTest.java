@@ -981,15 +981,16 @@ public class GroupServiceTest {
                     .build();
             List<GroupDto> groupDtoList = new ArrayList<>(List.of(groupDto));
             Page<GroupDto> groupDtoPage = new PageImpl<>(groupDtoList);
-
+            doReturn(null).when(context)
+                            .getMemberEmail();
+            Long memberId = null;
             doReturn(groupDtoPage).when(groupQueryRepository)
-                    .findByGroupList(any(), any());
+                    .findByGroupList(any(), eq(memberId), any());
 
             // when
             Page<GroupDto> groupDtoPages = groupService.groupList(pageRequest, condition);
 
             // then
-            System.out.println(groupDtoPages);
             assertEquals(groupDtoPages.getContent().size(), groupDtoList.size());
         }
     }

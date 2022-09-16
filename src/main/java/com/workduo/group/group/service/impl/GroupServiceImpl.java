@@ -45,6 +45,7 @@ import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMB
 import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_LEADER;
 import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_NORMAL;
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
+import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
 @Service
@@ -182,8 +183,14 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional(readOnly = true)
     public Page<GroupDto> groupList(Pageable pageable, ListGroup.Request condition) {
+        String memberEmail = context.getMemberEmail();
+        Long memberId = null;
+        if (hasText(memberEmail)) {
+            Member member = getMember(memberEmail);
+            memberId = member.getId();
+        }
 
-        return groupQueryRepository.findByGroupList(pageable, condition);
+        return groupQueryRepository.findByGroupList(pageable, memberId, condition);
     }
 
     /**
