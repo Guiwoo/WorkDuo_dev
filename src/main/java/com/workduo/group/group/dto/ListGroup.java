@@ -8,6 +8,9 @@ public class ListGroup {
 
     @Getter
     @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Request {
         private String sgg;
         private Integer sportId;
