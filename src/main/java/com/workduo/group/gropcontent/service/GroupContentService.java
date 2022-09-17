@@ -51,4 +51,11 @@ public interface GroupContentService {
      * @param groupContentId
      */
     void groupContentUnLike(Long groupId, Long groupContentId);
+
+    /**
+     * 그룹 피드 삭제
+     * @param groupId
+     * @param groupContentId
+     */
+    void groupContentDelete(Long groupId, Long groupContentId);
 }

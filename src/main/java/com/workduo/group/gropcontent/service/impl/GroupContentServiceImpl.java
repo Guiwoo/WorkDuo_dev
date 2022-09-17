@@ -184,6 +184,44 @@ public class GroupContentServiceImpl implements GroupContentService {
         groupContentLikeRepository.deleteByMemberAndGroupContent(member, groupContent);
     }
 
+    /**
+     * 그룹 피드 삭제
+     */
+    @Override
+    @Transactional
+    public void groupContentDelete(Long groupId, Long groupContentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        groupContentDeleteValidate(member, group, groupContent);
+
+        groupContent.deleteContent();
+    }
+
+    private void groupContentDeleteValidate(Member member, Group group, GroupContent groupContent) {
+        if (groupContent.isDeletedYn()) {
+            throw new GroupException(GROUP_ALREADY_DELETE_CONTENT);
+        }
+
+        if (groupContent.getGroup().getId() != group.getId()) {
+            throw new GroupException(GROUP_NOT_FOUND_CONTENT);
+        }
+
+        if (group.getGroupStatus() != GROUP_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
+        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_WITHDRAW);
+        }
+
+        if (member.getId() != groupContent.getMember().getId()) {
+            throw new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR);
+        }
+    }
+
     private void groupContentLikeValidate(Member member, Group group, GroupContent groupContent) {
 
         if (groupContent.isDeletedYn()) {

@@ -44,6 +44,11 @@ public class GroupContent extends BaseEntity {
     private boolean noticeYn;
     private int sortValue;
 
+    public void deleteContent() {
+        this.deletedYn = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
 //    public void addGroupContentImage(GroupContentImage groupContentImage) {
 //        this.groupContentImages.add(groupContentImage);
 //        groupContentImage.addGroupContent(this);

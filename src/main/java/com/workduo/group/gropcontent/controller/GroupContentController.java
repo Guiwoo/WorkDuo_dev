@@ -128,4 +128,22 @@ public class GroupContentController {
                 HttpStatus.OK
         );
     }
+
+    /**
+     * 그룹 피드 삭제
+     * @param groupId
+     * @param contentId
+     * @return
+     */
+    @DeleteMapping("/{groupId}/content/{contentId}")
+    public ResponseEntity<?> groupContentDelete(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId) {
+
+        groupContentService.groupContentDelete(groupId, contentId);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
+    }
 }
