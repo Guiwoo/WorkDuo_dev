@@ -5,7 +5,7 @@ import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContent;
 import com.workduo.group.gropcontent.dto.listgroupcontent.ListGroupContent;
-import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import com.workduo.group.gropcontent.service.GroupContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +27,12 @@ public class GroupContentController {
 
     private final GroupContentService groupContentService;
 
+    /**
+     * 그룹 피드 리스트
+     * @param groupId
+     * @param pageable
+     * @return
+     */
     @GetMapping("/{groupId}/content")
     public ResponseEntity<?> groupContentList(
             @PathVariable("groupId") Long groupId,
@@ -84,6 +90,86 @@ public class GroupContentController {
                 DetailGroupContent.Response.from(
                         groupContentService.detailGroupContent(groupId, contentId)
                 ),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 좋아요
+     * @param groupId
+     * @param contentId
+     * @return
+     */
+    @PostMapping("/{groupId}/content/{contentId}/like")
+    public ResponseEntity<?> groupContentLike(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId) {
+
+        groupContentService.groupContentLike(groupId, contentId);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 좋아요 취소
+     * @param groupId
+     * @param contentId
+     * @return
+     */
+    @DeleteMapping("/{groupId}/content/{contentId}/like")
+    public ResponseEntity<?> groupContentUnLike(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId) {
+
+        groupContentService.groupContentUnLike(groupId, contentId);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 삭제
+     * @param groupId
+     * @param contentId
+     * @return
+     */
+    @DeleteMapping("/{groupId}/content/{contentId}")
+    public ResponseEntity<?> groupContentDelete(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId) {
+
+        groupContentService.groupContentDelete(groupId, contentId);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 수정
+     * @param groupId
+     * @param contentId
+     * @param request
+     * @param bindingResult
+     * @return
+     */
+    @PatchMapping("/{groupId}/content/{contentId}")
+    public ResponseEntity<?> groupContentUpdate(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @RequestBody @Validated UpdateContent.Request request,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+
+        groupContentService.groupContentUpdate(request, groupId, contentId);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
                 HttpStatus.OK
         );
     }

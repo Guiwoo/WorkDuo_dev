@@ -65,8 +65,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -739,6 +738,399 @@ public class GroupContentControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value("F"))
                     .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    public class groupContentLike {
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 성공")
+        public void groupContentLike() throws Exception {
+            // given
+
+            // when
+
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andExpect(jsonPath("$.result").isEmpty())
+                    .andDo(print());
+
+            verify(groupContentService, times(1))
+                    .groupContentLike(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 실패 - 유저 정보 없음")
+        public void groupContentLikeFailNotFoundUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new MemberException(MEMBER_EMAIL_ERROR)).when(groupContentService)
+                    .groupContentLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(MEMBER_EMAIL_ERROR.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 실패 - 그룹 정보 없음")
+        public void groupContentLikeFailNotFoundGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND)).when(groupContentService)
+                    .groupContentLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 실패 - 그룹 피드 정보 없음")
+        public void groupContentLikeFailNotFoundGroupContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND_CONTENT)).when(groupContentService)
+                    .groupContentLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 실패 - 이미 삭제된 그룹")
+        public void groupContentLikeFailAlreadyDeleteGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_GROUP)).when(groupContentService)
+                    .groupContentLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_GROUP.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 실패 - 이미 삭제된 피드")
+        public void groupContentLikeFailAlreadyContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_CONTENT)).when(groupContentService)
+                    .groupContentLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 실패 - 이미 탈퇴한 유저")
+        public void groupContentLikeFailAlreadyUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_WITHDRAW)).when(groupContentService)
+                    .groupContentLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_WITHDRAW.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 실패 - 이미 좋아요를 누른 유저")
+        public void groupContentLikeFailAlreadyLike() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_LIKE)).when(groupContentService)
+                    .groupContentLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(post("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_LIKE.getMessage()))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    public class groupContentUnLike {
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 취소 성공")
+        public void groupContentUnLike() throws Exception {
+            // given
+
+            // when
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andExpect(jsonPath("$.result").isEmpty())
+                    .andDo(print());
+
+            verify(groupContentService, times(1))
+                    .groupContentUnLike(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 취소 실패 - 유저 정보 없음")
+        public void groupContentUnLikeFailNotFoundUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new MemberException(MEMBER_EMAIL_ERROR)).when(groupContentService)
+                    .groupContentUnLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(MEMBER_EMAIL_ERROR.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 취소 실패 - 그룹 정보 없음")
+        public void groupContentUnLikeFailNotFoundGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND)).when(groupContentService)
+                    .groupContentUnLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 취소 실패 - 그룹 피드 정보 없음")
+        public void groupContentUnLikeFailNotFoundGroupContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND_CONTENT)).when(groupContentService)
+                    .groupContentUnLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 취소 실패 - 이미 삭제된 그룹")
+        public void groupContentUnLikeFailAlreadyDeleteGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_GROUP)).when(groupContentService)
+                    .groupContentUnLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_GROUP.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 취소 실패 - 이미 삭제된 피드")
+        public void groupContentUnLikeFailAlreadyContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_CONTENT)).when(groupContentService)
+                    .groupContentUnLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 좋아요 취소 실패 - 이미 탈퇴한 유저")
+        public void groupContentUnLikeFailAlreadyUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_WITHDRAW)).when(groupContentService)
+                    .groupContentUnLike(anyLong(), anyLong());
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1/like"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_WITHDRAW.getMessage()))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    public class groupContentDelete {
+
+        @Test
+        @DisplayName("그룹 피드 삭제 성공")
+        public void groupContentDelete() throws Exception {
+            // given
+
+            // when
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andExpect(jsonPath("$.result").isEmpty())
+                    .andDo(print());
+
+            verify(groupContentService, times(1))
+                    .groupContentDelete(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 삭제 실패 - 유저 정보 없음")
+        public void groupContentDeleteFailNotFoundUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new MemberException(MEMBER_EMAIL_ERROR)).when(groupContentService)
+                    .groupContentDelete(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(MEMBER_EMAIL_ERROR.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 삭제 실패 - 그룹 정보 없음")
+        public void groupContentDeleteFailNotFoundGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND)).when(groupContentService)
+                    .groupContentDelete(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 삭제 실패 - 그룹 피드 정보 없음")
+        public void groupContentDeleteFailNotFoundGroupContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND_CONTENT)).when(groupContentService)
+                    .groupContentDelete(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 삭제 실패 - 이미 삭제된 그룹")
+        public void groupContentDeleteFailAlreadyDeleteGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_GROUP)).when(groupContentService)
+                        .groupContentDelete(anyLong(), anyLong());
+
+            // then
+                mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_GROUP.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 삭제 실패 - 이미 삭제된 그룹 피드")
+        public void groupContentDeleteFailAlreadyDeleteGroupContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_CONTENT)).when(groupContentService)
+                    .groupContentDelete(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 삭제 실패 - 그룹에서 피드를 찾을 수 없음")
+        public void groupContentDeleteFailNotFoundGroupInContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND_CONTENT)).when(groupContentService)
+                    .groupContentDelete(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 삭제 실패 - 피드 작성자가 아닐 경우")
+        public void groupContentDeleteFailNotSameContentAuthor() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR)).when(groupContentService)
+                    .groupContentDelete(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(delete("/api/v1/group/1/content/1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_SAME_CONTENT_AUTHOR.getMessage()))
                     .andDo(print());
         }
     }
