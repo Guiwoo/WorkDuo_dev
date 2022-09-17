@@ -5,6 +5,7 @@ import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContent;
 import com.workduo.group.gropcontent.dto.listgroupcontent.ListGroupContent;
+import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import com.workduo.group.gropcontent.service.GroupContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -141,6 +142,32 @@ public class GroupContentController {
             @PathVariable("contentId") Long contentId) {
 
         groupContentService.groupContentDelete(groupId, contentId);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 수정
+     * @param groupId
+     * @param contentId
+     * @param request
+     * @param bindingResult
+     * @return
+     */
+    @PatchMapping("/{groupId}/content/{contentId}")
+    public ResponseEntity<?> groupContentUpdate(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @RequestBody @Validated UpdateContent.Request request,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+
+        groupContentService.groupContentUpdate(request, groupId, contentId);
         return new ResponseEntity<>(
                 CommonResponse.from(),
                 HttpStatus.OK

@@ -1,10 +1,9 @@
 package com.workduo.group.gropcontent.service;
 
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
-import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
-import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,4 +57,12 @@ public interface GroupContentService {
      * @param groupContentId
      */
     void groupContentDelete(Long groupId, Long groupContentId);
+
+    /**
+     * 그룹 피드 수정
+     * @param request
+     * @param groupId
+     * @param groupContentId
+     */
+    void groupContentUpdate(UpdateContent.Request request , Long groupId, Long groupContentId);
 }

@@ -8,6 +8,7 @@ import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContentDt
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentCommentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentImageDto;
+import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import com.workduo.group.gropcontent.entity.GroupContent;
 import com.workduo.group.gropcontent.entity.GroupContentImage;
 import com.workduo.group.gropcontent.entity.GroupContentLike;
@@ -199,6 +200,52 @@ public class GroupContentServiceImpl implements GroupContentService {
         groupContent.deleteContent();
     }
 
+    /**
+     * 그룹 피드 수정
+     * @param request
+     * @param groupId
+     * @param groupContentId
+     */
+    @Override
+    @Transactional
+    public void groupContentUpdate(UpdateContent.Request request, Long groupId, Long groupContentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        groupContentUpdateValidate(member, group, groupContent);
+
+        groupContent.updateContent(request);
+    }
+
+    private void groupContentUpdateValidate (Member member, Group group, GroupContent groupContent) {
+        if (groupContent.isDeletedYn()) {
+            throw new GroupException(GROUP_ALREADY_DELETE_CONTENT);
+        }
+
+        if (groupContent.getGroup().getId() != group.getId()) {
+            throw new GroupException(GROUP_NOT_FOUND_CONTENT);
+        }
+
+        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
+        if (!exists) {
+            throw new GroupException(GROUP_NOT_FOUND_USER);
+        }
+
+        if (group.getGroupStatus() != GROUP_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
+        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_WITHDRAW);
+        }
+
+        if (member.getId() != groupContent.getMember().getId()) {
+            throw new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR);
+        }
+    }
+
     private void groupContentDeleteValidate(Member member, Group group, GroupContent groupContent) {
         if (groupContent.isDeletedYn()) {
             throw new GroupException(GROUP_ALREADY_DELETE_CONTENT);
@@ -206,6 +253,11 @@ public class GroupContentServiceImpl implements GroupContentService {
 
         if (groupContent.getGroup().getId() != group.getId()) {
             throw new GroupException(GROUP_NOT_FOUND_CONTENT);
+        }
+
+        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
+        if (!exists) {
+            throw new GroupException(GROUP_NOT_FOUND_USER);
         }
 
         if (group.getGroupStatus() != GROUP_STATUS_ING) {
@@ -232,6 +284,11 @@ public class GroupContentServiceImpl implements GroupContentService {
             throw new GroupException(GROUP_NOT_FOUND_CONTENT);
         }
 
+        boolean existsByGroupAndMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);
+        if (!existsByGroupAndMember) {
+            throw new GroupException(GROUP_NOT_FOUND_USER);
+        }
+
         if (group.getGroupStatus() != GROUP_STATUS_ING) {
             throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
         }
@@ -255,6 +312,11 @@ public class GroupContentServiceImpl implements GroupContentService {
 
         if (groupContent.getGroup().getId() != group.getId()) {
             throw new GroupException(GROUP_NOT_FOUND_CONTENT);
+        }
+
+        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
+        if (!exists) {
+            throw new GroupException(GROUP_NOT_FOUND_USER);
         }
 
         if (group.getGroupStatus() != GROUP_STATUS_ING) {
