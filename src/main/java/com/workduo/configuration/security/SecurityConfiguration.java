@@ -4,11 +4,13 @@ import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import com.workduo.configuration.security.error.CustomNotAuthentication;
 import com.workduo.configuration.security.error.CustomNotAuthorization;
 import com.workduo.configuration.security.handler.LogoutSuccessHandler;
+import com.workduo.member.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,6 +32,7 @@ import static org.springframework.security.web.header.writers.ClearSiteDataHeade
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration {
+    private final MemberService memberService;
     private final JwtAuthenticationFilter authenticationFilter;
     private static final ClearSiteDataHeaderWriter.Directive[] SOURCE =
             {CACHE, COOKIES, STORAGE, EXECUTION_CONTEXTS};
@@ -52,6 +55,10 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.userDetailsService(memberService);
+        AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
+
         http
                 .httpBasic().disable()
                 .csrf().disable()
@@ -61,9 +68,7 @@ public class SecurityConfiguration {
                 .headers().frameOptions().sameOrigin().and()
                 .csrf().ignoringAntMatchers("/h2-console/**").disable();
 
-        http.exceptionHandling().authenticationEntryPoint(new CustomNotAuthentication())
-                        .accessDeniedHandler(new CustomNotAuthorization());
-
+        http.authenticationManager(authenticationManager);
         //접근 누구나 가능
         http.authorizeRequests()
                 .antMatchers(
@@ -92,7 +97,11 @@ public class SecurityConfiguration {
                 .antMatchers("/api/v1/member/password")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")
                 .antMatchers(HttpMethod.DELETE,"/api/v1/member")
-                .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN");
+                .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(new CustomNotAuthentication())
+                .accessDeniedHandler(new CustomNotAuthorization());
 
         http.logout()
                 .logoutUrl("/api/v1/member/logout")
