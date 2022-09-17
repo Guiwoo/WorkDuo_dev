@@ -15,6 +15,8 @@ import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.handler.MemberExceptionHandler;
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.GroupDto;
+import com.workduo.group.group.dto.GroupParticipantsDto;
+import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.group.group.type.GroupStatus;
@@ -29,24 +31,32 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
 import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_LEADER;
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
 import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_ING;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -85,7 +95,9 @@ public class GroupControllerTest {
     private static Validator validator;
 
     static Member member;
+    static SportCategory sportCategory;
     static Sport sport;
+    static SidoArea sidoArea;
     static SiggArea siggArea;
     static Group group;
     static GroupDto groupDto;
@@ -101,6 +113,12 @@ public class GroupControllerTest {
                         GroupExceptionHandler.class,
                         MemberExceptionHandler.class,
                         GlobalExceptionHandler.class
+                ).
+                setCustomArgumentResolvers(
+                        new PageableHandlerMethodArgumentResolver()
+                )
+                .setViewResolvers(
+                        (viewName, locale) -> new MappingJackson2JsonView()
                 )
                 .build();
     }
@@ -167,6 +185,16 @@ public class GroupControllerTest {
                 .sidoArea(SidoAreaDto.builder().sido("11").build())
                 .siggArea(SiggAreaDto.builder().sgg("11110").build())
                 .name("test")
+                .build();
+
+        sportCategory = SportCategory.builder()
+                .id(1)
+                .name("구기")
+                .build();
+
+        sidoArea = SidoArea.builder()
+                .sido("11")
+                .sidonm("서울특별시")
                 .build();
     }
 
@@ -976,6 +1004,190 @@ public class GroupControllerTest {
                     .andExpect(jsonPath("$.success").value("F"))
                     .andExpect(jsonPath("$.errorMessage").value(GROUP_MAXIMUM_PARTICIPANT.getMessage()))
                     .andDo(print());
+        }
+    }
+
+    @Nested
+    public class groupList {
+
+        @Test
+        @DisplayName("그룹 리스트 성공")
+        public void groupList() throws Exception {
+            // given
+            SidoAreaDto sidoAreaDto = SidoAreaDto.fromEntity(sidoArea);
+            SiggAreaDto siggAreaDto = SiggAreaDto.fromEntity(siggArea);
+            SportCategoryDto sportCategoryDto = SportCategoryDto.fromEntity(sportCategory);
+            SportDto sportDto = SportDto.fromEntity(sport);
+
+            GroupDto groupDto = GroupDto.builder()
+                    .groupId(1L)
+                    .sidoArea(sidoAreaDto)
+                    .siggArea(siggAreaDto)
+                    .sport(sportDto)
+                    .sportCategory(sportCategoryDto)
+                    .introduce("test")
+                    .limitPerson(10)
+                    .likes(10L)
+                    .participants(20L)
+                    .thumbnailPath("test")
+                    .name("group1")
+                    .build();
+
+            List<GroupDto> groupDtoList = new ArrayList<>(List.of(groupDto));
+            Page<GroupDto> groupDtos = new PageImpl<>(groupDtoList);
+
+            doReturn(groupDtos).when(groupService)
+                    .groupList(any(), any());
+
+            // when
+
+            // then
+            mockMvc.perform(get("/api/v1/group")
+                            .param("page", "0")
+                            .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+        }
+
+        @Nested
+        public class groupParticipantList {
+
+            @Test
+            @DisplayName("그룹 참여자 리스트 성공")
+            public void groupParticipantList() throws Exception {
+                // given
+                GroupParticipantsDto groupParticipantsDto = GroupParticipantsDto.builder()
+                        .userId(1L)
+                        .username("test")
+                        .nickname("test")
+                        .profileImg("test")
+                        .groupRole(GROUP_ROLE_LEADER)
+                        .build();
+                List<GroupParticipantsDto> participantsDtoList =
+                        new ArrayList<>(List.of(groupParticipantsDto));
+                Page<GroupParticipantsDto> participantsDtos = new PageImpl<>(participantsDtoList);
+
+                doReturn(participantsDtos).when(groupService)
+                        .groupParticipantList(any(), anyLong());
+
+                // when
+
+                // then
+                mockMvc.perform(get("/api/v1/group/participant/1")
+                                .param("page", "0")
+                                .param("size", "5")
+                                .contentType(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isOk())
+                        .andDo(print());
+            }
+
+            @Test
+            @DisplayName("그룹 참여자 리스트 실패 - 유저 정보 없음")
+            public void groupParticipantListFailNotFoundUser() throws Exception {
+                // given
+
+                // when
+                doThrow(new MemberException(MEMBER_EMAIL_ERROR)).when(groupService)
+                                .groupParticipantList(any(), anyLong());
+
+                // then
+                mockMvc.perform(get("/api/v1/group/participant/1")
+                                .param("page", "0")
+                                .param("size", "5")
+                                .contentType(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isForbidden())
+                        .andExpect(jsonPath("$.success").value("F"))
+                        .andExpect(jsonPath("$.errorMessage").value(MEMBER_EMAIL_ERROR.getMessage()))
+                        .andDo(print());
+            }
+
+            @Test
+            @DisplayName("그룹 참여자 리스트 실패 - 그룹 없음")
+            public void groupParticipantListFailNotFoundGroup() throws Exception {
+                // given
+
+                // when
+                doThrow(new GroupException(GROUP_NOT_FOUND)).when(groupService)
+                        .groupParticipantList(any(), anyLong());
+
+                // then
+                mockMvc.perform(get("/api/v1/group/participant/1")
+                                .param("page", "0")
+                                .param("size", "5")
+                                .contentType(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.success").value("F"))
+                        .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND.getMessage()))
+                        .andDo(print());
+            }
+
+            @Test
+            @DisplayName("그룹 참여자 리스트 실패 - 그룹에 해당 유저 없음")
+            public void groupParticipantListFailNotFoundGroupUser() throws Exception {
+                // given
+
+                // when
+                doThrow(new GroupException(GROUP_NOT_FOUND_USER)).when(groupService)
+                        .groupParticipantList(any(), anyLong());
+
+                // then
+                mockMvc.perform(get("/api/v1/group/participant/1")
+                                .param("page", "0")
+                                .param("size", "5")
+                                .contentType(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.success").value("F"))
+                        .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_USER.getMessage()))
+                        .andDo(print());
+            }
+
+            @Test
+            @DisplayName("그룹 참여자 리스트 실패 - 이미 삭제된 그룹")
+            public void groupParticipantListFailAlreadyDeleteGroup() throws Exception {
+                // given
+
+                // when
+                doThrow(new GroupException(GROUP_ALREADY_DELETE_GROUP)).when(groupService)
+                        .groupParticipantList(any(), anyLong());
+
+                // then
+                mockMvc.perform(get("/api/v1/group/participant/1")
+                                .param("page", "0")
+                                .param("size", "5")
+                                .contentType(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.success").value("F"))
+                        .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_GROUP.getMessage()))
+                        .andDo(print());
+            }
+
+            @Test
+            @DisplayName("그룹 참여자 리스트 실패 - 이미 탈퇴한 유저")
+            public void groupParticipantListFailAlreadyWithdrawGroup() throws Exception {
+                // given
+
+                // when
+                doThrow(new GroupException(GROUP_ALREADY_WITHDRAW)).when(groupService)
+                        .groupParticipantList(any(), anyLong());
+
+                // then
+                mockMvc.perform(get("/api/v1/group/participant/1")
+                                .param("page", "0")
+                                .param("size", "5")
+                                .contentType(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.success").value("F"))
+                        .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_WITHDRAW.getMessage()))
+                        .andDo(print());
+            }
         }
     }
 }

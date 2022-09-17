@@ -18,6 +18,10 @@ import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.gropcontent.controller.GroupContentController;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContentDto;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentCommentDto;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentImageDto;
+import com.workduo.group.gropcontent.entity.GroupContent;
 import com.workduo.group.gropcontent.service.GroupContentService;
 import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.entity.Group;
@@ -32,18 +36,25 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.io.FileInputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
@@ -51,7 +62,10 @@ import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
 import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_ING;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -104,6 +118,12 @@ public class GroupContentControllerTest {
                         GroupExceptionHandler.class,
                         MemberExceptionHandler.class,
                         GlobalExceptionHandler.class
+                )
+                .setCustomArgumentResolvers(
+                        new PageableHandlerMethodArgumentResolver()
+                )
+                .setViewResolvers(
+                        ((viewName, locale) -> new MappingJackson2JsonView())
                 )
                 .build();
     }
@@ -386,16 +406,340 @@ public class GroupContentControllerTest {
     }
 
     @Nested
-    public class deatailGroupContent {
+    public class groupContentList {
+
+        @Test
+        @DisplayName("그룹 피드 리스트 성공")
+        public void detailGroupContent() throws Exception {
+            // given
+            GroupContentDto groupContentDto = GroupContentDto.builder()
+                    .id(1L)
+                    .title("test title")
+                    .content("test content")
+                    .memberId(1L)
+                    .username("test username")
+                    .nickname("test user nickname")
+                    .profileImg("test")
+                    .deletedYn(false)
+                    .createdAt(LocalDateTime.now())
+                    .contentLike(1L)
+                    .build();
+
+            List<GroupContentDto> groupContentDtoList =
+                    new ArrayList<>(List.of(groupContentDto));
+            Page<GroupContentDto> groupContentDtos = new PageImpl<>(groupContentDtoList);
+            doReturn(groupContentDtos).when(groupContentService)
+                    .groupContentList(any(), anyLong());
+            // when
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content")
+                    .param("page", "0")
+                    .param("size", "5")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 유저 정보 없음")
+        public void groupContentListFailNotFoundUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new MemberException(MEMBER_EMAIL_ERROR)).when(groupContentService)
+                    .groupContentList(any(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content")
+                            .param("page", "0")
+                            .param("size", "5")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(MEMBER_EMAIL_ERROR.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 그룹 정보 없음")
+        public void groupContentListFailNotFoundGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND)).when(groupContentService)
+                    .groupContentList(any(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content")
+                            .param("page", "0")
+                            .param("size", "5")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 이미 삭제된 그룹")
+        public void groupContentListFailAlreadDeleteGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_GROUP)).when(groupContentService)
+                    .groupContentList(any(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content")
+                            .param("page", "0")
+                            .param("size", "5")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_GROUP.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 그룹에 해당 유저가 없는 경우")
+        public void groupContentListFailNotFoundGroupUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND_USER)).when(groupContentService)
+                    .groupContentList(any(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content")
+                            .param("page", "0")
+                            .param("size", "5")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_USER.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 이미 그룹을 탈퇴한 유저")
+        public void groupContentListFailAlreadtWithdrawUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_WITHDRAW)).when(groupContentService)
+                    .groupContentList(any(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content")
+                            .param("page", "0")
+                            .param("size", "5")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_WITHDRAW.getMessage()))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    public class detailGroupContent {
 
         @Test
         @DisplayName("그룹 피드 상세 성공")
         public void detailGroupContent() throws Exception {
             // given
+            GroupContentDto groupContentDto = GroupContentDto.builder()
+                    .id(1L)
+                    .title("test title")
+                    .content("test content")
+                    .memberId(1L)
+                    .username("tset username")
+                    .nickname("test user nickname")
+                    .profileImg("test profile path")
+                    .deletedYn(false)
+                    .createdAt(LocalDateTime.now())
+                    .contentLike(1L)
+                    .build();
 
+            GroupContentImageDto groupContentImageDto = GroupContentImageDto.builder()
+                    .id(1L)
+                    .imagePath("teste file path")
+                    .build();
+            List<GroupContentImageDto> groupContentImageDtos =
+                    new ArrayList<>(List.of(groupContentImageDto));
+
+            GroupContentCommentDto groupContentCommentDto = GroupContentCommentDto.builder()
+                    .commentId(1L)
+                    .memberId(1L)
+                    .username("tset username")
+                    .nickname("test user nickname")
+                    .profileImg("test profile path")
+                    .groupContentId(1L)
+                    .content("test content")
+                    .createdAt(LocalDateTime.now())
+                    .commentLike(1L)
+                    .build();
+            List<GroupContentCommentDto> groupContentCommentDtos =
+                    new ArrayList<>(List.of(groupContentCommentDto));
+            Page<GroupContentCommentDto> groupContentCommentDtoPage =
+                    new PageImpl<>(groupContentCommentDtos);
+            DetailGroupContentDto detailGroupContentDto =
+                    DetailGroupContentDto.from(
+                            groupContentDto,
+                            groupContentImageDtos,
+                            groupContentCommentDtoPage
+                    );
+
+            doReturn(detailGroupContentDto).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
             // when
 
             // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 유저 정보 없음")
+        public void detailGroupContentFailNotFoundUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new MemberException(MEMBER_EMAIL_ERROR)).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(MEMBER_EMAIL_ERROR.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 그룹 정보 없음")
+        public void detailGroupContentFailNotFoundGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND)).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 그룹 피드 없음")
+        public void detailGroupContentFailNotFoundGroupContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND_CONTENT)).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_CONTENT.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 이미 삭제된 그룹")
+        public void detailGroupContentFailAlreadyDeleteGroup() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_GROUP)).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_GROUP.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 그룹에서 해당 유저를 찾을 수 없음")
+        public void detailGroupContentFailNotFoundGroupUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_NOT_FOUND_USER)).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_FOUND_USER.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 이미 탈퇴한 유저")
+        public void detailGroupContentFailAlreadyWithdrawUser() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_WITHDRAW)).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_WITHDRAW.getMessage()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 피드가 삭제된 경우")
+        public void detailGroupContentFailAlreadyDeleteContent() throws Exception {
+            // given
+
+            // when
+            doThrow(new GroupException(GROUP_ALREADY_DELETE_CONTENT)).when(groupContentService)
+                    .detailGroupContent(anyLong(), anyLong());
+
+            // then
+            mockMvc.perform(get("/api/v1/group/1/content/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value("F"))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_ALREADY_DELETE_CONTENT.getMessage()))
+                    .andDo(print());
         }
     }
 }

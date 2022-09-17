@@ -3,10 +3,12 @@ package com.workduo.group.group.repository.query.impl;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.*;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.workduo.group.group.dto.*;
 import com.workduo.group.group.repository.query.GroupQueryRepository;
+import com.workduo.member.area.entity.QMemberActiveArea;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import static com.workduo.group.group.entity.QGroupLike.groupLike;
 import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
 import static com.workduo.group.group.type.GroupRole.*;
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
+import static com.workduo.member.area.entity.QMemberActiveArea.memberActiveArea;
 import static com.workduo.member.member.entity.QMember.member;
 import static com.workduo.sport.sport.entity.QSport.sport;
 import static com.workduo.sport.sportcategory.entity.QSportCategory.sportCategory;
@@ -72,6 +75,7 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
     @Override
     public Page<GroupDto> findByGroupList(
             Pageable pageable,
+            Long memberId,
             ListGroup.Request condition) {
 
         List<GroupDto> content = jpaQueryFactory
@@ -104,7 +108,7 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
                 .join(sport.sportCategory, sportCategory)
                 .where(
                         groupStatusIng(),
-                        siggAreaEq(condition.getSgg()),
+                        siggAreaEq(condition.getSgg(), memberId),
                         sportEq(condition.getSportId())
                 )
                 .offset(pageable.getOffset())
@@ -118,7 +122,7 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
                 .from(group)
                 .where(
                         groupStatusIng(),
-                        siggAreaEq(condition.getSgg()),
+                        siggAreaEq(condition.getSgg(), memberId),
                         sportEq(condition.getSportId())
                 );
 
@@ -170,8 +174,19 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
         return group.groupStatus.eq(GROUP_STATUS_ING);
     }
 
-    private BooleanExpression siggAreaEq(String sgg) {
-        return sgg == null ? null : siggArea.sgg.eq(sgg);
+    private BooleanExpression siggAreaEq(String sgg, Long memberId) {
+        if (sgg == null && memberId == null) {
+            return null;
+        } else if (sgg == null && memberId != null) {
+            return group.siggArea.in(
+                    select(memberActiveArea.siggArea)
+                            .from(memberActiveArea)
+                            .join(memberActiveArea.siggArea, siggArea)
+                            .where(memberActiveArea.member.id.eq(memberId))
+            );
+        } else {
+            return siggArea.sgg.eq(sgg);
+        }
     }
 
     private BooleanExpression sportEq(Integer sportId) {

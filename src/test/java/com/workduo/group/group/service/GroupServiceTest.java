@@ -1,5 +1,6 @@
 package com.workduo.group.group.service;
 
+import com.workduo.area.sidoarea.dto.SidoAreaDto;
 import com.workduo.area.sidoarea.entity.SidoArea;
 import com.workduo.area.siggarea.dto.siggarea.SiggAreaDto;
 import com.workduo.area.siggarea.entity.SiggArea;
@@ -10,6 +11,8 @@ import com.workduo.error.group.exception.GroupException;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.GroupDto;
+import com.workduo.group.group.dto.GroupParticipantsDto;
+import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.entity.GroupJoinMember;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
@@ -27,6 +30,7 @@ import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import com.workduo.sport.sport.dto.SportDto;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
+import com.workduo.sport.sportcategory.dto.SportCategoryDto;
 import com.workduo.sport.sportcategory.entity.SportCategory;
 import com.workduo.util.AwsS3Utils;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +44,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -100,7 +107,9 @@ public class GroupServiceTest {
 
     Member member;
     Sport sport;
+    SportCategory sportCategory;
     SiggArea siggArea;
+    SidoArea sidoArea;
     Group group;
     GroupDto groupDto;
     GroupCreateMember groupCreateMember;
@@ -212,6 +221,16 @@ public class GroupServiceTest {
                 .groupJoinMemberStatus(GROUP_JOIN_MEMBER_STATUS_WITHDRAW)
                 .groupRole(GROUP_ROLE_LEADER)
                 .id(3L)
+                .build();
+
+        sportCategory = SportCategory.builder()
+                .id(1)
+                .name("구기")
+                .build();
+
+        sidoArea = SidoArea.builder()
+                .sido("11")
+                .sidonm("서울특별시")
                 .build();
     }
 
@@ -926,6 +945,194 @@ public class GroupServiceTest {
 
             // then
             assertEquals(groupException.getErrorCode(), GROUP_MAXIMUM_PARTICIPANT);
+        }
+    }
+
+    @Nested
+    public class groupList {
+
+        @Test
+        @DisplayName("그룹 리스트 성공")
+        public void groupList() throws Exception {
+            // given
+            SidoAreaDto sidoAreaDto = SidoAreaDto.fromEntity(sidoArea);
+            SiggAreaDto siggAreaDto = SiggAreaDto.fromEntity(siggArea);
+            SportCategoryDto sportCategoryDto = SportCategoryDto.fromEntity(sportCategory);
+            SportDto sportDto = SportDto.fromEntity(sport);
+
+            ListGroup.Request condition = ListGroup.Request.builder()
+                    .sgg(null)
+                    .sportId(null)
+                    .build();
+
+            PageRequest pageRequest = PageRequest.of(0, 5);
+            GroupDto groupDto = GroupDto.builder()
+                    .groupId(1L)
+                    .sidoArea(sidoAreaDto)
+                    .siggArea(siggAreaDto)
+                    .sport(sportDto)
+                    .sportCategory(sportCategoryDto)
+                    .introduce("test")
+                    .limitPerson(10)
+                    .likes(10L)
+                    .participants(20L)
+                    .thumbnailPath("test")
+                    .name("group1")
+                    .build();
+            List<GroupDto> groupDtoList = new ArrayList<>(List.of(groupDto));
+            Page<GroupDto> groupDtoPage = new PageImpl<>(groupDtoList);
+            doReturn(null).when(context)
+                            .getMemberEmail();
+            Long memberId = null;
+            doReturn(groupDtoPage).when(groupQueryRepository)
+                    .findByGroupList(any(), eq(memberId), any());
+
+            // when
+            Page<GroupDto> groupDtoPages = groupService.groupList(pageRequest, condition);
+
+            // then
+            assertEquals(groupDtoPages.getContent().size(), groupDtoList.size());
+        }
+    }
+
+    @Nested
+    public class groupParticipantList {
+
+        @Test
+        @DisplayName("그룹 참여자 리스트 성공")
+        public void groupParticipantList() throws Exception {
+            // given
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn("test1234").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+
+            PageRequest pageRequest = PageRequest.of(0, 5);
+            GroupParticipantsDto groupParticipantsDto = GroupParticipantsDto.builder()
+                    .userId(1L)
+                    .username("test")
+                    .nickname("test")
+                    .profileImg("test")
+                    .groupRole(GROUP_ROLE_LEADER)
+                    .build();
+            List<GroupParticipantsDto> participantsDtoList =
+                    new ArrayList<>(List.of(groupParticipantsDto));
+            Page<GroupParticipantsDto> participantsDtos = new PageImpl<>(participantsDtoList);
+            doReturn(participantsDtos).when(groupQueryRepository)
+                    .findByGroupParticipantList(any(), anyLong());
+
+            // when
+            Page<GroupParticipantsDto> participantsPages = groupService.groupParticipantList(pageRequest, 1L);
+
+            // then
+            assertEquals(participantsPages.getContent().size(), participantsDtoList.size());
+        }
+
+        @Test
+        @DisplayName("그룹 참여자 리스트 실패 - 유저 정보 없음")
+        public void groupParticipantListFailNotFoundUser() throws Exception {
+            // given
+            doReturn(Optional.empty()).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn("").when(context)
+                    .getMemberEmail();
+
+            // when
+            MemberException groupException = assertThrows(MemberException.class,
+                    () -> groupService.groupParticipantList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), MEMBER_EMAIL_ERROR);
+        }
+
+        @Test
+        @DisplayName("그룹 참여자 리스트 실패 - 그룹 없음")
+        public void groupParticipantListFailNotFoundGroup() throws Exception {
+            // given
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn("test1234").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.empty()).when(groupRepository)
+                    .findById(anyLong());
+
+            // when
+            GroupException groupException = assertThrows(GroupException.class,
+                    () -> groupService.groupParticipantList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("그룹 참여자 리스트 실패 - 그룹에 해당 유저 없음")
+        public void groupParticipantListFailNotFoundGroupUser() throws Exception {
+            // given
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn("test1234").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(Optional.empty()).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+
+            // when
+            GroupException groupException = assertThrows(GroupException.class,
+                    () -> groupService.groupParticipantList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND_USER);
+        }
+
+        @Test
+        @DisplayName("그룹 참여자 리스트 실패 - 이미 삭제된 그룹")
+        public void groupParticipantListFailAlreadyDeleteGroup() throws Exception {
+            // given
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn("test1234").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(deletedGroup)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+
+            // when
+            GroupException groupException = assertThrows(GroupException.class,
+                    () -> groupService.groupParticipantList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        @Test
+        @DisplayName("그룹 참여자 리스트 실패 - 이미 탈퇴한 유저")
+        public void groupParticipantListFailAlreadyWithdrawGroup() throws Exception {
+            // given
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn("test1234").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(Optional.of(alreadyWithdrawMember)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+
+            // when
+            GroupException groupException = assertThrows(GroupException.class,
+                    () -> groupService.groupParticipantList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_WITHDRAW);
         }
     }
 }

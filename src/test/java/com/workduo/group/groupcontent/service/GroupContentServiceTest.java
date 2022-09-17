@@ -7,10 +7,15 @@ import com.workduo.configuration.jpa.JpaAuditingConfiguration;
 import com.workduo.error.group.exception.GroupException;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContentDto;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentCommentDto;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentImageDto;
 import com.workduo.group.gropcontent.entity.GroupContent;
 import com.workduo.group.gropcontent.repository.GroupContentImageRepository;
 import com.workduo.group.gropcontent.repository.GroupContentLikeRepository;
 import com.workduo.group.gropcontent.repository.GroupContentRepository;
+import com.workduo.group.gropcontent.repository.query.GroupContentQueryRepository;
 import com.workduo.group.gropcontent.service.impl.GroupContentServiceImpl;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.entity.GroupJoinMember;
@@ -32,10 +37,14 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +78,8 @@ public class GroupContentServiceTest {
     private MemberRepository memberRepository;
     @Mock
     private GroupRepository groupRepository;
+    @Mock
+    private GroupContentQueryRepository groupContentQueryRepository;
     @Mock
     private CommonRequestContext context;
     @Mock
@@ -365,6 +376,444 @@ public class GroupContentServiceTest {
 
             // then
             assertEquals(groupContentException.getErrorMessage(), GROUP_ALREADY_WITHDRAW.getMessage());
+        }
+    }
+
+    @Nested
+    public class groupContentList {
+
+        @Test
+        @DisplayName("그룹 피드 리스트 성공")
+        public void groupContentList() throws Exception {
+            // given
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn("Test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+
+            GroupContentDto groupContentDto = GroupContentDto.builder()
+                    .id(1L)
+                    .title("test title")
+                    .content("test content")
+                    .memberId(1L)
+                    .username("test username")
+                    .nickname("test user nickname")
+                    .profileImg("test")
+                    .deletedYn(false)
+                    .createdAt(LocalDateTime.now())
+                    .contentLike(1L)
+                    .build();
+
+            PageRequest pageRequest = PageRequest.of(0, 5);
+            List<GroupContentDto> groupContentDtoList =
+                    new ArrayList<>(List.of(groupContentDto));
+            Page<GroupContentDto> groupContentDtos = new PageImpl<>(groupContentDtoList);
+            doReturn(groupContentDtos).when(groupContentQueryRepository)
+                    .findByGroupContentList(any(), anyLong());
+
+            // when
+            Page<GroupContentDto> groupContents = groupContentService.groupContentList(pageRequest, 1L);
+
+            // then
+            assertEquals(groupContentDtoList.size(), groupContents.getContent().size());
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 유저 정보 없음")
+        public void groupContentListFailNotFoundUser() throws Exception {
+            // given
+            doReturn("").when(context)
+                            .getMemberEmail();
+            doReturn(Optional.empty()).when(memberRepository)
+                    .findByEmail(anyString());
+
+            // when
+            MemberException groupException =
+                    assertThrows(MemberException.class,
+                            () -> groupContentService.groupContentList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), MEMBER_EMAIL_ERROR);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 그룹 정보 없음")
+        public void groupContentListFailNotFoundGroup() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.empty()).when(groupRepository)
+                    .findById(anyLong());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.groupContentList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 이미 삭제된 그룹")
+        public void groupContentListFailAlreadDeleteGroup() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(deletedGroup)).when(groupRepository)
+                    .findById(anyLong());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.groupContentList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 그룹에 해당 유저가 없는 경우")
+        public void groupContentListFailNotFoundGroupUser() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(false).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.groupContentList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND_USER);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 리스트 실패 - 이미 그룹을 탈퇴한 유저")
+        public void groupContentListFailAlreadtWithdrawUser() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(alreadyWithdrawMember)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.groupContentList(any(), anyLong()));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_WITHDRAW);
+        }
+    }
+
+    @Nested
+    public class detailGroupContent {
+
+        @Test
+        @DisplayName("그룹 피드 상세 성공")
+        public void detailGroupContent() throws Exception {
+            // given
+            GroupContent groupContent = GroupContent.builder()
+                    .id(1L)
+                    .member(member)
+                    .group(group)
+                    .title("test title")
+                    .content("test content")
+                    .deletedYn(false)
+                    .noticeYn(false)
+                    .sortValue(0)
+                    .build();
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(Optional.of(groupContent)).when(groupContentRepository)
+                            .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+            GroupContentDto groupContentDto = GroupContentDto.builder()
+                    .id(1L)
+                    .title("test title")
+                    .content("test content")
+                    .memberId(1L)
+                    .username("tset username")
+                    .nickname("test user nickname")
+                    .profileImg("test profile path")
+                    .deletedYn(false)
+                    .createdAt(LocalDateTime.now())
+                    .contentLike(1L)
+                    .build();
+            doReturn(Optional.of(groupContentDto)).when(groupContentQueryRepository)
+                    .findByGroupContent(anyLong(), anyLong());
+            GroupContentImageDto groupContentImageDto = GroupContentImageDto.builder()
+                    .id(1L)
+                    .imagePath("teste file path")
+                    .build();
+            List<GroupContentImageDto> groupContentImageDtos =
+                    new ArrayList<>(List.of(groupContentImageDto));
+            doReturn(groupContentImageDtos).when(groupContentQueryRepository)
+                    .findByGroupContentImage(anyLong(), anyLong());
+
+            GroupContentCommentDto groupContentCommentDto = GroupContentCommentDto.builder()
+                    .commentId(1L)
+                    .memberId(1L)
+                    .username("tset username")
+                    .nickname("test user nickname")
+                    .profileImg("test profile path")
+                    .groupContentId(1L)
+                    .content("test content")
+                    .createdAt(LocalDateTime.now())
+                    .commentLike(1L)
+                    .build();
+            List<GroupContentCommentDto> groupContentCommentDtos =
+                    new ArrayList<>(List.of(groupContentCommentDto));
+            Page<GroupContentCommentDto> groupContentCommentDtoPage =
+                    new PageImpl<>(groupContentCommentDtos);
+            doReturn(groupContentCommentDtoPage).when(groupContentQueryRepository)
+                    .findByGroupContentComments(any(), anyLong(), anyLong());
+
+            // when
+            DetailGroupContentDto detailGroupContentDto = groupContentService.detailGroupContent(1L, 1L);
+
+            // then
+            assertEquals(detailGroupContentDto.getId(), groupContent.getId());
+            assertEquals(
+                    detailGroupContentDto.getGroupContentImages().size(),
+                    groupContentImageDtos.size()
+            );
+            assertEquals(
+                    detailGroupContentDto.getGroupContentComments().getContent().size(),
+                    groupContentImageDtos.size()
+            );
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 유저 정보 없음")
+        public void detailGroupContentFailNotFoundUser() throws Exception {
+            // given
+            doReturn("").when(context)
+                            .getMemberEmail();
+            doReturn(Optional.empty()).when(memberRepository)
+                    .findByEmail(anyString());
+
+            // when
+            MemberException groupException =
+                    assertThrows(MemberException.class,
+                            () -> groupContentService.detailGroupContent(1L, 1L));
+
+            // then
+            assertEquals(groupException.getErrorCode(), MEMBER_EMAIL_ERROR);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 그룹 정보 없음")
+        public void detailGroupContentFailNotFoundGroup() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.empty()).when(groupRepository)
+                    .findById(anyLong());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.detailGroupContent(1L, 1L));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 그룹 피드 없음")
+        public void detailGroupContentFailNotFoundGroupContent() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(Optional.empty()).when(groupContentRepository)
+                    .findById(anyLong());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.detailGroupContent(1L, 1L));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND_CONTENT);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 이미 삭제된 그룹")
+        public void detailGroupContentFailAlreadyDeleteGroup() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(deletedGroup)).when(groupRepository)
+                    .findById(anyLong());
+
+            GroupContent groupContent = GroupContent.builder()
+                    .id(1L)
+                    .member(member)
+                    .group(group)
+                    .title("test title")
+                    .content("test content")
+                    .deletedYn(false)
+                    .noticeYn(false)
+                    .sortValue(0)
+                    .build();
+            doReturn(Optional.of(groupContent)).when(groupContentRepository)
+                    .findById(anyLong());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.detailGroupContent(1L, 1L));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 그룹에서 해당 유저를 찾을 수 없음")
+        public void detailGroupContentFailNotFoundGroupUser() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+
+            GroupContent groupContent = GroupContent.builder()
+                    .id(1L)
+                    .member(member)
+                    .group(group)
+                    .title("test title")
+                    .content("test content")
+                    .deletedYn(false)
+                    .noticeYn(false)
+                    .sortValue(0)
+                    .build();
+            doReturn(Optional.of(groupContent)).when(groupContentRepository)
+                    .findById(anyLong());
+            doReturn(false).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.detailGroupContent(1L, 1L));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_NOT_FOUND_USER);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 이미 탈퇴한 유저")
+        public void detailGroupContentFailAlreadyWithdrawUser() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+
+            GroupContent groupContent = GroupContent.builder()
+                    .id(1L)
+                    .member(member)
+                    .group(group)
+                    .title("test title")
+                    .content("test content")
+                    .deletedYn(false)
+                    .noticeYn(false)
+                    .sortValue(0)
+                    .build();
+            doReturn(Optional.of(groupContent)).when(groupContentRepository)
+                    .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(alreadyWithdrawMember)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.detailGroupContent(1L, 1L));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_WITHDRAW);
+        }
+
+        @Test
+        @DisplayName("그룹 피드 상세 실패 - 피드가 삭제된 경우")
+        public void detailGroupContentFailAlreadyDeleteContent() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                    .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+
+            GroupContent groupContent = GroupContent.builder()
+                    .id(1L)
+                    .member(member)
+                    .group(group)
+                    .title("test title")
+                    .content("test content")
+                    .deletedYn(true)
+                    .noticeYn(false)
+                    .sortValue(0)
+                    .build();
+            doReturn(Optional.of(groupContent)).when(groupContentRepository)
+                    .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.detailGroupContent(1L, 1L));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_DELETE_CONTENT);
         }
     }
 }
