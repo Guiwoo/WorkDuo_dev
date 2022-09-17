@@ -37,4 +37,18 @@ public interface GroupContentService {
      * @return
      */
     DetailGroupContentDto detailGroupContent(Long groupId, Long groupContentId);
+
+    /**
+     * 그룹 피드 좋아요
+     * @param groupId
+     * @param groupContentId
+     */
+    void groupContentLike(Long groupId, Long groupContentId);
+
+    /**
+     * 그룹 피드 좋아요 취소
+     * @param groupId
+     * @param groupContentId
+     */
+    void groupContentUnLike(Long groupId, Long groupContentId);
 }
