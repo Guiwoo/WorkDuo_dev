@@ -1,6 +1,7 @@
 package com.workduo.group.gropcontent.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
+import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import com.workduo.group.group.entity.Group;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
@@ -43,6 +44,18 @@ public class GroupContent extends BaseEntity {
 
     private boolean noticeYn;
     private int sortValue;
+
+    public void deleteContent() {
+        this.deletedYn = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void updateContent(UpdateContent.Request request) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.noticeYn = request.isNoticeYn();
+        this.sortValue = request.getSortValue();
+    }
 
 //    public void addGroupContentImage(GroupContentImage groupContentImage) {
 //        this.groupContentImages.add(groupContentImage);
