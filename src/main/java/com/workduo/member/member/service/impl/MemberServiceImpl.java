@@ -36,6 +36,8 @@ import com.workduo.member.memberrole.type.MemberRoleType;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,12 +71,10 @@ public class MemberServiceImpl implements MemberService {
     private final MemberCalendarRepository memberCalendarRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
     private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
-
-
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));
+                .orElseThrow(() -> new UsernameNotFoundException("❌ 유저 를 찾을수 없습니다, 로그인 되었지만 삭제 되었습니다."));
         List<MemberRole> roles = memberRoleRepository.findByMember(member);
         MemberAuthDto authDto = MemberAuthDto.builder()
                 .username(member.getUsername())
@@ -151,6 +151,8 @@ public class MemberServiceImpl implements MemberService {
         memberActiveAreaRepository.deleteByMember(m);
         // 멤버 관심 운동 테이블
         interestedSportRepository.deleteByMember(m);
+
+        //맴버 피드 도 업데이트 해줘야함
 
         //그룹 쪽 지우러 가보자
         List<GroupJoinMember> groupJoinMemberList = groupJoinMemberRepository.findAllByMember(m);

@@ -22,9 +22,7 @@ public class CustomNotAuthorization implements AccessDeniedHandler {
             throws IOException, ServletException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.sendError(GlobalExceptionType.AUTHORIZATION_ERROR.getHttpStatus().value(),
-                accessDeniedException.getMessage());
-
+        response.sendError(GlobalExceptionType.AUTHORIZATION_ERROR.getHttpStatus().value());
         response.getWriter().println(
                 responseJsonString(GlobalExceptionType.AUTHORIZATION_ERROR.getMessage())
         );

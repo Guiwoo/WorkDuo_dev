@@ -5,6 +5,7 @@ import com.workduo.member.member.entity.Member;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,8 +24,14 @@ public class MemberContent extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    private String title;
+
     @Lob
     private String content;
+
+    private boolean noticeYn;
+
+    private int sortValue;
 
     private boolean deletedYn; // 삭제(탈퇴) 여부
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
