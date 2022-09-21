@@ -1,12 +1,15 @@
 package com.workduo.member.member.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
+import com.workduo.member.area.entity.MemberActiveArea;
 import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.type.MemberStatus;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,13 +22,15 @@ public class Member extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
     private Long id;
-
     private String email; // 유저 이메일 (실제 사용되는 id)
     private String password; // 비밀번호
     private String username; // 유저 이름
     private String nickname; // 별명
     private String phoneNumber; // 핸드폰
     private String status; // 상태메세지
+
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY , cascade = CascadeType.REMOVE)
+    private List<MemberActiveArea> activeAreas = new ArrayList<>();
 
     @Lob
     private String profileImg; // 프로필이미지
