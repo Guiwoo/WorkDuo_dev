@@ -932,8 +932,6 @@ public class GroupContentServiceTest {
                     .findById(anyLong());
             doReturn(Optional.of(groupContent)).when(groupContentRepository)
                     .findById(anyLong());
-            doReturn(true).when(groupJoinMemberRepository)
-                    .existsByGroupAndMember(any(), any());
 
             // when
             GroupException groupException =
@@ -954,6 +952,10 @@ public class GroupContentServiceTest {
                     .findByEmail(anyString());
             doReturn(Optional.of(group)).when(groupRepository)
                     .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
 
             GroupContent groupContent = GroupContent.builder()
                     .id(1L)
@@ -1138,8 +1140,6 @@ public class GroupContentServiceTest {
                     .findById(anyLong());
             doReturn(Optional.of(groupContent)).when(groupContentRepository)
                     .findById(anyLong());
-            doReturn(true).when(groupJoinMemberRepository)
-                    .existsByGroupAndMember(any(), any());
 
             // when
             GroupException groupException =
@@ -1160,6 +1160,10 @@ public class GroupContentServiceTest {
                     .findByEmail(anyString());
             doReturn(Optional.of(group)).when(groupRepository)
                     .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
 
             GroupContent groupContent = GroupContent.builder()
                     .id(1L)
@@ -1318,8 +1322,6 @@ public class GroupContentServiceTest {
                     .findById(anyLong());
             doReturn(Optional.of(groupContent)).when(groupContentRepository)
                     .findById(anyLong());
-            doReturn(true).when(groupJoinMemberRepository)
-                    .existsByGroupAndMember(any(), any());
 
             // when
             GroupException groupException =
@@ -1340,6 +1342,10 @@ public class GroupContentServiceTest {
                     .findByEmail(anyString());
             doReturn(Optional.of(group)).when(groupRepository)
                     .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
             GroupContent groupContent = GroupContent.builder()
                     .id(1L)
                     .member(member)
@@ -1372,6 +1378,10 @@ public class GroupContentServiceTest {
                     .findByEmail(anyString());
             doReturn(Optional.of(group)).when(groupRepository)
                     .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
             GroupContent groupContent = GroupContent.builder()
                     .id(1L)
                     .member(member)
@@ -1610,6 +1620,10 @@ public class GroupContentServiceTest {
                     .findByEmail(anyString());
             doReturn(Optional.of(group)).when(groupRepository)
                     .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
 
             GroupContent groupContent = GroupContent.builder()
                     .id(1L)
@@ -1657,6 +1671,10 @@ public class GroupContentServiceTest {
                     .findByEmail(anyString());
             doReturn(Optional.of(group)).when(groupRepository)
                     .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
 
             GroupContent groupContent = GroupContent.builder()
                     .id(1L)
@@ -1744,8 +1762,6 @@ public class GroupContentServiceTest {
                     .findById(anyLong());
             doReturn(Optional.of(groupContent)).when(groupContentRepository)
                     .findById(anyLong());
-            doReturn(true).when(groupJoinMemberRepository)
-                    .existsByGroupAndMember(any(), any());
 
             UpdateContent.Request request = UpdateContent.Request.builder()
                     .title("test title")
