@@ -4,12 +4,16 @@ import com.workduo.common.CommonRequestContext;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.dto.ContentCreate;
+import com.workduo.member.content.dto.MemberContentImageDto;
+import com.workduo.member.content.dto.MemberContentListDto;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.MemberContentRepository;
+import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
 import com.workduo.member.contentimage.repository.MemberContentImageRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.util.AwsS3Utils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,16 +21,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
+import java.awt.print.Pageable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -48,6 +58,8 @@ class MemberContentServiceImplTest {
     private EntityManager em;
     @Mock
     private AwsS3Utils awsS3Utils;
+    @Mock
+    private MemberContentQueryRepositoryImpl memberContentQueryRepository;
 
     @InjectMocks
     MemberContentServiceImpl memberContentService;
@@ -98,6 +110,51 @@ class MemberContentServiceImplTest {
 
             verify(memberContentRepository,times(1)).save(any());
             verify(memberContentImageRepository,times(1)).saveAll(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 리스트 테스트")
+    class TestGetMemberContentList{
+        // Point !! 로그인 안된 유저 또한 모두 볼수 있어야 함
+        // 따라서 성공테스트만 작성 예정
+        @Test
+        @DisplayName("멤버 피드 생성 성공")
+        public void successCreateMemberFeed() throws Exception{
+            MemberContentImageDto mcid = MemberContentImageDto.builder()
+                    .id(1L)
+                    .imagePath("aws/s3/member/content/somewhere")
+                    .build();
+            MemberContentListDto c = MemberContentListDto.builder()
+                    .id(13L)
+                    .title("test title")
+                    .content("test content")
+                    .memberId(1L)
+                    .username("user")
+                    .profileImg("aws/s3/somewhere")
+                    .deletedYn(false)
+                    .createdAt(LocalDateTime.now())
+                    .count(3L)
+                    .memberContentImages(new ArrayList<>(List.of(mcid)))
+                    .build();
+            List<MemberContentListDto> list = new ArrayList<>(List.of(c));
+            Page<MemberContentListDto> plist = new PageImpl<>(list);
+            PageRequest pageRequest = PageRequest.of(0, 5);
+
+            given(memberContentQueryRepository.findByContentList(pageRequest)).willReturn(
+                    plist
+            );
+            Page<MemberContentListDto> contentList = memberContentService.getContentList(pageRequest);
+
+            verify(memberContentQueryRepository,times(1)).findByContentList(any());
+
+            assertThat(contentList.getSize()).isEqualTo(1);
+            assertThat(contentList.isLast()).isTrue();
+            contentList.forEach(
+                    (x)->{
+                        assertThat(x.getTitle()).isEqualTo("test title");
+                    }
+            );
         }
     }
 }
