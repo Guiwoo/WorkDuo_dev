@@ -2,7 +2,9 @@ package com.workduo.group.gropcontent.controller;
 
 import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
+import com.workduo.group.gropcontent.dto.createGroupContentComment.CreateComment;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
+import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailContentComment;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContent;
 import com.workduo.group.gropcontent.dto.listgroupcontent.ListGroupContent;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
@@ -172,5 +174,45 @@ public class GroupContentController {
                 CommonResponse.from(),
                 HttpStatus.OK
         );
+    }
+
+    /**
+     * 그룹 피드 댓글 리스트
+     * @param groupId
+     * @param contentId
+     * @param pageable
+     * @return
+     */
+    @GetMapping("/{groupId}/content/{contentId}/comment")
+    public ResponseEntity<?> groupContentCommentList(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            Pageable pageable) {
+
+        return new ResponseEntity<>(
+                DetailContentComment.Response.from(
+                        groupContentService.groupContentCommentList(
+                                pageable,
+                                groupId,
+                                contentId
+                        )
+                ),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/{groupId}/content/{contentId}/comment")
+    public ResponseEntity<?> createGroupContentComment(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @RequestBody @Validated CreateComment.Request request,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+
+        groupContentService.createGroupContentComment(request, groupId, contentId);
+        return new ResponseEntity<>(CommonResponse.from(), HttpStatus.OK);
     }
 }

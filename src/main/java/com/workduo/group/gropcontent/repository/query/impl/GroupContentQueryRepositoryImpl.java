@@ -14,7 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import static com.workduo.group.gropcontent.entity.QGroupContentImage.groupConte
 import static com.workduo.group.gropcontent.entity.QGroupContentLike.groupContentLike;
 import static com.workduo.member.member.entity.QMember.member;
 
-@Service
+@Repository
 @RequiredArgsConstructor
 public class GroupContentQueryRepositoryImpl implements GroupContentQueryRepository {
 
@@ -95,6 +95,7 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
 
     @Override
     public Optional<GroupContentDto> findByGroupContent(Long groupId, Long groupContentId) {
+
         return Optional.ofNullable(jpaQueryFactory
                 .select(
                         new QGroupContentDto(
@@ -180,7 +181,7 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                 .join(groupContentComment.member, member)
                 .join(groupContentComment.groupContent, groupContent)
                 .where(
-                        commentUsDelYn(),
+                        commentIsDelYn(),
                         groupEq(groupId),
                         groupContentEq(groupContentId)
                 )
@@ -194,7 +195,7 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
                 .select(groupContentComment.count())
                 .from(groupContentComment)
                 .where(
-                        commentUsDelYn(),
+                        commentIsDelYn(),
                         groupEq(groupId),
                         groupContentEq(groupContentId)
                 );
@@ -214,7 +215,7 @@ public class GroupContentQueryRepositoryImpl implements GroupContentQueryReposit
         return groupContent.group.id.eq(groupId);
     }
 
-    private BooleanExpression commentUsDelYn() {
+    private BooleanExpression commentIsDelYn() {
         return groupContentComment.deletedYn.eq(false);
     }
 
