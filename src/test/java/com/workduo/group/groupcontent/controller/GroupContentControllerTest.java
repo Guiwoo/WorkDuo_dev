@@ -11,17 +11,14 @@ import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.error.global.handler.GlobalExceptionHandler;
 import com.workduo.error.group.exception.GroupException;
 import com.workduo.error.group.handler.GroupExceptionHandler;
-import com.workduo.error.group.type.GroupErrorCode;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.handler.MemberExceptionHandler;
-import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.gropcontent.controller.GroupContentController;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentCommentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentImageDto;
-import com.workduo.group.gropcontent.entity.GroupContent;
 import com.workduo.group.gropcontent.service.GroupContentService;
 import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.entity.Group;
@@ -38,7 +35,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -50,11 +46,9 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.io.FileInputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
@@ -1123,14 +1117,14 @@ public class GroupContentControllerTest {
             // given
 
             // when
-            doThrow(new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR)).when(groupContentService)
+            doThrow(new GroupException(GROUP_NOT_SAME_AUTHOR)).when(groupContentService)
                     .groupContentDelete(anyLong(), anyLong());
 
             // then
             mockMvc.perform(delete("/api/v1/group/1/content/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value("F"))
-                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_SAME_CONTENT_AUTHOR.getMessage()))
+                    .andExpect(jsonPath("$.errorMessage").value(GROUP_NOT_SAME_AUTHOR.getMessage()))
                     .andDo(print());
         }
     }

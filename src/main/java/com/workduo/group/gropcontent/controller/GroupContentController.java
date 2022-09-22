@@ -8,6 +8,7 @@ import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailContentComment
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContent;
 import com.workduo.group.gropcontent.dto.listgroupcontent.ListGroupContent;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
+import com.workduo.group.gropcontent.dto.updategroupcontentcomment.UpdateComment;
 import com.workduo.group.gropcontent.service.GroupContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -201,6 +202,14 @@ public class GroupContentController {
         );
     }
 
+    /**
+     * 그룹 피드 댓글 작성
+     * @param groupId
+     * @param contentId
+     * @param request
+     * @param bindingResult
+     * @return
+     */
     @PostMapping("/{groupId}/content/{contentId}/comment")
     public ResponseEntity<?> createGroupContentComment(
             @PathVariable("groupId") Long groupId,
@@ -214,5 +223,53 @@ public class GroupContentController {
 
         groupContentService.createGroupContentComment(request, groupId, contentId);
         return new ResponseEntity<>(CommonResponse.from(), HttpStatus.OK);
+    }
+
+    /**
+     * 그룹 피드 댓글 수정
+     * @param groupId
+     * @param contentId
+     * @param commentId
+     * @param request
+     * @param bindingResult
+     * @return
+     */
+    @PatchMapping("/{groupId}/content/{contentId}/comment/{commentId}")
+    public ResponseEntity<?> updateGroupContentComment(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @PathVariable("commentId") Long commentId,
+            @RequestBody @Validated UpdateComment.Request request,
+            BindingResult bindingResult) {
+
+            if (bindingResult.hasErrors()) {
+                throw new CustomMethodArgumentNotValidException(bindingResult);
+            }
+
+            groupContentService.updateGroupContentComment(request, groupId, contentId, commentId);
+            return new ResponseEntity<>(
+                    CommonResponse.from(),
+                    HttpStatus.OK
+            );
+    }
+
+    /**
+     * 그룹 피드 댓글 삭제
+     * @param groupId
+     * @param contentId
+     * @param commentId
+     * @return
+     */
+    @DeleteMapping("/{groupId}/content/{contentId}/comment/{commentId}")
+    public ResponseEntity<?> deleteGroupContentComment(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @PathVariable("commentId") Long commentId) {
+
+        groupContentService.deleteGroupContentComment(groupId, contentId, commentId);
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
     }
 }

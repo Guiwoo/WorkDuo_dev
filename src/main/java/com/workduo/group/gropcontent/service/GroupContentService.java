@@ -6,6 +6,7 @@ import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContentDt
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentCommentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
+import com.workduo.group.gropcontent.dto.updategroupcontentcomment.UpdateComment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -89,4 +90,22 @@ public interface GroupContentService {
             CreateComment.Request request,
             Long groupId,
             Long groupContentId);
+
+    /**
+     * 그룹 피드 댓글 수정
+     * @param groupId
+     * @param groupContentId
+     */
+    void updateGroupContentComment(
+            UpdateComment.Request request,
+            Long groupId,
+            Long groupContentId,
+            Long commentId);
+
+    /**
+     * 그룹 피드 댓글 삭제
+     * @param groupId
+     * @param groupContentId
+     */
+    void deleteGroupContentComment(Long groupId, Long groupContentId, Long commentId);
 }

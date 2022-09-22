@@ -10,6 +10,7 @@ import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentCommentD
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentImageDto;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
+import com.workduo.group.gropcontent.dto.updategroupcontentcomment.UpdateComment;
 import com.workduo.group.gropcontent.entity.GroupContent;
 import com.workduo.group.gropcontent.entity.GroupContentComment;
 import com.workduo.group.gropcontent.entity.GroupContentImage;
@@ -235,6 +236,7 @@ public class GroupContentServiceImpl implements GroupContentService {
      * @return
      */
     @Override
+    @Transactional(readOnly = true)
     public Page<GroupContentCommentDto> groupContentCommentList(Pageable pageable, Long groupId, Long groupContentId) {
         Member member = getMember(context.getMemberEmail());
         Group group = getGroup(groupId);
@@ -270,6 +272,62 @@ public class GroupContentServiceImpl implements GroupContentService {
                 .build();
 
         groupContentCommentRepository.save(comment);
+    }
+
+    /**
+     * 그룹 피드 댓글 수정
+     * @param groupId
+     * @param groupContentId
+     */
+    @Override
+    @Transactional
+    public void updateGroupContentComment(
+            UpdateComment.Request request,
+            Long groupId,
+            Long groupContentId,
+            Long commentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+
+        GroupContentComment comment = getComment(commentId, groupContent, member);
+
+        commentValidate(member, comment);
+
+        comment.updateComment(request.getComment());
+    }
+
+    /**
+     * 그룹 피드 댓글 삭제
+     * @param groupId
+     * @param groupContentId
+     */
+    @Override
+    @Transactional
+    public void deleteGroupContentComment(Long groupId, Long groupContentId, Long commentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+
+        GroupContentComment comment = getComment(commentId, groupContent, member);
+
+        commentValidate(member, comment);
+
+        comment.deleteComment();
+    }
+
+    private void commentValidate(Member member, GroupContentComment groupContentComment) {
+        if (member.getId() != groupContentComment.getMember().getId()) {
+            throw new GroupException(GROUP_NOT_SAME_AUTHOR);
+        }
+
+        if (groupContentComment.isDeletedYn()) {
+            throw new GroupException(GROUP_ALREADY_DELETE_COMMENT);
+        }
     }
 
     private void commonGroupContentCommentValidate(Member member, Group group, GroupContent groupContent) {
@@ -322,7 +380,7 @@ public class GroupContentServiceImpl implements GroupContentService {
         }
 
         if (member.getId() != groupContent.getMember().getId()) {
-            throw new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR);
+            throw new GroupException(GROUP_NOT_SAME_AUTHOR);
         }
     }
 
@@ -336,7 +394,7 @@ public class GroupContentServiceImpl implements GroupContentService {
         }
 
         if (member.getId() != groupContent.getMember().getId()) {
-            throw new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR);
+            throw new GroupException(GROUP_NOT_SAME_AUTHOR);
         }
     }
 
@@ -392,6 +450,11 @@ public class GroupContentServiceImpl implements GroupContentService {
     private GroupContent getGroupContent(Long groupContentId) {
         return groupContentRepository.findById(groupContentId)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_CONTENT));
+    }
+
+    private GroupContentComment getComment(Long commentId, GroupContent groupContent, Member member) {
+        return groupContentCommentRepository.findByGroupContentAndMember(commentId, groupContent, member)
+                .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_COMMENT));
     }
 
     public String generatePath(Long groupId, Long groupContentId) {

@@ -33,4 +33,13 @@ public class GroupContentComment extends BaseEntity {
 
     private boolean deletedYn; // 삭제(탈퇴) 여부
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
+
+    public void updateComment(String comment) {
+        this.comment = comment;
+    }
+
+    public void deleteComment() {
+        this.deletedYn = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }
