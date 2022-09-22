@@ -1,10 +1,13 @@
 package com.workduo.member.content.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.member.content.dto.ContentCreate;
+import com.workduo.member.content.dto.MemberContentDto;
+import com.workduo.member.content.dto.MemberContentListDto;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.service.MemberContentService;
@@ -18,6 +21,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +32,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +42,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberContentController.class)
@@ -124,6 +130,41 @@ class MemberContentControllerTest {
                     )
                     .andExpect(status().isOk())
                     .andDo(print());
+        }
+    }
+    @Nested
+    @DisplayName("개인 피드 목록 API 테스트")
+    class getLists{
+        // get api 가 실패하는 경우가 뭐가 있을까요 ... 서버가 다운되지 않는이상은 항상 결과를 줄텐데..
+        @Test
+        public void success() throws Exception{
+
+            MemberContentListDto c = MemberContentListDto.builder()
+                    .id(13L)
+                    .title("test title")
+                    .content("test content")
+                    .memberId(1L)
+                    .username("user")
+                    .profileImg("aws/s3/somewhere")
+                    .deletedYn(false)
+                    .createdAt(LocalDateTime.now())
+                    .count(3L)
+                    .memberContentImages(new ArrayList<>())
+                    .build();
+            List<MemberContentListDto> list = new ArrayList<>(List.of(c));
+            Page<MemberContentListDto> plist = new PageImpl<>(list);
+            given(memberContentService.getContentList(any())).willReturn(
+                plist
+            );
+
+            mockMvc.perform(get("/api/v1/member/content/list")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andExpect(jsonPath("$.result.content.size()").value(1))
+                    .andDo(print());
+
         }
     }
 }
