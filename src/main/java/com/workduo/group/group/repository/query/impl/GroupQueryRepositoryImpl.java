@@ -228,7 +228,7 @@ public class GroupQueryRepositoryImpl implements GroupQueryRepository {
     }
 
     private OrderSpecifier<Integer> findByGroupParticipantListSort() {
-       return new CaseBuilder()
+        return new CaseBuilder()
                 .when(groupJoinMember.groupRole.eq(GROUP_ROLE_LEADER)).then(1)
                 .when(groupJoinMember.groupRole.eq(GROUP_ROLE_STAFF)).then(2)
                 .otherwise(3).asc();

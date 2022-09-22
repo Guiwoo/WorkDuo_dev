@@ -3,15 +3,19 @@ package com.workduo.group.gropcontent.service.impl;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.error.group.exception.GroupException;
 import com.workduo.error.member.exception.MemberException;
+import com.workduo.group.gropcontent.dto.createGroupContentComment.CreateComment;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentCommentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentImageDto;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
+import com.workduo.group.gropcontent.dto.updategroupcontentcomment.UpdateComment;
 import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.gropcontent.entity.GroupContentComment;
 import com.workduo.group.gropcontent.entity.GroupContentImage;
 import com.workduo.group.gropcontent.entity.GroupContentLike;
+import com.workduo.group.gropcontent.repository.GroupContentCommentRepository;
 import com.workduo.group.gropcontent.repository.GroupContentImageRepository;
 import com.workduo.group.gropcontent.repository.GroupContentLikeRepository;
 import com.workduo.group.gropcontent.repository.GroupContentRepository;
@@ -50,6 +54,7 @@ public class GroupContentServiceImpl implements GroupContentService {
     private final GroupContentLikeRepository groupContentLikeRepository;
     private final GroupContentImageRepository groupContentImageRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
+    private final GroupContentCommentRepository groupContentCommentRepository;
     private final GroupContentQueryRepository groupContentQueryRepository;
     private final MemberRepository memberRepository;
     private final GroupRepository groupRepository;
@@ -70,7 +75,7 @@ public class GroupContentServiceImpl implements GroupContentService {
         Member member = getMember(context.getMemberEmail());
         Group group = getGroup(groupId);
 
-        groupContentListValidate(member, group);
+        commonGroupContentValidate(member, group);
 
         return groupContentQueryRepository.findByGroupContentList(pageable, groupId);
     }
@@ -89,7 +94,7 @@ public class GroupContentServiceImpl implements GroupContentService {
         Member member = getMember(context.getMemberEmail());
         Group group = getGroup(groupId);
 
-        createGroupContentValidate(member, group);
+        commonGroupContentValidate(member, group);
 
         GroupContent groupContent = GroupContent.builder()
                 .title(request.getTitle())
@@ -127,7 +132,8 @@ public class GroupContentServiceImpl implements GroupContentService {
         Group group = getGroup(groupId);
         GroupContent groupContent = getGroupContent(groupContentId);
 
-        detailGroupContentValidate(member, group, groupContent);
+        commonGroupContentValidate(member, group);
+        detailGroupContentValidate(groupContent);
 
         GroupContentDto groupContentDto = groupContentQueryRepository.findByGroupContent(groupId, groupContentId)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_CONTENT));
@@ -158,6 +164,7 @@ public class GroupContentServiceImpl implements GroupContentService {
         Group group = getGroup(groupId);
         GroupContent groupContent = getGroupContent(groupContentId);
 
+        commonGroupContentValidate(member, group);
         groupContentLikeValidate(member, group, groupContent);
 
         GroupContentLike groupContentLike = GroupContentLike.builder()
@@ -180,7 +187,8 @@ public class GroupContentServiceImpl implements GroupContentService {
         Group group = getGroup(groupId);
         GroupContent groupContent = getGroupContent(groupContentId);
 
-        groupContentUnLikeValidate(member, group, groupContent);
+        commonGroupContentValidate(member, group);
+        groupContentUnLikeValidate(group, groupContent);
 
         groupContentLikeRepository.deleteByMemberAndGroupContent(member, groupContent);
     }
@@ -195,6 +203,7 @@ public class GroupContentServiceImpl implements GroupContentService {
         Group group = getGroup(groupId);
         GroupContent groupContent = getGroupContent(groupContentId);
 
+        commonGroupContentValidate(member, group);
         groupContentDeleteValidate(member, group, groupContent);
 
         groupContent.deleteContent();
@@ -213,12 +222,115 @@ public class GroupContentServiceImpl implements GroupContentService {
         Group group = getGroup(groupId);
         GroupContent groupContent = getGroupContent(groupContentId);
 
+        commonGroupContentValidate(member, group);
         groupContentUpdateValidate(member, group, groupContent);
 
         groupContent.updateContent(request);
     }
 
-    private void groupContentUpdateValidate (Member member, Group group, GroupContent groupContent) {
+    /**
+     * 그룹 피드 댓글 리스트
+     * @param pageable
+     * @param groupId
+     * @param groupContentId
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<GroupContentCommentDto> groupContentCommentList(Pageable pageable, Long groupId, Long groupContentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+
+        return groupContentQueryRepository.findByGroupContentComments(
+                pageable,
+                groupId,
+                groupContentId
+        );
+    }
+
+    /**
+     * 그룹 피드 댓글 작성
+     * @param groupId
+     * @param groupContentId
+     */
+    @Override
+    @Transactional
+    public void createGroupContentComment(CreateComment.Request request, Long groupId, Long groupContentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+
+        GroupContentComment comment = GroupContentComment.builder()
+                .member(member)
+                .groupContent(groupContent)
+                .comment(request.getComment())
+                .build();
+
+        groupContentCommentRepository.save(comment);
+    }
+
+    /**
+     * 그룹 피드 댓글 수정
+     * @param groupId
+     * @param groupContentId
+     */
+    @Override
+    @Transactional
+    public void updateGroupContentComment(
+            UpdateComment.Request request,
+            Long groupId,
+            Long groupContentId,
+            Long commentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+
+        GroupContentComment comment = getComment(commentId, groupContent, member);
+
+        commentValidate(member, comment);
+
+        comment.updateComment(request.getComment());
+    }
+
+    /**
+     * 그룹 피드 댓글 삭제
+     * @param groupId
+     * @param groupContentId
+     */
+    @Override
+    @Transactional
+    public void deleteGroupContentComment(Long groupId, Long groupContentId, Long commentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+
+        GroupContentComment comment = getComment(commentId, groupContent, member);
+
+        commentValidate(member, comment);
+
+        comment.deleteComment();
+    }
+
+    private void commentValidate(Member member, GroupContentComment groupContentComment) {
+        if (member.getId() != groupContentComment.getMember().getId()) {
+            throw new GroupException(GROUP_NOT_SAME_AUTHOR);
+        }
+
+        if (groupContentComment.isDeletedYn()) {
+            throw new GroupException(GROUP_ALREADY_DELETE_COMMENT);
+        }
+    }
+
+    private void commonGroupContentCommentValidate(Member member, Group group, GroupContent groupContent) {
         if (groupContent.isDeletedYn()) {
             throw new GroupException(GROUP_ALREADY_DELETE_CONTENT);
         }
@@ -240,9 +352,35 @@ public class GroupContentServiceImpl implements GroupContentService {
         if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
             throw new GroupException(GROUP_ALREADY_WITHDRAW);
         }
+    }
+
+    private void commonGroupContentValidate(Member member, Group group) {
+        if (group.getGroupStatus() != GROUP_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
+        }
+
+        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
+        if (!exists) {
+            throw new GroupException(GROUP_NOT_FOUND_USER);
+        }
+
+        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
+        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
+            throw new GroupException(GROUP_ALREADY_WITHDRAW);
+        }
+    }
+
+    private void groupContentUpdateValidate (Member member, Group group, GroupContent groupContent) {
+        if (groupContent.isDeletedYn()) {
+            throw new GroupException(GROUP_ALREADY_DELETE_CONTENT);
+        }
+
+        if (groupContent.getGroup().getId() != group.getId()) {
+            throw new GroupException(GROUP_NOT_FOUND_CONTENT);
+        }
 
         if (member.getId() != groupContent.getMember().getId()) {
-            throw new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR);
+            throw new GroupException(GROUP_NOT_SAME_AUTHOR);
         }
     }
 
@@ -255,22 +393,8 @@ public class GroupContentServiceImpl implements GroupContentService {
             throw new GroupException(GROUP_NOT_FOUND_CONTENT);
         }
 
-        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
-        if (!exists) {
-            throw new GroupException(GROUP_NOT_FOUND_USER);
-        }
-
-        if (group.getGroupStatus() != GROUP_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
-        }
-
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
-        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_WITHDRAW);
-        }
-
         if (member.getId() != groupContent.getMember().getId()) {
-            throw new GroupException(GROUP_NOT_SAME_CONTENT_AUTHOR);
+            throw new GroupException(GROUP_NOT_SAME_AUTHOR);
         }
     }
 
@@ -284,27 +408,13 @@ public class GroupContentServiceImpl implements GroupContentService {
             throw new GroupException(GROUP_NOT_FOUND_CONTENT);
         }
 
-        boolean existsByGroupAndMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);
-        if (!existsByGroupAndMember) {
-            throw new GroupException(GROUP_NOT_FOUND_USER);
-        }
-
-        if (group.getGroupStatus() != GROUP_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
-        }
-
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
-        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_WITHDRAW);
-        }
-
         boolean exists = groupContentLikeRepository.existsByMemberAndGroupContent(member, groupContent);
         if (exists) {
             throw new GroupException(GROUP_ALREADY_LIKE);
         }
     }
 
-    private void groupContentUnLikeValidate(Member member, Group group, GroupContent groupContent) {
+    private void groupContentUnLikeValidate(Group group, GroupContent groupContent) {
 
         if (groupContent.isDeletedYn()) {
             throw new GroupException(GROUP_ALREADY_DELETE_CONTENT);
@@ -313,74 +423,9 @@ public class GroupContentServiceImpl implements GroupContentService {
         if (groupContent.getGroup().getId() != group.getId()) {
             throw new GroupException(GROUP_NOT_FOUND_CONTENT);
         }
-
-        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
-        if (!exists) {
-            throw new GroupException(GROUP_NOT_FOUND_USER);
-        }
-
-        if (group.getGroupStatus() != GROUP_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
-        }
-
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
-        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_WITHDRAW);
-        }
     }
 
-    private void groupContentListValidate(Member member, Group group) {
-
-        if (group.getGroupStatus() != GROUP_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
-        }
-
-        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
-        if (!exists) {
-            throw new GroupException(GROUP_NOT_FOUND_USER);
-        }
-
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
-        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_WITHDRAW);
-        }
-    }
-
-    private void createGroupContentValidate(Member member, Group group) {
-
-        if (group.getGroupStatus() != GROUP_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
-        }
-
-        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
-        if (!exists) {
-            throw new GroupException(GROUP_NOT_FOUND_USER);
-        }
-
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
-        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_WITHDRAW);
-        }
-    }
-
-    private void detailGroupContentValidate(
-            Member member,
-            Group group,
-            GroupContent groupContent) {
-
-        if (group.getGroupStatus() != GROUP_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);
-        }
-
-        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);
-        if (!exists) {
-            throw new GroupException(GROUP_NOT_FOUND_USER);
-        }
-
-        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);
-        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {
-            throw new GroupException(GROUP_ALREADY_WITHDRAW);
-        }
+    private void detailGroupContentValidate(GroupContent groupContent) {
 
         if (groupContent.isDeletedYn()) {
             throw new GroupException(GROUP_ALREADY_DELETE_CONTENT);
@@ -405,6 +450,11 @@ public class GroupContentServiceImpl implements GroupContentService {
     private GroupContent getGroupContent(Long groupContentId) {
         return groupContentRepository.findById(groupContentId)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_CONTENT));
+    }
+
+    private GroupContentComment getComment(Long commentId, GroupContent groupContent, Member member) {
+        return groupContentCommentRepository.findByGroupContentAndMember(commentId, groupContent, member)
+                .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_COMMENT));
     }
 
     public String generatePath(Long groupId, Long groupContentId) {
