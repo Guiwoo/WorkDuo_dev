@@ -4,6 +4,8 @@ import com.workduo.common.CommonRequestContext;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.dto.ContentCreate;
+import com.workduo.member.content.dto.MemberContentCommentDto;
+import com.workduo.member.content.dto.MemberContentDetailDto;
 import com.workduo.member.content.dto.MemberContentListDto;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.MemberContentRepository;
@@ -16,6 +18,7 @@ import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.util.AwsS3Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,7 @@ import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
 
+import static com.workduo.error.member.type.MemberErrorCode.MEMBER_CONTENT_DELETED;
 import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
 
 @Service
@@ -84,6 +88,21 @@ public class MemberContentServiceImpl implements MemberContentService {
 //            member = getMember(memberEmail);
 //        }
         return memberContentQueryRepository.findByContentList(pageable);
+    }
+
+    @Override
+    public MemberContentDetailDto getContentDetail(Long memberContentId) {
+        //예외 가져오는데 ? 이미 지워진 게시글 이라면 ?
+        boolean exists = memberContentRepository.existsById(memberContentId);
+        if(!exists){
+            throw new MemberException(MEMBER_CONTENT_DELETED);
+        }
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        MemberContentListDto contentDetail = memberContentQueryRepository.getContentDetail(memberContentId);
+        Page<MemberContentCommentDto> commentByContent =
+                memberContentQueryRepository.getCommentByContent(memberContentId, pageRequest);
+
+        return MemberContentDetailDto.from(contentDetail, commentByContent);
     }
 
     @Transactional(readOnly = true)
