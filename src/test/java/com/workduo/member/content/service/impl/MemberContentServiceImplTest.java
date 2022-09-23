@@ -3,9 +3,7 @@ package com.workduo.member.content.service.impl;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
-import com.workduo.member.content.dto.ContentCreate;
-import com.workduo.member.content.dto.MemberContentImageDto;
-import com.workduo.member.content.dto.MemberContentListDto;
+import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
@@ -155,6 +153,39 @@ class MemberContentServiceImplTest {
                         assertThat(x.getTitle()).isEqualTo("test title");
                     }
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 상세 테스트")
+    class TestGetMemberContentDetail{
+        @Test
+        @DisplayName("멤버 피드 상세 실팰 [삭제됨]")
+        public void failMemberFeedDetailDeletedAlready() throws Exception{
+            //given
+            doReturn(false).when(memberContentRepository).existsById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.getContentDetail(any()));
+
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED, exception.getErrorCode());
+        }
+        @Test
+        public void successMemberFeedDetail() throws Exception{
+            //given
+            doReturn(true).when(memberContentRepository).existsById(any());
+            doReturn(MemberContentListDto.builder().title("test").build())
+                    .when(memberContentQueryRepository).getContentDetail(any());
+            doReturn(new PageImpl<>(List.of(MemberContentCommentDto.builder().build())))
+                    .when(memberContentQueryRepository).getCommentByContent(any(), any());
+            //when
+            MemberContentDetailDto contentDetail = memberContentService.getContentDetail(1L);
+            //then
+            verify(memberContentRepository,times(1)).existsById(any());
+            verify(memberContentQueryRepository,times(1)).getContentDetail(any());
+            verify(memberContentQueryRepository,times(1)).getCommentByContent(any(),any());
+            assertEquals("test", contentDetail.getTitle());
         }
     }
 }
