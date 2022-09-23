@@ -2406,7 +2406,7 @@ public class GroupContentServiceTest {
                     .id(1L)
                     .build();
             doReturn(Optional.of(comment)).when(groupContentCommentRepository)
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
             UpdateComment.Request request = UpdateComment.Request
                     .builder()
@@ -2432,7 +2432,7 @@ public class GroupContentServiceTest {
             verify(groupJoinMemberRepository, times(1))
                     .findByMemberAndGroup(any(), any());
             verify(groupContentCommentRepository, times(1))
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
         }
 
@@ -2459,7 +2459,7 @@ public class GroupContentServiceTest {
                     .id(1L)
                     .build();
             doReturn(Optional.of(comment)).when(groupContentCommentRepository)
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
             UpdateComment.Request request = UpdateComment.Request
                     .builder()
@@ -2503,7 +2503,7 @@ public class GroupContentServiceTest {
                     .id(1L)
                     .build();
             doReturn(Optional.of(comment)).when(groupContentCommentRepository)
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
             UpdateComment.Request request = UpdateComment.Request
                     .builder()
@@ -2551,7 +2551,7 @@ public class GroupContentServiceTest {
                     .id(1L)
                     .build();
             doReturn(Optional.of(comment)).when(groupContentCommentRepository)
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
             // when
             groupContentService.deleteGroupContentComment(
@@ -2572,7 +2572,7 @@ public class GroupContentServiceTest {
             verify(groupJoinMemberRepository, times(1))
                     .findByMemberAndGroup(any(), any());
             verify(groupContentCommentRepository, times(1))
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
         }
 
@@ -2599,7 +2599,7 @@ public class GroupContentServiceTest {
                     .id(1L)
                     .build();
             doReturn(Optional.of(comment)).when(groupContentCommentRepository)
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
             // when
             GroupException  groupException =
@@ -2637,12 +2637,51 @@ public class GroupContentServiceTest {
                     .id(1L)
                     .build();
             doReturn(Optional.of(comment)).when(groupContentCommentRepository)
-                    .findByGroupContentAndMember(anyLong(), any(), any());
+                    .findByGroupContentCommentIdGroupContentAndMember(anyLong(), any(), any());
 
             // when
             GroupException  groupException =
                     assertThrows(GroupException.class,
                             () -> groupContentService.deleteGroupContentComment(
+                                    1L,
+                                    1L,
+                                    1L
+                            ));
+
+            // then
+            assertEquals(groupException.getErrorCode(), GROUP_ALREADY_DELETE_COMMENT);
+        }
+    }
+
+    @Nested
+    public class groupContentCommentTest {
+
+        @Test
+        @DisplayName("그룹 피드 댓글 좋아요 실패 - 이미 삭제된 댓글")
+        public void groupConentCommentFailAlreadyDeleteComment() throws Exception {
+            // given
+            doReturn("test@naver.com").when(context)
+                            .getMemberEmail();
+            doReturn(Optional.of(member)).when(memberRepository)
+                    .findByEmail(anyString());
+            doReturn(Optional.of(group)).when(groupRepository)
+                    .findById(anyLong());
+            doReturn(Optional.of(groupContent)).when(groupContentRepository)
+                    .findById(anyLong());
+            doReturn(true).when(groupJoinMemberRepository)
+                    .existsByGroupAndMember(any(), any());
+            doReturn(Optional.of(normal)).when(groupJoinMemberRepository)
+                    .findByMemberAndGroup(any(), any());
+            GroupContentComment comment = GroupContentComment.builder()
+                    .deletedYn(true)
+                    .build();
+            doReturn(Optional.of(comment)).when(groupContentCommentRepository)
+                    .findByIdAndGroupContent(anyLong(), any());
+
+            // when
+            GroupException groupException =
+                    assertThrows(GroupException.class,
+                            () -> groupContentService.groupContentCommentLike(
                                     1L,
                                     1L,
                                     1L

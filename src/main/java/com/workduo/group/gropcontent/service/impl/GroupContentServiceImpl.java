@@ -11,14 +11,8 @@ import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentDto;
 import com.workduo.group.gropcontent.dto.detailgroupcontent.GroupContentImageDto;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import com.workduo.group.gropcontent.dto.updategroupcontentcomment.UpdateComment;
-import com.workduo.group.gropcontent.entity.GroupContent;
-import com.workduo.group.gropcontent.entity.GroupContentComment;
-import com.workduo.group.gropcontent.entity.GroupContentImage;
-import com.workduo.group.gropcontent.entity.GroupContentLike;
-import com.workduo.group.gropcontent.repository.GroupContentCommentRepository;
-import com.workduo.group.gropcontent.repository.GroupContentImageRepository;
-import com.workduo.group.gropcontent.repository.GroupContentLikeRepository;
-import com.workduo.group.gropcontent.repository.GroupContentRepository;
+import com.workduo.group.gropcontent.entity.*;
+import com.workduo.group.gropcontent.repository.*;
 import com.workduo.group.gropcontent.repository.query.GroupContentQueryRepository;
 import com.workduo.group.gropcontent.service.GroupContentService;
 import com.workduo.group.group.entity.Group;
@@ -55,12 +49,12 @@ public class GroupContentServiceImpl implements GroupContentService {
     private final GroupContentImageRepository groupContentImageRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
     private final GroupContentCommentRepository groupContentCommentRepository;
+    private final GroupContentCommentLikeRepository groupContentCommentLikeRepository;
     private final GroupContentQueryRepository groupContentQueryRepository;
     private final MemberRepository memberRepository;
     private final GroupRepository groupRepository;
     private final AwsS3Utils awsS3Utils;
     private final CommonRequestContext context;
-
     private final EntityManager entityManager;
 
     /**
@@ -292,7 +286,7 @@ public class GroupContentServiceImpl implements GroupContentService {
 
         commonGroupContentCommentValidate(member, group, groupContent);
 
-        GroupContentComment comment = getComment(commentId, groupContent, member);
+        GroupContentComment comment = getAuthorComment(commentId, groupContent, member);
 
         commentValidate(member, comment);
 
@@ -313,11 +307,67 @@ public class GroupContentServiceImpl implements GroupContentService {
 
         commonGroupContentCommentValidate(member, group, groupContent);
 
-        GroupContentComment comment = getComment(commentId, groupContent, member);
+        GroupContentComment comment = getAuthorComment(commentId, groupContent, member);
 
         commentValidate(member, comment);
 
         comment.deleteComment();
+    }
+
+    /**
+     * 그룹 피드 댓글 좋아요
+     * @param groupId
+     * @param groupContentId
+     * @param commentId
+     */
+    @Override
+    @Transactional
+    public void groupContentCommentLike(Long groupId, Long groupContentId, Long commentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+        GroupContentComment comment = getComment(commentId, groupContent);
+        commentLikeValidate(member, comment);
+
+        boolean exists = groupContentCommentLikeRepository.existsByGroupContentCommentAndMember(comment, member);
+        if (exists) {
+            throw new GroupException(GROUP_ALREADY_LIKE);
+        }
+
+        GroupContentCommentLike commentLike = GroupContentCommentLike.builder()
+                .groupContentComment(comment)
+                .member(member)
+                .build();
+
+        groupContentCommentLikeRepository.save(commentLike);
+    }
+
+    /**
+     * 그룹 피드 댓글 좋아요 취소
+     * @param groupId
+     * @param groupContentId
+     * @param commentId
+     */
+    @Override
+    @Transactional
+    public void groupContentCommentUnLike(Long groupId, Long groupContentId, Long commentId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+        GroupContent groupContent = getGroupContent(groupContentId);
+
+        commonGroupContentCommentValidate(member, group, groupContent);
+        GroupContentComment comment = getComment(commentId, groupContent);
+        commentLikeValidate(member, comment);
+
+        groupContentCommentLikeRepository.deleteByGroupContentCommentAndMember(comment, member);
+    }
+
+    private void commentLikeValidate(Member member, GroupContentComment groupContentComment) {
+        if (groupContentComment.isDeletedYn()) {
+            throw new GroupException(GROUP_ALREADY_DELETE_COMMENT);
+        }
     }
 
     private void commentValidate(Member member, GroupContentComment groupContentComment) {
@@ -452,8 +502,13 @@ public class GroupContentServiceImpl implements GroupContentService {
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_CONTENT));
     }
 
-    private GroupContentComment getComment(Long commentId, GroupContent groupContent, Member member) {
-        return groupContentCommentRepository.findByGroupContentAndMember(commentId, groupContent, member)
+    private GroupContentComment getAuthorComment(Long commentId, GroupContent groupContent, Member member) {
+        return groupContentCommentRepository.findByGroupContentCommentIdGroupContentAndMember(commentId, groupContent, member)
+                .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_COMMENT));
+    }
+
+    private GroupContentComment getComment(Long commentId, GroupContent groupContent) {
+        return groupContentCommentRepository.findByIdAndGroupContent(commentId, groupContent)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_COMMENT));
     }
 

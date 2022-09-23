@@ -272,4 +272,46 @@ public class GroupContentController {
                 HttpStatus.OK
         );
     }
+
+    /**
+     * 그룹 피드 댓글 좋아요
+     * @param groupId
+     * @param contentId
+     * @param commentId
+     * @return
+     */
+    @PostMapping("/{groupId}/content/{contentId}/comment/{commentId}/like")
+    public ResponseEntity<?> groupContentCommentLike(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @PathVariable("commentId") Long commentId) {
+
+        groupContentService.groupContentCommentLike(groupId, contentId, commentId);
+
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 댓글 좋아요 취소
+     * @param groupId
+     * @param contentId
+     * @param commentId
+     * @return
+     */
+    @DeleteMapping("/{groupId}/content/{contentId}/comment/{commentId}/like")
+    public ResponseEntity<?> groupContentCommentUnLike(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @PathVariable("commentId") Long commentId) {
+
+        groupContentService.groupContentCommentUnLike(groupId, contentId, commentId);
+
+        return new ResponseEntity<>(
+                CommonResponse.from(),
+                HttpStatus.OK
+        );
+    }
 }
