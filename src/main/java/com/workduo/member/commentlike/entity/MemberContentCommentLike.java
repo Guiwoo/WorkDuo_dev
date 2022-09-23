@@ -15,10 +15,11 @@ import javax.persistence.*;
 public class MemberContentCommentLike {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="member_content_comment_like_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_content_comment_like_id")
+    @JoinColumn(name = "member_content_comment_id")
     private MemberContentComment memberContentComment;
 
     @ManyToOne(fetch = FetchType.LAZY)

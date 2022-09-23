@@ -5,9 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import com.workduo.configuration.jwt.TokenProvider;
-import com.workduo.member.content.dto.ContentCreate;
-import com.workduo.member.content.dto.MemberContentDto;
-import com.workduo.member.content.dto.MemberContentListDto;
+import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.service.MemberContentService;
@@ -163,6 +161,48 @@ class MemberContentControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
                     .andExpect(jsonPath("$.result.content.size()").value(1))
+                    .andDo(print());
+
+        }
+    }
+
+    @Nested
+    @DisplayName("개인 프드 상세 API 테스트")
+    class getDetail{
+        @Test
+        public void success() throws Exception{
+            MemberContentListDto c = MemberContentListDto.builder()
+                    .id(13L)
+                    .title("test title")
+                    .content("test content")
+                    .memberId(1L)
+                    .username("user")
+                    .profileImg("aws/s3/somewhere")
+                    .deletedYn(false)
+                    .createdAt(LocalDateTime.now())
+                    .count(3L)
+                    .memberContentImages(new ArrayList<>())
+                    .build();
+
+            MemberContentCommentDto mcc = MemberContentCommentDto.builder()
+                    .content("This is test comment!")
+                    .id(1L)
+                    .likeCnt(123467688L)
+                    .build();
+            List<MemberContentCommentDto> cList = new ArrayList<>(List.of(mcc));
+            Page<MemberContentCommentDto> pList = new PageImpl<>(cList);
+
+            given(memberContentService.getContentDetail(any())).willReturn(
+                    MemberContentDetailDto.from(c,pList)
+            );
+
+            mockMvc.perform(get("/api/v1/member/content/3")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andExpect(jsonPath("$.result.size()").value(12))
+                    .andExpect(jsonPath("$.result.comments.content[0].likeCnt").value(123467688))
                     .andDo(print());
 
         }

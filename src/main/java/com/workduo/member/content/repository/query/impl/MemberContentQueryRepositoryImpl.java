@@ -6,11 +6,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.workduo.member.area.entity.MemberActiveArea;
 import com.workduo.member.content.dto.*;
-import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.query.MemberContentQueryRepository;
-import com.workduo.member.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +17,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.querydsl.core.types.Order.ASC;
 import static com.querydsl.core.types.Order.DESC;
 import static com.querydsl.jpa.JPAExpressions.select;
+import static com.workduo.member.comment.entity.QMemberContentComment.memberContentComment;
+import static com.workduo.member.commentlike.entity.QMemberContentCommentLike.memberContentCommentLike;
 import static com.workduo.member.content.entity.QMemberContent.memberContent;
 import static com.workduo.member.contentimage.entitiy.QMemberContentImage.memberContentImage;
 import static com.workduo.member.contentlike.entity.QMemberContentLike.memberContentLike;
@@ -58,6 +58,7 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
                                 memberContent.sortValue,
                                 member.id,
                                 member.username,
+                                member.nickname,
                                 member.profileImg,
                                 memberContent.deletedYn,
                                 memberContent.createdAt,
@@ -109,6 +110,96 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
         return PageableExecutionUtils.getPage(list, pageable, total::fetchOne);
     }
 
+    /**
+     * 멤버 디테일
+     * @param memberContentId
+     * @return
+     */
+    @Override
+    public MemberContentDto getContentDetail(Long memberContentId) {
+        MemberContentDto memberContentDto = jpaQueryFactory.select(
+                        new QMemberContentDto(
+                                memberContent.id,
+                                memberContent.title,
+                                memberContent.content,
+                                memberContent.noticeYn,
+                                memberContent.sortValue,
+                                member.id,
+                                member.username,
+                                member.nickname,
+                                member.profileImg,
+                                memberContent.deletedYn,
+                                memberContent.createdAt,
+                                select(memberContentLike.count())
+                                        .from(memberContentLike)
+                                        .where(
+                                                memberContentLike.memberContent.eq(
+                                                memberContent)
+                                        )
+                        )
+                )
+                .from(memberContent)
+                .join(memberContent.member, member)
+                .where(
+                        memberContent.id.eq(memberContentId),
+                        memberContent.deletedYn.eq(false)
+                )
+                .fetchOne();
+
+        return Objects.requireNonNull(memberContentDto);
+    }
+
+    /**
+     * 코멘트 가져오기
+     * @param memberContentId
+     * @param pageable
+     * @return
+     */
+    @Override
+    public Page<MemberContentCommentDto> getCommentByContent(Long memberContentId, Pageable pageable) {
+        List<MemberContentCommentDto> list = jpaQueryFactory.select(
+                        new QMemberContentCommentDto(
+                                memberContentComment.id,
+                                member.id,
+                                member.username,
+                                memberContentComment.content,
+                                member.nickname,
+                                member.profileImg,
+                                Expressions.as(
+                                        select(memberContentCommentLike.count())
+                                                .from(memberContentCommentLike)
+                                                .where(
+                                                        memberContentCommentLike
+                                                                .memberContentComment
+                                                                .eq(memberContentComment)
+                                                ), "likeCnt"),
+                                memberContentComment.createdAt
+                        )
+                )
+                .from(memberContentComment)
+                .join(memberContentComment.member,member)
+                .join(memberContentComment.memberContent,memberContent)
+                .where(
+                        memberContentComment.memberContent.id.eq(memberContentId),
+                        memberContentComment.deletedYn.eq(false)
+                )
+                .groupBy(memberContentComment)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(findByContentComment().toArray(OrderSpecifier[]::new))
+                .fetch();
+
+        JPAQuery<Long> countQuery = jpaQueryFactory
+                .select(memberContentComment.count())
+                .from(memberContentComment)
+                .where(memberContentComment.memberContent.id.eq(memberContentId));
+
+        return PageableExecutionUtils.getPage(
+                list,
+                pageable,
+                countQuery::fetchOne);
+    }
+
     @Override
     public List<MemberContentImageDto> getByMemberContent(Long memberContentId) {
         return jpaQueryFactory.select(
@@ -157,6 +248,16 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
         }else{
             orders.add(new OrderSpecifier(DESC, memberContent.createdAt));
         }
+        return orders;
+    }
+    private List<OrderSpecifier> findByContentComment() {
+        StringPath aliasCommentLikes = Expressions.stringPath("likeCnt");
+
+        List<OrderSpecifier> orders = new ArrayList<>(List.of(
+                new OrderSpecifier<>(DESC, aliasCommentLikes),
+                new OrderSpecifier<>(DESC, memberContentComment.createdAt)
+        ));
+
         return orders;
     }
 }
