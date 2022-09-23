@@ -2,7 +2,8 @@ package com.workduo.member.content.controller;
 
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.member.content.dto.ContentCreate;
-import com.workduo.member.content.dto.MemberContentDto;
+import com.workduo.member.content.dto.MemberContentCommentDto;
+import com.workduo.member.content.dto.MemberContentDetailDto;
 import com.workduo.member.content.dto.MemberContentListDto;
 import com.workduo.member.content.service.MemberContentService;
 import com.workduo.member.member.dto.MemberLogin;
@@ -14,10 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -61,4 +59,15 @@ public class MemberContentController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping("{memberContentId}")
+    public ResponseEntity<?> getSpecificContent(
+            @PathVariable("memberContentId") Long memberContentId){
+        MemberContentDetailDto contentDetail = memberContentService.getContentDetail(memberContentId);
+        return new ResponseEntity<>(
+                MemberContentDetailDto.Response.from(contentDetail),
+                HttpStatus.OK
+        );
+    }
+
 }

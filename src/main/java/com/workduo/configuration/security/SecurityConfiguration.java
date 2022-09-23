@@ -83,7 +83,8 @@ public class SecurityConfiguration {
                 .antMatchers(HttpMethod.GET,
                         "/api/v1/group",
                         "/api/v1/group/{groupId}",
-                        "/api/v1/member/content/list"
+                        "/api/v1/member/content/list",
+                        "/api/v1/member/content/{contentId}"
                 ).permitAll();
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
