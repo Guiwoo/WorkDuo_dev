@@ -116,7 +116,7 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
      * @return
      */
     @Override
-    public MemberContentListDto getContentDetail(Long memberContentId) {
+    public MemberContentDto getContentDetail(Long memberContentId) {
         MemberContentDto memberContentDto = jpaQueryFactory.select(
                         new QMemberContentDto(
                                 memberContent.id,
@@ -146,10 +146,7 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
                 )
                 .fetchOne();
 
-        return MemberContentListDto.from(
-                Objects.requireNonNull(memberContentDto),
-                getByMemberContent(memberContentId)
-        );
+        return Objects.requireNonNull(memberContentDto);
     }
 
     /**

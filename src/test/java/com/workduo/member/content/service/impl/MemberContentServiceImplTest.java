@@ -175,8 +175,10 @@ class MemberContentServiceImplTest {
         public void successMemberFeedDetail() throws Exception{
             //given
             doReturn(true).when(memberContentRepository).existsById(any());
-            doReturn(MemberContentListDto.builder().title("test").build())
+            doReturn(MemberContentDto.builder().title("test").build())
                     .when(memberContentQueryRepository).getContentDetail(any());
+            doReturn(new ArrayList<>())
+                    .when(memberContentQueryRepository).getByMemberContent(any());
             doReturn(new PageImpl<>(List.of(MemberContentCommentDto.builder().build())))
                     .when(memberContentQueryRepository).getCommentByContent(any(), any());
             //when

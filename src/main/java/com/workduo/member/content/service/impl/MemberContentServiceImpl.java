@@ -3,10 +3,7 @@ package com.workduo.member.content.service.impl;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
-import com.workduo.member.content.dto.ContentCreate;
-import com.workduo.member.content.dto.MemberContentCommentDto;
-import com.workduo.member.content.dto.MemberContentDetailDto;
-import com.workduo.member.content.dto.MemberContentListDto;
+import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
@@ -98,11 +95,14 @@ public class MemberContentServiceImpl implements MemberContentService {
             throw new MemberException(MEMBER_CONTENT_DELETED);
         }
         PageRequest pageRequest = PageRequest.of(0, 10);
-        MemberContentListDto contentDetail = memberContentQueryRepository.getContentDetail(memberContentId);
+        MemberContentDto contentDetail = memberContentQueryRepository.getContentDetail(memberContentId);
+        List<MemberContentImageDto> byMemberContent = memberContentQueryRepository.getByMemberContent(memberContentId);
         Page<MemberContentCommentDto> commentByContent =
                 memberContentQueryRepository.getCommentByContent(memberContentId, pageRequest);
 
-        return MemberContentDetailDto.from(contentDetail, commentByContent);
+        return MemberContentDetailDto.from(
+                MemberContentListDto.from(contentDetail,byMemberContent)
+                , commentByContent);
     }
 
     @Transactional(readOnly = true)
