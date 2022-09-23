@@ -92,11 +92,10 @@ public class SecurityConfiguration {
 
         // 로그인 된 유저(토큰 이 있는),권한 이 있는 접근
         http.authorizeRequests()
-                .antMatchers( "/api/v1/group/**")
+                .antMatchers( "/api/v1/group/**","/api/v1/member/password")
                 .hasAnyAuthority("ROLE_MEMBER", "ROLE_ADMIN")
-                .antMatchers(HttpMethod.PATCH,"/api/v1/member")
-                .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")
-                .antMatchers("/api/v1/member/password")
+                .antMatchers(HttpMethod.PATCH,"/api/v1/member",
+                        "api/v1/member/content/{contentId}")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")
                 .antMatchers(HttpMethod.DELETE,"/api/v1/member")
                 .hasAnyAuthority( "ROLE_MEMBER", "ROLE_ADMIN")

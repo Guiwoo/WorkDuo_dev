@@ -2,6 +2,7 @@ package com.workduo.member.content.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
 import com.workduo.member.area.entity.MemberActiveArea;
+import com.workduo.member.content.dto.ContentUpdate;
 import com.workduo.member.contentimage.entitiy.MemberContentImage;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
@@ -42,4 +43,11 @@ public class MemberContent extends BaseEntity {
 
     private boolean deletedYn; // 삭제(탈퇴) 여부
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
+
+    public void updateContent(ContentUpdate.Request req){
+        this.title = req.getTitle();
+        this.content = req.getContent();
+        this.noticeYn = req.isNoticeYn();
+        this.sortValue = req.getSortValue();
+    }
 }
