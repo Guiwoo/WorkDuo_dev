@@ -20,6 +20,7 @@ public class MemberContentListDto {
     private int sortValue;
     private Long memberId;
     private String username;
+    private String nickname;
     private String profileImg;
     private boolean deletedYn;
     private LocalDateTime createdAt;
@@ -38,6 +39,7 @@ public class MemberContentListDto {
                 .sortValue(memberContentDto.getSortValue())
                 .memberId(memberContentDto.getMemberId())
                 .username(memberContentDto.getUsername())
+                .nickname(memberContentDto.getNickname())
                 .profileImg(memberContentDto.getProfileImg())
                 .deletedYn(memberContentDto.isDeletedYn())
                 .createdAt(memberContentDto.getCreatedAt())
