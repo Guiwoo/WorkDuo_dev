@@ -24,7 +24,9 @@ public enum MemberErrorCode {
     // 회원 상태 에러
     MEMBER_STOP_ERROR(HttpStatus.FORBIDDEN,"❌ 정지된 회원 입니다."),
     MEMBER_WITHDRAW_ERROR(HttpStatus.FORBIDDEN,"❌ 탈퇴한 회원 입니다."),
-    MEMBER_REFRESH_TOKEN_ERROR(HttpStatus.FORBIDDEN,"❌ 탈퇴한 회원 입니다.");
+    MEMBER_REFRESH_TOKEN_ERROR(HttpStatus.FORBIDDEN,"❌ 탈퇴한 회원 입니다."),
+    // 멤버 피드 에러
+    MEMBER_CONTENT_DELETED(HttpStatus.BAD_REQUEST,"❌ 삭제된 게시글 입니다.");
 
 
 
