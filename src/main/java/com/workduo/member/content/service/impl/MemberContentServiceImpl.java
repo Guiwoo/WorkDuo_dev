@@ -25,8 +25,7 @@ import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
 
-import static com.workduo.error.member.type.MemberErrorCode.MEMBER_CONTENT_DELETED;
-import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
+import static com.workduo.error.member.type.MemberErrorCode.*;
 
 @Service
 @Transactional
@@ -87,7 +86,13 @@ public class MemberContentServiceImpl implements MemberContentService {
         return memberContentQueryRepository.findByContentList(pageable);
     }
 
+    /**
+     * 피드 상세
+     * @param memberContentId
+     * @return
+     */
     @Override
+    @Transactional(readOnly = true)
     public MemberContentDetailDto getContentDetail(Long memberContentId) {
         //예외 가져오는데 ? 이미 지워진 게시글 이라면 ?
         boolean exists = memberContentRepository.existsById(memberContentId);
@@ -105,6 +110,19 @@ public class MemberContentServiceImpl implements MemberContentService {
                 , commentByContent);
     }
 
+    /**
+     * 피드 업데이트
+     * @param memberContentId
+     * @param req
+     */
+    @Override
+    public void contentUpdate(Long memberContentId, ContentUpdate.Request req) {
+        Member member = getMember(commonRequestContext.getMemberEmail());
+        MemberContent memberContent = getContent(memberContentId);
+        validEditContent(member,memberContent);
+        memberContent.updateContent(req);
+    }
+
     @Transactional(readOnly = true)
     public Member validCheckLoggedInUser(){
         Member m = memberRepository.findByEmail(commonRequestContext.getMemberEmail())
@@ -117,8 +135,25 @@ public class MemberContentServiceImpl implements MemberContentService {
     public String generatePath(Long memberId, Long contentId) {
         return "member/" + memberId + "/content/" + contentId + "/";
     }
-    private Member getMember(String memberEmail) {
+    @Transactional(readOnly = true)
+    protected void validEditContent(Member m,MemberContent mc){
+        //1. 멤버 아이디랑 컨탠트 멤버 아이디랑 다른경우
+        if(m != mc.getMember()){
+            throw new MemberException(MEMBER_CONTENT_UPDATE_AUTHORIZATION);
+        }
+        //2. 멤버 컨탠트 가 삭제된 게시글 인 경우
+        if(mc.isDeletedYn()){
+            throw new MemberException(MEMBER_CONTENT_DELETED);
+        }
+    }
+    @Transactional(readOnly = true)
+    protected Member getMember(String memberEmail) {
         return memberRepository.findByEmail(memberEmail)
                 .orElseThrow(() -> new MemberException(MEMBER_EMAIL_ERROR));
+    }
+    @Transactional(readOnly = true)
+    protected MemberContent getContent(Long contentId){
+        return memberContentRepository.findById(contentId)
+                .orElseThrow(()-> new MemberException(MEMBER_CONTENT_DOES_NOT_EXIST));
     }
 }

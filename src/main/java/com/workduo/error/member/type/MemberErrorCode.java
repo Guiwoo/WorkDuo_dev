@@ -26,6 +26,8 @@ public enum MemberErrorCode {
     MEMBER_WITHDRAW_ERROR(HttpStatus.FORBIDDEN,"❌ 탈퇴한 회원 입니다."),
     MEMBER_REFRESH_TOKEN_ERROR(HttpStatus.FORBIDDEN,"❌ 탈퇴한 회원 입니다."),
     // 멤버 피드 에러
+    MEMBER_CONTENT_UPDATE_AUTHORIZATION(HttpStatus.FORBIDDEN,"❌ 수정 권한 이 없습니다."),
+    MEMBER_CONTENT_DOES_NOT_EXIST(HttpStatus.BAD_REQUEST,"❌ 게시글 이 존재 하지 않습니다."),
     MEMBER_CONTENT_DELETED(HttpStatus.BAD_REQUEST,"❌ 삭제된 게시글 입니다.");
 
 

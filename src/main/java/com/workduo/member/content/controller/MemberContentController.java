@@ -2,11 +2,10 @@ package com.workduo.member.content.controller;
 
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.member.content.dto.ContentCreate;
-import com.workduo.member.content.dto.MemberContentCommentDto;
+import com.workduo.member.content.dto.ContentUpdate;
 import com.workduo.member.content.dto.MemberContentDetailDto;
 import com.workduo.member.content.dto.MemberContentListDto;
 import com.workduo.member.content.service.MemberContentService;
-import com.workduo.member.member.dto.MemberLogin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.util.List;
 
 ;
@@ -30,6 +30,7 @@ public class MemberContentController {
 
     private final MemberContentService memberContentService;
 
+    // 피드 생성
     @PostMapping("")
     public ResponseEntity<?> apiCreateContent(
             List<MultipartFile> multipartFiles,
@@ -46,11 +47,13 @@ public class MemberContentController {
 
         memberContentService.createContent(req,multipartFiles);
 
-        return new ResponseEntity<>(MemberLogin.Response.builder()
-                .success("T")
-                .build(), HttpStatus.OK);
+        return new ResponseEntity<>(
+                ContentCreate.Response.ok(),
+                HttpStatus.OK
+                );
     }
 
+    // 피드 리스트
     @GetMapping("/list")
     public ResponseEntity<?> getContents(Pageable pageable){
         Page<MemberContentListDto> contentList = memberContentService.getContentList(pageable);
@@ -60,12 +63,28 @@ public class MemberContentController {
         );
     }
 
+    // 피드 상세
     @GetMapping("{memberContentId}")
     public ResponseEntity<?> getSpecificContent(
             @PathVariable("memberContentId") Long memberContentId){
         MemberContentDetailDto contentDetail = memberContentService.getContentDetail(memberContentId);
         return new ResponseEntity<>(
                 MemberContentDetailDto.Response.from(contentDetail),
+                HttpStatus.OK
+        );
+    }
+    //피드 수정
+    @PatchMapping("{memberContentId}")
+    public ResponseEntity<?> updateContent(
+            @PathVariable("memberContentId") Long memberContentId,
+            @RequestBody @Valid ContentUpdate.Request req,
+            BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+        memberContentService.contentUpdate(memberContentId,req);
+        return new ResponseEntity<>(
+                ContentUpdate.Response.ok(),
                 HttpStatus.OK
         );
     }

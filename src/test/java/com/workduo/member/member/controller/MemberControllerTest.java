@@ -47,9 +47,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(MemberController.class)
 @Import(
-        {TokenProvider.class, CommonRequestContext.class,
+        {
+                TokenProvider.class,
+                CommonRequestContext.class,
                 MemberRepository.class,
-                JwtAuthenticationFilter.class,MemberException.class}
+                JwtAuthenticationFilter.class,
+                MemberException.class
+        }
 )
 @AutoConfigureMockMvc(addFilters = false)
 @DisplayName("MEMBER API 테스트")

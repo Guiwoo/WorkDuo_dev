@@ -6,22 +6,22 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Map;
 
-public class ContentCreate {
-    @Getter
-    @Setter
+public class ContentUpdate {
+
+    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class Request {
-        @NotNull(message = "제목 은 필수 입력 사항 입니다.")
+    public static class Request{
+        @NotNull(message = "제목은 필수 입력 사항입니다.")
         private String title;
-        @NotNull(message = "내용 은 필수 입력 사항 입니다.")
+
+        @NotNull(message = "내용은 필수 입력 사항입니다.")
         private String content;
 
-        private boolean noticeYn; // 공지사항
+        private boolean noticeYn;
         @Min(value = 0, message = "정렬값은 최소 0 입니다.")
         private int sortValue;
-
     }
 
     @Getter
@@ -32,12 +32,11 @@ public class ContentCreate {
         private String success;
         private Map<String,String> result;
 
-        public static Response ok(){
-            return Response.builder()
+        public static ContentCreate.Response ok(){
+            return ContentCreate.Response.builder()
                     .success("T")
                     .result(null)
                     .build();
         }
     }
 }
-

@@ -81,7 +81,7 @@ class MemberContentControllerTest {
     }
 
     @Nested
-    @DisplayName("개인 피드 생성 API 테스트")
+    @DisplayName("멤버 피드 생성 API 테스트")
     class CreateContentApi{
 
         @Test
@@ -106,7 +106,7 @@ class MemberContentControllerTest {
         }
 
         @Test
-        @DisplayName("개인 피드 생성 성공")
+        @DisplayName("멤버 피드 생성 성공")
         public void successCreateMemberContent() throws Exception{
 
             ContentCreate.Request req = ContentCreate.Request.builder().build();
@@ -131,10 +131,11 @@ class MemberContentControllerTest {
         }
     }
     @Nested
-    @DisplayName("개인 피드 목록 API 테스트")
+    @DisplayName("멤버 피드 목록 API 테스트")
     class getLists{
         // get api 가 실패하는 경우가 뭐가 있을까요 ... 서버가 다운되지 않는이상은 항상 결과를 줄텐데..
         @Test
+        @DisplayName("멤버 피드 목록 성공")
         public void success() throws Exception{
 
             MemberContentListDto c = MemberContentListDto.builder()
@@ -167,9 +168,10 @@ class MemberContentControllerTest {
     }
 
     @Nested
-    @DisplayName("개인 프드 상세 API 테스트")
+    @DisplayName("멤버 피드 상세 API 테스트")
     class getDetail{
         @Test
+        @DisplayName("멤버 피드 상세 성공")
         public void success() throws Exception{
             MemberContentListDto c = MemberContentListDto.builder()
                     .id(13L)
@@ -205,6 +207,52 @@ class MemberContentControllerTest {
                     .andExpect(jsonPath("$.result.comments.content[0].likeCnt").value(123467688))
                     .andDo(print());
 
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 수정 API 테스트")
+    class update{
+        ContentUpdate.Request req = ContentUpdate.Request.builder().build();
+        @Test
+        @DisplayName("멤버 피드 생성 실패 [리퀘스트 검증 테스트]")
+        public void failUpdateMemberContent() throws Exception{
+            List<String> errors = new ArrayList<>(
+                    List.of("제목은 필수 입력 사항입니다.",
+                            "내용은 필수 입력 사항입니다.",
+                            "정렬값은 최소 0 입니다."));
+            //given
+            Set<ConstraintViolation<ContentUpdate.Request>> violations
+                    = validator.validate(req);
+            violations.forEach(
+                    (error) -> {
+                        System.out.println(error.getMessage());
+                        assertThat(error.getMessage()).isIn(errors);
+                    }
+            );
+            // 정렬값은 최소값이 보장 된 상태
+            assertThat(violations.size()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("멤버 피드 수정 성공")
+        public void successUpdate() throws Exception{
+            //given
+            doNothing().when(memberContentService).contentUpdate(any(),any());
+            //when
+            mockMvc.perform(patch("/api/v1/member/content/3")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                            ContentUpdate.Request.builder()
+                                                    .title("testing")
+                                                    .content("content")
+                                                    .build()
+                                    )
+                            )
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andDo(print());
         }
     }
 }

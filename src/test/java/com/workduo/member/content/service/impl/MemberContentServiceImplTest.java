@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -43,7 +44,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MEMBER CONTENT SERVICE 테스트")
 class MemberContentServiceImplTest {
-
     @Mock
     private MemberRepository memberRepository;
     @Mock
@@ -188,6 +188,98 @@ class MemberContentServiceImplTest {
             verify(memberContentQueryRepository,times(1)).getContentDetail(any());
             verify(memberContentQueryRepository,times(1)).getCommentByContent(any(),any());
             assertEquals("test", contentDetail.getTitle());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 수정 테스트")
+    class TestUpdateContent{
+        Long contentId = 169L;
+        ContentUpdate.Request req = ContentUpdate.Request.builder()
+                .title("Holy")
+                .content("Moly")
+                .build();
+        @Test
+        @DisplayName("멤버 피드 수정 실패 [로그인 유저 미 일치]")
+        public void failMissingMember() throws Exception{
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentUpdate(contentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 수정 실패 [피드가 없는 경우]")
+        public void doesNotExistContent() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentUpdate(contentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 수정 실패 [피드 작성자가 아닌 경우]")
+        public void doNotHaveAuthorization() throws Exception{
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentUpdate(contentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_UPDATE_AUTHORIZATION
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 수정 실패 [피드가 삭제된 게시글 인 경우]")
+        public void feedTerminatedBefore() throws Exception{
+            Member m = Member.builder().id(2L).build();
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().member(m)
+                    .deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentUpdate(contentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 수정 성공")
+        public void success() throws Exception{
+            Member m = Member.builder().id(2L).build();
+            MemberContent build = MemberContent.builder().member(m)
+                    .deletedYn(false).build();
+
+            MemberContent spy = spy(build);
+
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(spy))
+                    .when(memberContentRepository).findById(any());
+            //when
+            memberContentService.contentUpdate(contentId,req);
+            //then
+            verify(commonRequestContext,times(1)).getMemberEmail();
+            verify(memberContentRepository,times(1)).findById(any());
+            verify(spy,times(1)).updateContent(any());
         }
     }
 }
