@@ -16,4 +16,6 @@ public interface MemberContentService {
     MemberContentDetailDto getContentDetail(Long memberContentId);
 
     void contentUpdate(Long memberContentId, ContentUpdate.Request req);
+
+    void contentDelete(Long contentId);
 }
