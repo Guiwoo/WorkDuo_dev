@@ -6,7 +6,6 @@ import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 public class MemberChangePassword {
-
     @Getter
     @Setter
     @NoArgsConstructor
@@ -17,19 +16,4 @@ public class MemberChangePassword {
         private String password;
     }
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Response{
-        private String success;
-        private Map<String,String> result;
-
-        public static Response from(){
-            return Response.builder()
-                    .success("T")
-                    .result(null)
-                    .build();
-        }
-    }
 }

@@ -23,20 +23,4 @@ public class ContentUpdate {
         @Min(value = 0, message = "정렬값은 최소 0 입니다.")
         private int sortValue;
     }
-
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Response{
-        private String success;
-        private Map<String,String> result;
-
-        public static ContentCreate.Response ok(){
-            return ContentCreate.Response.builder()
-                    .success("T")
-                    .result(null)
-                    .build();
-        }
-    }
 }

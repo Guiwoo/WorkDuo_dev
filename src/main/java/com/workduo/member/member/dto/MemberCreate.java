@@ -42,22 +42,6 @@ public class MemberCreate {
         @Size(min = 1,max = 3)
         private List<Integer> sportList;
     }
-
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Response{
-        private String success;
-        private Map<String,String> result;
-
-        public static MemberCreate.Response from(){
-            return MemberCreate.Response.builder()
-                    .success("T")
-                    .result(null)
-                    .build();
-        }
-    }
     public static Member createReqToMember(Request req) {
         return Member.builder()
                 .email(req.getEmail())
