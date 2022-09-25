@@ -48,7 +48,7 @@ public class MemberContentController {
         memberContentService.createContent(req,multipartFiles);
 
         return new ResponseEntity<>(
-                ContentCreate.Response.from(),
+                ContentCreate.Response.ok(),
                 HttpStatus.OK
                 );
     }
@@ -84,7 +84,7 @@ public class MemberContentController {
         }
         memberContentService.contentUpdate(memberContentId,req);
         return new ResponseEntity<>(
-                ContentUpdate.Response.from(),
+                ContentUpdate.Response.ok(),
                 HttpStatus.OK
         );
     }

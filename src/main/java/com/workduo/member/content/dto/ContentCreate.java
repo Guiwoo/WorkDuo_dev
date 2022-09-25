@@ -32,7 +32,7 @@ public class ContentCreate {
         private String success;
         private Map<String,String> result;
 
-        public static Response from(){
+        public static Response ok(){
             return Response.builder()
                     .success("T")
                     .result(null)

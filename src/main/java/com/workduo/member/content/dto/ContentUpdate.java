@@ -32,7 +32,7 @@ public class ContentUpdate {
         private String success;
         private Map<String,String> result;
 
-        public static ContentCreate.Response from(){
+        public static ContentCreate.Response ok(){
             return ContentCreate.Response.builder()
                     .success("T")
                     .result(null)
