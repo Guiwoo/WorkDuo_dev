@@ -108,4 +108,20 @@ public interface GroupContentService {
      * @param groupContentId
      */
     void deleteGroupContentComment(Long groupId, Long groupContentId, Long commentId);
+
+    /**
+     * 그룹 피드 댓글 좋아요
+     * @param groupId
+     * @param groupContentId
+     * @param commentId
+     */
+    void groupContentCommentLike(Long groupId, Long groupContentId, Long commentId);
+
+    /**
+     * 그룹 피드 댓글 좋아요 취소
+     * @param groupId
+     * @param groupContentId
+     * @param commentId
+     */
+    void groupContentCommentUnLike(Long groupId, Long groupContentId, Long commentId);
 }

@@ -123,7 +123,7 @@ public class GroupController {
 
         groupService.groupLike(groupId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
@@ -139,7 +139,7 @@ public class GroupController {
 
         groupService.groupUnLike(groupId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
@@ -155,7 +155,7 @@ public class GroupController {
 
         groupService.groupParticipant(groupId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }

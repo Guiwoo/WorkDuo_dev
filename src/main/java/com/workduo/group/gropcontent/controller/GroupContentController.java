@@ -73,7 +73,7 @@ public class GroupContentController {
 
         groupContentService.createGroupContent(groupId, request, multipartFiles);
         return new ResponseEntity<>(
-                CommonResponse.from()
+                CommonResponse.ok()
                 ,HttpStatus.CREATED
         );
     }
@@ -110,7 +110,7 @@ public class GroupContentController {
 
         groupContentService.groupContentLike(groupId, contentId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
@@ -128,7 +128,7 @@ public class GroupContentController {
 
         groupContentService.groupContentUnLike(groupId, contentId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
@@ -146,7 +146,7 @@ public class GroupContentController {
 
         groupContentService.groupContentDelete(groupId, contentId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
@@ -172,7 +172,7 @@ public class GroupContentController {
 
         groupContentService.groupContentUpdate(request, groupId, contentId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
@@ -222,7 +222,7 @@ public class GroupContentController {
         }
 
         groupContentService.createGroupContentComment(request, groupId, contentId);
-        return new ResponseEntity<>(CommonResponse.from(), HttpStatus.OK);
+        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.OK);
     }
 
     /**
@@ -248,7 +248,7 @@ public class GroupContentController {
 
             groupContentService.updateGroupContentComment(request, groupId, contentId, commentId);
             return new ResponseEntity<>(
-                    CommonResponse.from(),
+                    CommonResponse.ok(),
                     HttpStatus.OK
             );
     }
@@ -268,7 +268,49 @@ public class GroupContentController {
 
         groupContentService.deleteGroupContentComment(groupId, contentId, commentId);
         return new ResponseEntity<>(
-                CommonResponse.from(),
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 댓글 좋아요
+     * @param groupId
+     * @param contentId
+     * @param commentId
+     * @return
+     */
+    @PostMapping("/{groupId}/content/{contentId}/comment/{commentId}/like")
+    public ResponseEntity<?> groupContentCommentLike(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @PathVariable("commentId") Long commentId) {
+
+        groupContentService.groupContentCommentLike(groupId, contentId, commentId);
+
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
+
+    /**
+     * 그룹 피드 댓글 좋아요 취소
+     * @param groupId
+     * @param contentId
+     * @param commentId
+     * @return
+     */
+    @DeleteMapping("/{groupId}/content/{contentId}/comment/{commentId}/like")
+    public ResponseEntity<?> groupContentCommentUnLike(
+            @PathVariable("groupId") Long groupId,
+            @PathVariable("contentId") Long contentId,
+            @PathVariable("commentId") Long commentId) {
+
+        groupContentService.groupContentCommentUnLike(groupId, contentId, commentId);
+
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
