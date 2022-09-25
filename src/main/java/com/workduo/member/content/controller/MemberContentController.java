@@ -1,5 +1,6 @@
 package com.workduo.member.content.controller;
 
+import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.member.content.dto.ContentCreate;
 import com.workduo.member.content.dto.ContentUpdate;
@@ -48,7 +49,7 @@ public class MemberContentController {
         memberContentService.createContent(req,multipartFiles);
 
         return new ResponseEntity<>(
-                ContentCreate.Response.ok(),
+                CommonResponse.ok(),
                 HttpStatus.OK
                 );
     }
@@ -84,9 +85,20 @@ public class MemberContentController {
         }
         memberContentService.contentUpdate(memberContentId,req);
         return new ResponseEntity<>(
-                ContentUpdate.Response.ok(),
+                CommonResponse.ok(),
                 HttpStatus.OK
         );
     }
 
+    // 피드삭제
+    @DeleteMapping("{memberContentId}")
+    public ResponseEntity<?> deleteContent(
+            @PathVariable("memberContentId") Long contentId
+    ){
+        memberContentService.contentDelete(contentId);
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
 }
