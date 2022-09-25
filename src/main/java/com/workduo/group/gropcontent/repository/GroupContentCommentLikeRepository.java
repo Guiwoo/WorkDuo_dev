@@ -11,4 +11,5 @@ public interface GroupContentCommentLikeRepository extends JpaRepository<GroupCo
 
     boolean existsByGroupContentCommentAndMember(GroupContentComment groupContentComment, Member member);
     void deleteByGroupContentCommentAndMember(GroupContentComment groupContentComment, Member member);
+
 }
