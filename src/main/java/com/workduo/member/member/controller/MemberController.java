@@ -1,5 +1,6 @@
 package com.workduo.member.member.controller;
 
+import com.workduo.common.CommonResponse;
 import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshService;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
@@ -65,7 +66,7 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.createUser(req);
-        return new ResponseEntity<>(MemberCreate.Response.from(), HttpStatus.CREATED);
+        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.CREATED);
     }
 
     //회원정보수정
@@ -78,7 +79,7 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.editUser(req);
-        return new ResponseEntity<>(MemberEdit.Response.from(), HttpStatus.OK);
+        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.OK);
     }
     //비밀번호 변경
     @PatchMapping("/password")
@@ -90,12 +91,12 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.changePassword(req);
-        return new ResponseEntity<>(MemberChangePassword.Response.from(), HttpStatus.OK);
+        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.OK);
     }
     //회원탈퇴
     @DeleteMapping("")
     public ResponseEntity<?> apiDelete(){
         memberService.withdraw(groupService);
-        return new ResponseEntity<>(MemberWithdraw.Response.from(),HttpStatus.OK);
+        return new ResponseEntity<>(CommonResponse.ok(),HttpStatus.OK);
     }
 }

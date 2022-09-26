@@ -23,21 +23,5 @@ public class ContentCreate {
         private int sortValue;
 
     }
-
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Response{
-        private String success;
-        private Map<String,String> result;
-
-        public static Response ok(){
-            return Response.builder()
-                    .success("T")
-                    .result(null)
-                    .build();
-        }
-    }
 }
 

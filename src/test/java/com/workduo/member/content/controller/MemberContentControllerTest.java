@@ -255,4 +255,22 @@ class MemberContentControllerTest {
                     .andDo(print());
         }
     }
+
+    @Nested
+    @DisplayName("멤버 피드 삭제 API 테스트")
+    class delete{
+        @Test
+        @DisplayName("멤버 피드 삭제 성공")
+        public void successUpdate() throws Exception{
+            //given
+            doNothing().when(memberContentService).contentUpdate(any(),any());
+            //when
+            mockMvc.perform(delete("/api/v1/member/content/3")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andDo(print());
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package com.workduo.member.contentlike.entity;
+package com.workduo.member.content.entity;
 
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.member.entity.Member;

@@ -36,21 +36,4 @@ public class MemberEdit {
         @Size(min = 1,max = 3)
         private List<Integer> sportList;
     }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Response{
-        private String success;
-        private Map<String,String> result;
-
-        public static Response from(){
-            return Response.builder()
-                    .success("T")
-                    .result(null)
-                    .build();
-        }
-    }
 }

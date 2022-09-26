@@ -1,7 +1,6 @@
-package com.workduo.member.comment.entity;
+package com.workduo.member.content.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
-import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
 

@@ -3,8 +3,12 @@ package com.workduo.member.content.service.impl;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
+import com.workduo.member.content.entity.MemberContentComment;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
+import com.workduo.member.content.repository.MemberContentCommentLikeRepository;
+import com.workduo.member.content.repository.MemberContentCommentRepository;
+import com.workduo.member.content.repository.MemberContentLikeRepository;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
 import com.workduo.member.content.service.MemberContentService;
@@ -24,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.workduo.error.member.type.MemberErrorCode.*;
 
@@ -36,6 +41,9 @@ public class MemberContentServiceImpl implements MemberContentService {
     private final MemberRepository memberRepository;
     private final MemberContentRepository memberContentRepository;
     private final MemberContentImageRepository memberContentImageRepository;
+    private final MemberContentCommentLikeRepository memberContentCommentLikeRepository;
+    private final MemberContentCommentRepository memberContentCommentRepository;
+    private final MemberContentLikeRepository memberContentLikeRepository;
     private final AwsS3Utils awsS3Utils;
     private final MemberContentQueryRepositoryImpl memberContentQueryRepository;
 
@@ -119,8 +127,33 @@ public class MemberContentServiceImpl implements MemberContentService {
     public void contentUpdate(Long memberContentId, ContentUpdate.Request req) {
         Member member = getMember(commonRequestContext.getMemberEmail());
         MemberContent memberContent = getContent(memberContentId);
-        validEditContent(member,memberContent);
+        validEditCheck(member,memberContent);
         memberContent.updateContent(req);
+    }
+
+    /**
+     * 멤버 컨탠트 삭제
+     * @param contentId
+     */
+    @Override
+    public void contentDelete(Long contentId) {
+        Member member = validCheckLoggedInUser();
+        MemberContent content = getContent(contentId);
+        validEditCheck(member,content);
+        //댓글 아이디 어떻게 가져올래 ?
+        List<MemberContentComment> cList =
+                memberContentCommentRepository.findAllByMemberContent(content);
+        //피드 좋아요 날려
+        memberContentLikeRepository.
+                deleteAllByMemberContent(content);
+//        //댓글 좋아요들 날려
+        memberContentCommentLikeRepository.
+                deleteAllByMemberContentCommentIn(cList);
+//        //댓글 날려
+        memberContentCommentRepository.
+                deleteAllByMemberContent(content);
+        //컨탠트 딜리트 yn true 로 업데이트
+        content.terminate();
     }
 
     @Transactional(readOnly = true)
@@ -136,10 +169,10 @@ public class MemberContentServiceImpl implements MemberContentService {
         return "member/" + memberId + "/content/" + contentId + "/";
     }
     @Transactional(readOnly = true)
-    protected void validEditContent(Member m,MemberContent mc){
+    protected void validEditCheck(Member m, MemberContent mc){
         //1. 멤버 아이디랑 컨탠트 멤버 아이디랑 다른경우
         if(m != mc.getMember()){
-            throw new MemberException(MEMBER_CONTENT_UPDATE_AUTHORIZATION);
+            throw new MemberException(MEMBER_CONTENT_AUTHORIZATION);
         }
         //2. 멤버 컨탠트 가 삭제된 게시글 인 경우
         if(mc.isDeletedYn()){

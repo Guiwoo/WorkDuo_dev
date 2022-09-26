@@ -5,20 +5,22 @@ import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
+import com.workduo.member.content.repository.MemberContentCommentLikeRepository;
+import com.workduo.member.content.repository.MemberContentCommentRepository;
+import com.workduo.member.content.repository.MemberContentLikeRepository;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
+import com.workduo.member.contentimage.entitiy.MemberContentImage;
 import com.workduo.member.contentimage.repository.MemberContentImageRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.util.AwsS3Utils;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,10 +30,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
-import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,6 +50,12 @@ class MemberContentServiceImplTest {
     private MemberContentRepository memberContentRepository;
     @Mock
     private MemberContentImageRepository memberContentImageRepository;
+    @Mock
+    private MemberContentLikeRepository memberContentLikeRepository;
+    @Mock
+    private MemberContentCommentRepository memberContentCommentRepository;
+    @Mock
+    private MemberContentCommentLikeRepository memberContentCommentLikeRepository;
     @Mock
     private CommonRequestContext commonRequestContext;
     @Mock
@@ -230,7 +236,7 @@ class MemberContentServiceImplTest {
         public void doNotHaveAuthorization() throws Exception{
             //given
             given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
-            doReturn(Optional.of(Member.builder().build()))
+            doReturn(Optional.of(Member.builder().email("True-Lover").build()))
                     .when(memberRepository).findByEmail(any());
             doReturn(Optional.of(MemberContent.builder().build()))
                     .when(memberContentRepository).findById(any());
@@ -238,7 +244,7 @@ class MemberContentServiceImplTest {
             MemberException exception = assertThrows(MemberException.class,
                     ()->memberContentService.contentUpdate(contentId,req));
             //then
-            assertEquals(MemberErrorCode.MEMBER_CONTENT_UPDATE_AUTHORIZATION
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_AUTHORIZATION
                     ,exception.getErrorCode());
         }
 
@@ -280,6 +286,88 @@ class MemberContentServiceImplTest {
             verify(commonRequestContext,times(1)).getMemberEmail();
             verify(memberContentRepository,times(1)).findById(any());
             verify(spy,times(1)).updateContent(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 삭제 테스트")
+    class TestDeleteContent{
+        Long contentId = 169L;
+        Member m = Member.builder().id(2L).build();
+        ContentUpdate.Request req = ContentUpdate.Request.builder()
+                .title("Holy")
+                .content("Moly")
+                .build();
+        @Test
+        @DisplayName("멤버 피드 삭제 실패 [로그인 유저 미 일치]")
+        public void doseNotMatchUser(){
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentDelete(contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 삭제 실패 [피드 작성자가 아닌 경우]")
+        public void doNotHaveAuthorization() throws Exception{
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            doReturn(Optional.of(Member.builder().email("True-Lover").build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentDelete(contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_AUTHORIZATION
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 삭제 실패 [피드가 삭제된 게시글 인 경우]")
+        public void feedTerminatedBefore() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().member(m)
+                    .deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentDelete(contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("맴버 피드 삭제 성공")
+        public void feedTerminate() throws Exception{
+            //given
+            MemberContent build = MemberContent.builder().member(m)
+                    .deletedYn(false).build();
+            MemberContent spy = spy(build);
+
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(spy))
+                    .when(memberContentRepository).findById(any());
+            doReturn(new ArrayList<>())
+                    .when(memberContentCommentRepository).findAllByMemberContent(any());
+            //when
+            memberContentService.contentDelete(contentId);
+
+            verify(memberContentLikeRepository,times(1))
+                    .deleteAllByMemberContent(any());
+            verify(memberContentCommentLikeRepository,times(1))
+                    .deleteAllByMemberContentCommentIn(any());
+            verify(memberContentCommentRepository,times(1))
+                    .deleteAllByMemberContent(any());
+            verify(spy,times(1)).terminate();
         }
     }
 }

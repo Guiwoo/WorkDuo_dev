@@ -50,4 +50,11 @@ public class MemberContent extends BaseEntity {
         this.noticeYn = req.isNoticeYn();
         this.sortValue = req.getSortValue();
     }
+
+    public void terminate(){
+        this.title = "";
+        this.content = "";
+        this.deletedYn =true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }
