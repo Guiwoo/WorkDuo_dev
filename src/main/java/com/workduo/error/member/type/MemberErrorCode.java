@@ -28,7 +28,10 @@ public enum MemberErrorCode {
     // 멤버 피드 에러
     MEMBER_CONTENT_AUTHORIZATION(HttpStatus.FORBIDDEN,"❌ 권한 이 없습니다."),
     MEMBER_CONTENT_DOES_NOT_EXIST(HttpStatus.BAD_REQUEST,"❌ 게시글 이 존재 하지 않습니다."),
+    MEMBER_CONTENT_LIKE_ALREADY(HttpStatus.BAD_REQUEST,"❌ 이미 좋아요 한 게시글 입니다."),
+    MEMBER_CONTENT_LIKE_DOES_NOT_EXIST(HttpStatus.BAD_REQUEST,"❌ 좋아요 하지 않은 게시글 입니다."),
     MEMBER_CONTENT_DELETED(HttpStatus.BAD_REQUEST,"❌ 삭제된 게시글 입니다.");
+
 
 
 

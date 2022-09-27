@@ -18,4 +18,8 @@ public interface MemberContentService {
     void contentUpdate(Long memberContentId, ContentUpdate.Request req);
 
     void contentDelete(Long contentId);
+
+    void contentLike(Long contentId);
+
+    void contentLikeCancel(Long contentId);
 }

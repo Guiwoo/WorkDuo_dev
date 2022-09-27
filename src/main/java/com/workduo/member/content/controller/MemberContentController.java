@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.List;
 
 ;
@@ -96,6 +97,30 @@ public class MemberContentController {
             @PathVariable("memberContentId") Long contentId
     ){
         memberContentService.contentDelete(contentId);
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
+
+    // 피드 좋아요
+    @PostMapping("{memberContentId}/like")
+    public ResponseEntity<?> contentLike(
+            @PathVariable("memberContentId") Long contentId
+    ){
+        memberContentService.contentLike(contentId);
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
+
+    // 피드 좋아요 취소
+    @DeleteMapping("{memberContentId}/like")
+    public ResponseEntity<?> contentLikeCancel(
+            @PathVariable("memberContentId") Long contentId
+    ){
+        memberContentService.contentLikeCancel(contentId);
         return new ResponseEntity<>(
                 CommonResponse.ok(),
                 HttpStatus.OK
