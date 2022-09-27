@@ -1,9 +1,8 @@
 package com.workduo.util;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.workduo.error.global.exception.CustomS3Exception;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.workduo.error.global.type.GlobalExceptionType.FILE_EXTENSION_MALFORMED;
-import static com.workduo.error.global.type.GlobalExceptionType.S3_FAIL_UPLOAD;
+import static com.workduo.error.global.type.GlobalExceptionType.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -68,6 +66,29 @@ public class AwsS3Utils {
         });
 
         return files;
+    }
+
+    public boolean deleteFile(List<String> paths) {
+
+        List<KeyVersion> keyVersions = new ArrayList<>();
+
+        for (String path : paths) {
+            keyVersions.add(new KeyVersion(path));
+        }
+
+        DeleteObjectsRequest deleteObjectsRequest =
+                new DeleteObjectsRequest(bucket).withKeys(keyVersions);
+
+        int deleteSize;
+
+        try {
+            DeleteObjectsResult response = amazonS3Client.deleteObjects(deleteObjectsRequest);
+            deleteSize = response.getDeletedObjects().size();
+        } catch (CustomS3Exception e) {
+            throw new CustomS3Exception(FILE_DELETE_FAIL);
+        }
+
+        return deleteSize == paths.size() ? true : false;
     }
 
     private String createFileName(String fileName) {
