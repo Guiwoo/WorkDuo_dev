@@ -1,6 +1,5 @@
 package com.workduo.configuration.aop.groupmeeting;
 
-import com.workduo.group.groupmetting.service.GroupMeetingLockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,15 +15,15 @@ public class GroupMeetingLockAopAspect {
 
     private final GroupMeetingLockService groupMeetingLockService;
 
-    @Around("@annotation(com.workduo.configuration.aop.groupmeeting.GroupMeetingLock) && args(request)")
+    @Around("@annotation(com.workduo.configuration.aop.groupmeeting.GroupMeetingLock) && args(groupMeetingId)")
     public Object aroundMethod(ProceedingJoinPoint pjp,
-                               GroupMeetingLockInterface request) throws Throwable {
-        groupMeetingLockService.lock(request.getGroupMeetingId());
+                               Long groupMeetingId) throws Throwable {
+        groupMeetingLockService.lock(groupMeetingId);
 
         try {
             return pjp.proceed();
         } finally {
-            groupMeetingLockService.unlock(request.getGroupMeetingId());
+            groupMeetingLockService.unlock(groupMeetingId);
         }
     }
 }
