@@ -1,4 +1,4 @@
-package com.workduo.group.groupmetting.service;
+package com.workduo.configuration.aop.groupmeeting;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

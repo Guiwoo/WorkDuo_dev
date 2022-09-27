@@ -29,7 +29,7 @@ spring:
         format_sql: true
         default_batch_fetch_size: 1000
         jdbc.batch_size: 1000
-        dialect: org.hibernate.dialect.MySQL57InnoDBDialect
+        dialect: com.workduo.configuration.querydsl.CustomMySQL8InnoDBDialect
     database: mysql
 
   servlet:

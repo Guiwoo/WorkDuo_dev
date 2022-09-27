@@ -8,7 +8,7 @@ import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.service.GroupService;
-import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
+import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.area.repository.MemberActiveAreaRepository;
 import com.workduo.member.existmember.repository.ExistMemberRepository;
 import com.workduo.member.interestedsport.repository.InterestedSportRepository;

@@ -32,7 +32,8 @@ public class GroupMeeting extends BaseEntity {
     private String title;
     private String content;
     private Integer maxParticipant;
-    private LocalDateTime meetingDate;
+    private LocalDateTime meetingStartDate;
+    private LocalDateTime meetingEndDate;
 
     @Lob
     private String location;
