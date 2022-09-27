@@ -6,6 +6,7 @@ import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.entity.MemberContentComment;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
+import com.workduo.member.content.entity.MemberContentLike;
 import com.workduo.member.content.repository.MemberContentCommentLikeRepository;
 import com.workduo.member.content.repository.MemberContentCommentRepository;
 import com.workduo.member.content.repository.MemberContentLikeRepository;
@@ -140,20 +141,64 @@ public class MemberContentServiceImpl implements MemberContentService {
         Member member = validCheckLoggedInUser();
         MemberContent content = getContent(contentId);
         validEditCheck(member,content);
-        //댓글 아이디 어떻게 가져올래 ?
         List<MemberContentComment> cList =
                 memberContentCommentRepository.findAllByMemberContent(content);
-        //피드 좋아요 날려
+
         memberContentLikeRepository.
                 deleteAllByMemberContent(content);
-//        //댓글 좋아요들 날려
         memberContentCommentLikeRepository.
                 deleteAllByMemberContentCommentIn(cList);
-//        //댓글 날려
         memberContentCommentRepository.
                 deleteAllByMemberContent(content);
-        //컨탠트 딜리트 yn true 로 업데이트
+
         content.terminate();
+    }
+
+    /**
+     * 피드 좋아욧
+     * @param contentId
+     */
+    @Override
+    public void contentLike(Long contentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(contentId);
+        validateLike(m, mc);
+
+        memberContentLikeRepository.save(MemberContentLike.builder()
+                        .member(m)
+                        .memberContent(mc)
+                        .build());
+    }
+
+    /**
+     * 피드 좋아욧 캔슬
+     * @param contentId
+     */
+    @Override
+    public void contentLikeCancel(Long contentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(contentId);
+        validateLikeCancel(m,mc);
+
+        memberContentLikeRepository.deleteByMemberAndMemberContent(m,mc);
+    }
+
+    @Transactional(readOnly = true)
+    public void validateLikeCancel(Member m,MemberContent mc){
+        isContentDeleted(mc);
+        boolean exists = memberContentLikeRepository.existsByMemberAndMemberContent(m, mc);
+        if(!exists){
+            throw new MemberException(MEMBER_CONTENT_LIKE_DOES_NOT_EXIST);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    protected void validateLike(Member m,MemberContent mc){
+        isContentDeleted(mc);
+        boolean exists = memberContentLikeRepository.existsByMemberAndMemberContent(m, mc);
+        if(exists){
+            throw new MemberException(MEMBER_CONTENT_LIKE_ALREADY);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -175,10 +220,14 @@ public class MemberContentServiceImpl implements MemberContentService {
             throw new MemberException(MEMBER_CONTENT_AUTHORIZATION);
         }
         //2. 멤버 컨탠트 가 삭제된 게시글 인 경우
+        isContentDeleted(mc);
+    }
+    private void isContentDeleted(MemberContent mc){
         if(mc.isDeletedYn()){
             throw new MemberException(MEMBER_CONTENT_DELETED);
         }
     }
+
     @Transactional(readOnly = true)
     protected Member getMember(String memberEmail) {
         return memberRepository.findByEmail(memberEmail)

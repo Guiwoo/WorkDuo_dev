@@ -22,11 +22,11 @@ import java.util.Objects;
 import static com.querydsl.core.types.Order.ASC;
 import static com.querydsl.core.types.Order.DESC;
 import static com.querydsl.jpa.JPAExpressions.select;
-import static com.workduo.member.comment.entity.QMemberContentComment.memberContentComment;
-import static com.workduo.member.commentlike.entity.QMemberContentCommentLike.memberContentCommentLike;
 import static com.workduo.member.content.entity.QMemberContent.memberContent;
+import static com.workduo.member.content.entity.QMemberContentComment.memberContentComment;
+import static com.workduo.member.content.entity.QMemberContentCommentLike.memberContentCommentLike;
+import static com.workduo.member.content.entity.QMemberContentLike.memberContentLike;
 import static com.workduo.member.contentimage.entitiy.QMemberContentImage.memberContentImage;
-import static com.workduo.member.contentlike.entity.QMemberContentLike.memberContentLike;
 import static com.workduo.member.member.entity.QMember.member;
 
 @Repository
