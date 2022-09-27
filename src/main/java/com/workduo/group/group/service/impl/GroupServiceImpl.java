@@ -19,7 +19,7 @@ import com.workduo.group.group.service.GroupService;
 import com.workduo.group.group.type.GroupStatus;
 import com.workduo.group.group.entity.GroupCreateMember;
 import com.workduo.group.group.repository.GroupCreateMemberRepository;
-import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
+import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
@@ -133,7 +133,7 @@ public class GroupServiceImpl implements GroupService {
 
         groupCreateMemberRepository.deleteByMemberAndGroup(member, group);
         groupJoinMemberRepository.updateGroupJoinMemberStatusCancel(group);
-        groupMeetingParticipantRepository.deleteByGroup(group);
+        groupMeetingParticipantRepository.deleteAllByGroup(group);
         memberCalendarRepository.updateMemberCalendarMeetingActiveStatusGroupCancel(group);
         group.updateGroupStatusCancel();
     }

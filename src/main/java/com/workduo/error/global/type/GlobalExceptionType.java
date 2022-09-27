@@ -16,7 +16,8 @@ public enum GlobalExceptionType {
     ANONYMOUS_HOST_ERROR(HttpStatus.FORBIDDEN,"❌ 알수없는 호스트 입니다."),
     AUTHORIZATION_ERROR(HttpStatus.FORBIDDEN,"❌ 권한 이 없습니다"),
     S3_FAIL_UPLOAD(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드에 실패하였습니다."),
-    FILE_EXTENSION_MALFORMED(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드에 실패하였습니다.");
+    FILE_EXTENSION_MALFORMED(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드에 실패하였습니다."),
+    FILE_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR,"파일 삭제에 실패하였습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

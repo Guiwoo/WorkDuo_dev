@@ -21,7 +21,10 @@ public enum GroupErrorCode {
     GROUP_ALREADY_DELETE_CONTENT(HttpStatus.BAD_REQUEST, "이미 삭제된 게시글 입니다."),
     GROUP_ALREADY_DELETE_COMMENT(HttpStatus.BAD_REQUEST, "이미 삭제된 댓글 입니다."),
     GROUP_NOT_LEADER(HttpStatus.BAD_REQUEST, "그룹의 생성자가 아니므로 해제 권한이 없습니다."),
-    GROUP_NOT_SAME_AUTHOR(HttpStatus.BAD_REQUEST, "작성자가 아닙니다.");
+    GROUP_NOT_SAME_AUTHOR(HttpStatus.BAD_REQUEST, "작성자가 아닙니다."),
+    GROUP_MEETING_START_TIME_IS_AFTER(HttpStatus.BAD_REQUEST, "모임의 끝나는 시간이 시작 시간보다 빠를 수 없습니다."),
+    GROUP_MEETING_TIME_NOT_HOUR(HttpStatus.BAD_REQUEST, "모임의 시작 시간과 끝나는 시간이 정각이 아닙니다."),
+    GROUP_MEETING_DUPLICATION(HttpStatus.BAD_REQUEST, "이미 이 시간대에 신청했거나 생성한 모임이 있습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

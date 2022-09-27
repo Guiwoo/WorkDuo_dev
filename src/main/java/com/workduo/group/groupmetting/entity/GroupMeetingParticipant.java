@@ -1,4 +1,4 @@
-package com.workduo.group.groupmeetingparticipant.entity;
+package com.workduo.group.groupmetting.entity;
 
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.groupmetting.entity.GroupMeeting;

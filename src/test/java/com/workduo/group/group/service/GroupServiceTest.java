@@ -23,7 +23,7 @@ import com.workduo.group.group.service.impl.GroupServiceImpl;
 import com.workduo.group.group.type.GroupStatus;
 import com.workduo.group.group.entity.GroupCreateMember;
 import com.workduo.group.group.repository.GroupCreateMemberRepository;
-import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
+import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
@@ -38,7 +38,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -418,7 +417,7 @@ public class GroupServiceTest {
             doNothing().when(groupJoinMemberRepository)
                     .updateGroupJoinMemberStatusCancel(group);
             doNothing().when(groupMeetingParticipantRepository)
-                    .deleteByGroup(group);
+                    .deleteAllByGroup(group);
             doNothing().when(memberCalendarRepository).
                     updateMemberCalendarMeetingActiveStatusGroupCancel(group);
 
@@ -442,7 +441,7 @@ public class GroupServiceTest {
                     .updateGroupJoinMemberStatusCancel(group);
 
             verify(groupMeetingParticipantRepository, times(1))
-                    .deleteByGroup(group);
+                    .deleteAllByGroup(group);
 
             verify(memberCalendarRepository, times(1))
                     .updateMemberCalendarMeetingActiveStatusGroupCancel(group);
