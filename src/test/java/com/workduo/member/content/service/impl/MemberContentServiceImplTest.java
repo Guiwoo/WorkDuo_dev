@@ -370,4 +370,169 @@ class MemberContentServiceImplTest {
             verify(spy,times(1)).terminate();
         }
     }
+
+    @Nested
+    @DisplayName("멤버 피드 좋아요 테스트")
+    class TestContentLike{
+        Long contentId = 169L;
+        Member m = Member.builder().id(2L).build();
+        @Test
+        @DisplayName("멤버 피드 좋아요 실패 [로그인 유저 미 일치]")
+        public void doesNotMatchUser() throws Exception {
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentLike(contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 실패 [피드가 삭제된 경우]")
+        public void feedDeleted() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.contentLike(12L) );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED,
+                    exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 실패 [피드가 존재하지 않는 경우]")
+        public void feedDoesNotExist() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.contentLike(12L) );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST,
+                    exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 실패 [이미 피드 를 좋아요 한 경우]")
+        public void feedLikedAlready() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            given(memberContentLikeRepository.existsByMemberAndMemberContent(any(),any()))
+                    .willReturn(true);
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.contentLike(12L) );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_LIKE_ALREADY,
+                    exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 성공")
+        public void feedLikeSuccess() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            given(memberContentLikeRepository.existsByMemberAndMemberContent(any(),any()))
+                    .willReturn(false);
+            //when
+            memberContentService.contentLike(12L);
+            //then
+            verify(memberContentLikeRepository,times(1)).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 좋아요 취소 테스트")
+    class TestContentLikeCancel{
+        Long contentId = 169L;
+        Member m = Member.builder().id(2L).build();
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 취소 실패 [로그인 유저 미 일치]")
+        public void doesNotMatchUser() throws Exception {
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentLikeCancel(contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 취소 실패 [피드 가 존재하지 않는 경우]")
+        public void doesNotExistFeed() throws Exception{
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentLikeCancel(contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 취소 실패 [피드가 삭제된 경우]")
+        public void feedDeleted() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.contentLikeCancel(12L) );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED,
+                    exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 취소 실패 [피드 를 좋아요 하지 않은 경우]")
+        public void didNotLikeFeedBefore() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            given(memberContentLikeRepository.existsByMemberAndMemberContent(any(),any()))
+                    .willReturn(false);
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.contentLikeCancel(12L) );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_LIKE_DOES_NOT_EXIST,
+                    exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 좋아요 취소 성공")
+        public void successFeedCancel() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            doReturn(true).when(memberContentLikeRepository)
+                    .existsByMemberAndMemberContent(any(),any());
+            //when
+            memberContentService.contentLikeCancel(12L);
+            //then
+            verify(memberContentLikeRepository,times(1))
+                    .deleteByMemberAndMemberContent(any(),any());
+        }
+    }
 }

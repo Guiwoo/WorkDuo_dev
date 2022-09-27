@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         {
                 TokenProvider.class,
                 CommonRequestContext.class,
-                JwtAuthenticationFilter.class,
+                JwtAuthenticationFilter.class
         }
 )
 @AutoConfigureMockMvc(addFilters = false)
@@ -262,8 +263,6 @@ class MemberContentControllerTest {
         @Test
         @DisplayName("멤버 피드 삭제 성공")
         public void successUpdate() throws Exception{
-            //given
-            doNothing().when(memberContentService).contentUpdate(any(),any());
             //when
             mockMvc.perform(delete("/api/v1/member/content/3")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -271,6 +270,39 @@ class MemberContentControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
                     .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 좋아요 API 테스트")
+    class like{
+        @Test
+        @DisplayName("멤버 피드 좋아요 성공")
+        public void successUpdate() throws Exception{
+            //when
+            mockMvc.perform(post("/api/v1/member/content/3/like")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 좋아요 취소 API 테스트")
+    class likeCancel{
+        @Test
+        @DisplayName("멤버 피드 좋아요 취소 성공 ")
+        public void successFeed() throws Exception{
+            //given
+            //when
+            mockMvc.perform(delete("/api/v1/member/content/3/like")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andDo(print());
+            //then
         }
     }
 }
