@@ -796,7 +796,7 @@ class MemberContentServiceImplTest {
             given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
             //when
             MemberException exception = assertThrows(MemberException.class,
-                    ()->memberContentService.contentCommentLike(contentId,
+                    ()->memberContentService.contentCommentDelete(contentId,
                             commentId));
             //then
             assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
@@ -810,7 +810,7 @@ class MemberContentServiceImplTest {
                     .when(memberRepository).findByEmail(any());
             //when
             MemberException exception = assertThrows(MemberException.class,
-                    ()->memberContentService.contentCommentLike(contentId,
+                    ()->memberContentService.contentCommentDelete(contentId,
                             commentId));
             //then
             assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST,exception.getErrorCode());
@@ -826,7 +826,7 @@ class MemberContentServiceImplTest {
                     .when(memberContentRepository).findById(any());
             //when
             MemberException exception = assertThrows(MemberException.class,
-                    ()->memberContentService.contentCommentLike(contentId,
+                    ()->memberContentService.contentCommentDelete(contentId,
                             commentId));
             //then
             assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED,exception.getErrorCode());
@@ -841,7 +841,7 @@ class MemberContentServiceImplTest {
                     .when(memberContentRepository).findById(any());
             //when
             MemberException exception = assertThrows(MemberException.class,
-                    ()->memberContentService.contentCommentLike(contentId,
+                    ()->memberContentService.contentCommentDelete(contentId,
                             commentId));
             //then
             assertEquals(MemberErrorCode.MEMBER_COMMENT_DOES_NOT_EXIST,exception.getErrorCode());
@@ -861,7 +861,7 @@ class MemberContentServiceImplTest {
                     .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
             //when
             MemberException exception = assertThrows(MemberException.class,
-                    ()->memberContentService.contentCommentLike(contentId,
+                    ()->memberContentService.contentCommentDelete(contentId,
                             commentId));
             //then
             assertEquals(MemberErrorCode.MEMBER_COMMENT_DELETED,exception.getErrorCode());
@@ -879,7 +879,7 @@ class MemberContentServiceImplTest {
                     .when(memberContentCommentRepository)
                     .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
             //when
-            memberContentService.contentCommentLike(contentId,commentId);
+            memberContentService.contentCommentDelete(contentId,commentId);
             //then
             verify(memberContentCommentLikeRepository,times(1))
                     .deleteAllByMemberContentCommentIn(any());
@@ -964,7 +964,7 @@ class MemberContentServiceImplTest {
                     .deletedYn(true)
                     .build()))
                     .when(memberContentCommentRepository)
-                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
             //when
             MemberException exception = assertThrows(MemberException.class,
                     ()->memberContentService.contentCommentLike(contentId,
@@ -983,7 +983,7 @@ class MemberContentServiceImplTest {
             doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
             doReturn(Optional.of(spy))
                     .when(memberContentCommentRepository)
-                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
             //when
             memberContentService.contentCommentLike(contentId,commentId);
             //then
@@ -1069,7 +1069,7 @@ class MemberContentServiceImplTest {
                     .deletedYn(true)
                     .build()))
                     .when(memberContentCommentRepository)
-                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
             //when
             MemberException exception = assertThrows(MemberException.class,
                     ()->memberContentService.contentCommentLikeCancel(contentId,
@@ -1087,7 +1087,7 @@ class MemberContentServiceImplTest {
             doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
             doReturn(Optional.of(build))
                     .when(memberContentCommentRepository)
-                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
             //when
             memberContentService.contentCommentLikeCancel(contentId,commentId);
             //then

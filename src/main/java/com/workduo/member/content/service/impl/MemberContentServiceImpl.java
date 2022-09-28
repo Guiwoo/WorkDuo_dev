@@ -258,7 +258,7 @@ public class MemberContentServiceImpl implements MemberContentService {
     public void contentCommentLike(Long contentId, Long commentId) {
         Member m = validCheckLoggedInUser();
         MemberContent mc = getContent(contentId);
-        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+        MemberContentComment memberContentComment = getMemberContentCommentForLike(commentId, mc);
 
         MemberContentCommentLike build = MemberContentCommentLike.builder()
                 .member(m)
@@ -268,11 +268,16 @@ public class MemberContentServiceImpl implements MemberContentService {
         memberContentCommentLikeRepository.save(build);
     }
 
+    /**
+     * 컨탠트 댓글 좋아요 취소
+     * @param contentId
+     * @param commentId
+     */
     @Override
     public void contentCommentLikeCancel(Long contentId, Long commentId) {
         Member m = validCheckLoggedInUser();
         MemberContent mc = getContent(contentId);
-        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+        MemberContentComment memberContentComment = getMemberContentCommentForLike(commentId, mc);
 
         memberContentCommentLikeRepository
                 .deleteAllByMemberContentCommentIn(List.of(memberContentComment));
@@ -293,6 +298,14 @@ public class MemberContentServiceImpl implements MemberContentService {
         return memberContentComment;
     }
 
+    @Transactional(readOnly = true)
+    protected MemberContentComment getMemberContentCommentForLike(Long commentId, MemberContent mc) {
+        MemberContentComment memberContentComment = memberContentCommentRepository.
+                findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false)
+                .orElseThrow(() -> new MemberException(MEMBER_COMMENT_DOES_NOT_EXIST));
+        isCommentDeleted(memberContentComment);
+        return memberContentComment;
+    }
 
     @Transactional(readOnly = true)
     public void validateLikeCancel(Member m,MemberContent mc){
