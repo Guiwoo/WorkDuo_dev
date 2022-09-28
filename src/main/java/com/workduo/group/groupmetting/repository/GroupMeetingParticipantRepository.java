@@ -19,4 +19,5 @@ public interface GroupMeetingParticipantRepository extends JpaRepository<GroupMe
     void deleteAllByGroup(Group group);
     void deleteByMember(Member member);
     void deleteByGroupAndMember(Group group, Member member);
+    Integer countByGroupMeetingAndGroup(GroupMeeting groupMeeting, Group group);
 }

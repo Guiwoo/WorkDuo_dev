@@ -3,12 +3,11 @@ package com.workduo.group.groupmetting.service;
 import com.workduo.group.groupmetting.dto.CreateMeeting;
 import com.workduo.group.groupmetting.dto.MeetingDto;
 import com.workduo.group.groupmetting.dto.TimeDto;
+import com.workduo.group.groupmetting.dto.UpdateMeeting;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 public interface GroupMeetingService {
 
@@ -39,4 +38,6 @@ public interface GroupMeetingService {
      * @return
      */
     MeetingDto groupMeetingDetail(Long groupId, Long meetingId);
+
+    void groupMeetingUpdate(Long groupId, Long meetingId, UpdateMeeting.Request request);
 }

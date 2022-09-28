@@ -155,8 +155,7 @@ public class GroupMeetingQueryRepositoryImpl implements GroupMeetingQueryReposit
                         .where(
                                 groupMeetingIsDelYn(),
                                 groupIdEq(groupId),
-                                groupMeetingIdEq(meetingId),
-                                groupMeetingInMemberIdEq(memberId)
+                                groupMeetingIdEq(meetingId)
                         )
                         .fetchOne()
         );
@@ -164,10 +163,6 @@ public class GroupMeetingQueryRepositoryImpl implements GroupMeetingQueryReposit
 
     private BooleanExpression groupMeetingIsDelYn() {
         return groupMeeting.deletedYn.eq(false);
-    }
-
-    private BooleanExpression groupMeetingInMemberIdEq(Long memberId) {
-        return memberId == null ? null : groupMeeting.member.id.eq(memberId);
     }
 
     private BooleanExpression groupMeetingIdEq(Long meetingId) {

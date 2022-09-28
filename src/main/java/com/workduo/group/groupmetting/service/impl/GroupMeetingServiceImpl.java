@@ -141,6 +141,25 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         return getGroupMeeting(meetingId, groupId, member.getId());
     }
 
+    @Override
+    @Transactional
+    public void groupMeetingUpdate(Long groupId, Long meetingId, UpdateMeeting.Request request) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        GroupMeeting authorGroupMeeting = getAuthorGroupMeeting(meetingId, group, member);
+        Integer participants = groupMeetingParticipantRepository.countByGroupMeetingAndGroup(authorGroupMeeting, group);
+        authorGroupMeeting.updateGroupMeeting(
+                request.getTitle(),
+                request.getContent(),
+                request.getLocation(),
+                request.getMaxParticipant(),
+                participants);
+
+    }
+
     private void createMeetingValidate(Member member, CreateMeeting.Request request) {
         LocalDateTime meetingStartDate = request.getMeetingStartDate();
         LocalDateTime meetingEndDate = request.getMeetingEndDate();
@@ -197,6 +216,11 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
     private MeetingDto getGroupMeeting(Long meetingId, Long groupId, Long memberId) {
         return groupMeetingQueryRepository.findByGroupMeeting(meetingId, groupId, memberId)
                 .orElseThrow(() -> new GroupException(GROUP_MEETING_NOT_FOUND));
+    }
+
+    private GroupMeeting getAuthorGroupMeeting(Long meetingId, Group group, Member member) {
+        return groupMeetingRepository.findByIdAndGroupAndMember(meetingId, group, member)
+                .orElseThrow(() -> new GroupException(GROUP_NOT_SAME_AUTHOR));
     }
 
     private LocalDateTime parseTime(

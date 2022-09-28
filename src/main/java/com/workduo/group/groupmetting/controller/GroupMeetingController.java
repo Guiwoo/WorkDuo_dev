@@ -3,6 +3,7 @@ package com.workduo.group.groupmetting.controller;
 import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.groupmetting.dto.CreateMeeting;
+import com.workduo.group.groupmetting.dto.UpdateMeeting;
 import com.workduo.group.groupmetting.service.GroupMeetingService;
 import com.workduo.util.ApiUtils;
 import com.workduo.util.ApiUtils.ApiResult;
@@ -103,11 +104,18 @@ public class GroupMeetingController {
      * @return
      */
     @PatchMapping("/{groupId}/meeting/{meetingId}")
-    public ResponseEntity<?> updateMeeting(
+    public ApiResult<?> updateMeeting(
             @PathVariable("groupId") Long groupId,
-            @PathVariable("meetingId") Long meetingId) {
+            @PathVariable("meetingId") Long meetingId,
+            @RequestBody @Validated UpdateMeeting.Request request,
+            BindingResult bindingResult) {
 
-        return null;
+        if (bindingResult.hasErrors()) {
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+
+        groupMeetingService.groupMeetingUpdate(groupId, meetingId, request);
+        return success(null);
     }
 
     /**
