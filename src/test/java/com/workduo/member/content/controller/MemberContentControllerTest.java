@@ -309,7 +309,7 @@ class MemberContentControllerTest {
 
     @Nested
     @DisplayName("멤버 피드 댓글 작성 API 테스트")
-    class contentCommentLike{
+    class contentCommentCreate{
         @Test
         @DisplayName("멤버 피드 댓글 작성 실패 [리퀘스트 검증 테스트]")
         public void NotBlankTest() throws Exception{
@@ -424,6 +424,24 @@ class MemberContentControllerTest {
         @DisplayName("멤버 피드 댓글 삭제 성공")
         public void successCommentList() throws Exception{
             mockMvc.perform(delete("/api/v1/member/content/3/comment/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 좋아요 API 테스트")
+    class contentCommentLike{
+        @Test
+        @DisplayName("멤버 피드 댓글 좋아요 성공")
+        public void successCommentList() throws Exception{
+            mockMvc.perform(post("/api/v1/member/content/3/comment/1/like")
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isOk())

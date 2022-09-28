@@ -185,9 +185,19 @@ public class MemberContentController {
             @PathVariable("memberContentId") Long memberContentId,
             @PathVariable("commentId") Long commentId
     ){
-
-        memberContentService.contentConmmentDeltet(memberContentId,commentId);
-
+        memberContentService.contentCommentDelete(memberContentId,commentId);
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
+    //피드 댓글 좋아요
+    @PostMapping("{memberContentId}/comment/{commentId}/like")
+    public ResponseEntity<?> contentCommentLike(
+            @PathVariable("memberContentId") Long contentId,
+            @PathVariable("commentId") Long commentId
+    ){
+        memberContentService.contentCommentLike(contentId,commentId);
         return new ResponseEntity<>(
                 CommonResponse.ok(),
                 HttpStatus.OK

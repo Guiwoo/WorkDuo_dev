@@ -6,6 +6,7 @@ import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.entity.MemberContentComment;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
+import com.workduo.member.content.entity.MemberContentCommentLike;
 import com.workduo.member.content.entity.MemberContentLike;
 import com.workduo.member.content.repository.MemberContentCommentLikeRepository;
 import com.workduo.member.content.repository.MemberContentCommentRepository;
@@ -184,6 +185,11 @@ public class MemberContentServiceImpl implements MemberContentService {
         memberContentLikeRepository.deleteByMemberAndMemberContent(m,mc);
     }
 
+    /**
+     * 댓글 작성
+     * @param req
+     * @param contentId
+     */
     @Override
     public void contentCommentCreate(ContentCommentCreate.Request req, Long contentId) {
         Member m = validCheckLoggedInUser();
@@ -199,6 +205,12 @@ public class MemberContentServiceImpl implements MemberContentService {
         memberContentCommentRepository.save(mcc);
     }
 
+    /**
+     * 댓글 조회
+     * @param memberContentId
+     * @param pageable
+     * @return
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<MemberContentCommentDto> getContentCommentList(Long memberContentId, Pageable pageable) {
@@ -206,6 +218,12 @@ public class MemberContentServiceImpl implements MemberContentService {
         return memberContentQueryRepository.getCommentByContent(memberContentId,pageable);
     }
 
+    /**
+     * 댓글 업데이트
+     * @param memberContentId
+     * @param commentId
+     * @param req
+     */
     @Override
     public void contentCommentUpdate(Long memberContentId, Long commentId, ContentCommentUpdate.Request req) {
         Member m = validCheckLoggedInUser();
@@ -214,9 +232,13 @@ public class MemberContentServiceImpl implements MemberContentService {
 
         memberContentComment.updateComment(req.getComment());
     }
-
+    /**
+     * 댓글 삭제
+     * @param memberContentId
+     * @param commentId
+     */
     @Override
-    public void contentConmmentDeltet(Long memberContentId, Long commentId) {
+    public void contentCommentDelete(Long memberContentId, Long commentId) {
         Member m = validCheckLoggedInUser();
         MemberContent mc = getContent(memberContentId);
         MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
@@ -225,6 +247,25 @@ public class MemberContentServiceImpl implements MemberContentService {
                 new ArrayList<>(List.of(memberContentComment))
         );
         memberContentComment.terminate();
+    }
+
+    /**
+     * 댓글 좋아요
+     * @param contentId
+     * @param commentId
+     */
+    @Override
+    public void contentCommentLike(Long contentId, Long commentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(contentId);
+        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+
+        MemberContentCommentLike build = MemberContentCommentLike.builder()
+                .member(m)
+                .memberContentComment(memberContentComment)
+                .build();
+
+        memberContentCommentLikeRepository.save(build);
     }
 
     private void isCommentDeleted(MemberContentComment mcc){

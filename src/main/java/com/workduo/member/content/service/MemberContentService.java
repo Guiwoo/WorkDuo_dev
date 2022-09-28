@@ -26,5 +26,7 @@ public interface MemberContentService {
 
     void contentCommentUpdate(Long memberContentId, Long commentId, ContentCommentUpdate.Request req);
 
-    void contentConmmentDeltet(Long memberContentId, Long commentId);
+    void contentCommentDelete(Long memberContentId, Long commentId);
+
+    void contentCommentLike(Long contentId, Long commentId);
 }
