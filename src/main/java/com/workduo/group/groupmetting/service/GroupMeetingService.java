@@ -24,5 +24,19 @@ public interface GroupMeetingService {
      */
     void createMeeting(CreateMeeting.Request request, Long groupId);
 
+    /**
+     * 그룹 모임 리스트
+     * @param pageable
+     * @param groupId
+     * @return
+     */
     Page<MeetingDto> groupMeetingList(Pageable pageable, Long groupId);
+
+    /**
+     * 그룹 모임 상세
+     * @param groupId
+     * @param meetingId
+     * @return
+     */
+    MeetingDto groupMeetingDetail(Long groupId, Long meetingId);
 }

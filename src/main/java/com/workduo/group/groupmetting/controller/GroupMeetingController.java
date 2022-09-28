@@ -89,11 +89,11 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/{groupId}/meeting/{meetingId}")
-    public ResponseEntity<?> getMeeting(
+    public ApiResult<?> getMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
 
-        return null;
+        return success(groupMeetingService.groupMeetingDetail(groupId, meetingId));
     }
 
     /**

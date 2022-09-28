@@ -130,6 +130,17 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         return groupMeetingQueryRepository.groupMeetingList(pageable, groupId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingDto groupMeetingDetail(Long groupId, Long meetingId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        return getGroupMeeting(meetingId, groupId, member.getId());
+    }
+
     private void createMeetingValidate(Member member, CreateMeeting.Request request) {
         LocalDateTime meetingStartDate = request.getMeetingStartDate();
         LocalDateTime meetingEndDate = request.getMeetingEndDate();
@@ -181,6 +192,11 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
     private GroupJoinMember getGroupJoinMember(Group group, Member member) {
         return groupJoinMemberRepository.findByMemberAndGroup(member, group)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_USER));
+    }
+
+    private MeetingDto getGroupMeeting(Long meetingId, Long groupId, Long memberId) {
+        return groupMeetingQueryRepository.findByGroupMeeting(meetingId, groupId, memberId)
+                .orElseThrow(() -> new GroupException(GROUP_MEETING_NOT_FOUND));
     }
 
     private LocalDateTime parseTime(

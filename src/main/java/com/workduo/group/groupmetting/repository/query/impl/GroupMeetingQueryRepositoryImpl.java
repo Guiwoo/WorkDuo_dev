@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.querydsl.jpa.JPAExpressions.select;
 import static com.workduo.group.group.entity.QGroup.group;
@@ -86,7 +87,7 @@ public class GroupMeetingQueryRepositoryImpl implements GroupMeetingQueryReposit
                                         .where(groupMeetingParticipant.groupMeeting.id.eq(groupMeeting.id)),
                                 Expressions.stringTemplate(
                                         "DATE_FORMAT({0}, {1})",
-                                        groupMeeting.meetingStartDate,
+                                        groupMeeting.createdAt,
                                         "%Y-%m-%d %H%:%i"
                                 ),
                                 Expressions.stringTemplate(
@@ -122,8 +123,55 @@ public class GroupMeetingQueryRepositoryImpl implements GroupMeetingQueryReposit
         );
     }
 
+    @Override
+    public Optional<MeetingDto> findByGroupMeeting(Long meetingId, Long groupId, Long memberId) {
+        return Optional.ofNullable(
+                jpaQueryFactory
+                        .select(
+                                new QMeetingDto(
+                                        groupMeeting.id,
+                                        group.id,
+                                        groupMeeting.title,
+                                        groupMeeting.content,
+                                        groupMeeting.location,
+                                        groupMeeting.maxParticipant,
+                                        select(groupMeetingParticipant.count())
+                                                .from(groupMeetingParticipant)
+                                                .where(groupMeetingParticipant.groupMeeting.id.eq(groupMeeting.id)),
+                                        Expressions.stringTemplate(
+                                                "DATE_FORMAT({0}, {1})",
+                                                groupMeeting.createdAt,
+                                                "%Y-%m-%d %H%:%i"
+                                        ),
+                                        Expressions.stringTemplate(
+                                                "DATE_FORMAT({0}, {1})",
+                                                groupMeeting.meetingStartDate,
+                                                "%Y-%m-%d %H%:%i"
+                                        )
+                                )
+                        )
+                        .from(groupMeeting)
+                        .join(groupMeeting.group, group)
+                        .where(
+                                groupMeetingIsDelYn(),
+                                groupIdEq(groupId),
+                                groupMeetingIdEq(meetingId),
+                                groupMeetingInMemberIdEq(memberId)
+                        )
+                        .fetchOne()
+        );
+    }
+
     private BooleanExpression groupMeetingIsDelYn() {
         return groupMeeting.deletedYn.eq(false);
+    }
+
+    private BooleanExpression groupMeetingInMemberIdEq(Long memberId) {
+        return memberId == null ? null : groupMeeting.member.id.eq(memberId);
+    }
+
+    private BooleanExpression groupMeetingIdEq(Long meetingId) {
+        return groupMeeting.id.eq(meetingId);
     }
 
     private BooleanExpression groupIdEq(Long groupId) {
