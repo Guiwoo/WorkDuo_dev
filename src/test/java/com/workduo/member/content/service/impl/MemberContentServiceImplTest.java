@@ -16,6 +16,7 @@ import com.workduo.member.contentimage.repository.MemberContentImageRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.util.AwsS3Utils;
+import org.hibernate.boot.TempTableDdlTransactionHandling;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,9 +25,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.multipart.MultipartFile;
@@ -607,6 +610,280 @@ class MemberContentServiceImplTest {
             assertThat(m).isEqualTo(captor.getValue().getMember());
             assertThat(mc).isEqualTo(captor.getValue().getMemberContent());
             assertThat(req.getComment()).isEqualTo(captor.getValue().getContent());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 리스트 테스트")
+    class MemberCommentList{
+        PageRequest pageRequest = PageRequest.of(0, 20);
+        @Test
+        @DisplayName("멤버 피드 댓글 리스트 실패 [피드 가 존재하지 않는 경우]")
+        public void doesNotExistFeed() throws Exception{
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.getContentCommentList(12L,pageRequest));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 리스트 실패 [피드가 삭제된 경우]")
+        public void feedDeleted() throws Exception{
+            //given
+            doReturn(Optional.of(MemberContent.builder().deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.getContentCommentList(12L,pageRequest) );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED,
+                    exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 리스트 성공")
+        public void sucess() throws Exception{
+            //given
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            memberContentService.getContentCommentList(12L,pageRequest);
+            //then
+            verify(memberContentQueryRepository,times(1))
+                    .getCommentByContent(any(),any());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 업데이트 테스트")
+    class MemberFeedCommentUpdate{
+        Long contentId = 169L;
+        Long commentId = 73L;
+        ContentCommentUpdate.Request req =
+                ContentCommentUpdate.Request.builder()
+                        .comment("Update Test").build();
+        Member m = Member.builder().build();
+        MemberContent mc =MemberContent.builder().build();
+
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 실패 [로그인 유저 미 일치]")
+        public void doesNotMatchLogInUser() throws Exception{
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentCommentUpdate(contentId,
+                            commentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 실패 [피드 가 존재하지 않는 경우]")
+        public void doesNotExistFeed() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentCommentUpdate(contentId,
+                            commentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 실패 [피드가 삭제된 경우]")
+        public void hasDeletedFeed() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentCommentUpdate(contentId,
+                            commentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED,exception.getErrorCode());
+        }
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 실패 [댓글 이 존재하지 않는 경우]")
+        public void doesNotExistComment() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentCommentUpdate(contentId,
+                            commentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_COMMENT_DOES_NOT_EXIST,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 실패 [댓글 이 삭제된 경우]")
+        public void hasDeletedComment() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
+            doReturn(Optional.of(MemberContentComment.builder()
+                    .deletedYn(true)
+                    .build()))
+                    .when(memberContentCommentRepository)
+                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentCommentUpdate(contentId,
+                            commentId,req));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_COMMENT_DELETED,exception.getErrorCode());
+        }
+//        @Test
+//        @DisplayName("멤버 피드 댓글 업데이트 실패 [댓글 소유주 가 아닌 경우]")
+//        public void doNotHaveAuthority() throws Exception{
+//            //given
+//            doReturn(Optional.of(m))
+//                    .when(memberRepository).findByEmail(any());
+//            doReturn(Optional.of(MemberContent.builder().build()))
+//                    .when(memberContentRepository).findById(any());
+//            //when
+//            MemberException exception = assertThrows(MemberException.class,
+//                    ()->memberContentService.contentCommentUpdate(contentId,
+//                            commentId,req));
+//            //then
+//            assertEquals(MemberErrorCode.MEMBER_COMMENT_AUTHORIZATION,exception.getErrorCode());
+//        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 성공")
+        public void success() throws Exception{
+            MemberContentComment build = MemberContentComment.builder().build();
+            MemberContentComment spy = spy(build);
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
+            doReturn(Optional.of(spy))
+                    .when(memberContentCommentRepository)
+                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+
+            //when
+            memberContentService.contentCommentUpdate
+                    (contentId,commentId,req);
+            //then
+            verify(spy,times(1)).updateComment(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 삭제 테스트")
+    class MemberFeedCommentDelete{
+        Long contentId = 169L;
+        Long commentId = 73L;
+        Member m = Member.builder().build();
+        MemberContent mc =MemberContent.builder().build();
+
+        @Test
+        @DisplayName("멤버 피드 댓글 삭제 실패 [로그인 유저 미 일치]")
+        public void doesNotMatchLogInUser() throws Exception{
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentConmmentDeltet(contentId,
+                            commentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 삭제 실패 [피드 가 존재하지 않는 경우]")
+        public void doesNotExistFeed() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentConmmentDeltet(contentId,
+                            commentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 삭제 실패 [피드가 삭제된 경우]")
+        public void hasDeletedFeed() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentConmmentDeltet(contentId,
+                            commentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED,exception.getErrorCode());
+        }
+        @Test
+        @DisplayName("멤버 피드 댓글 삭제 실패 [댓글 이 존재하지 않는 경우]")
+        public void doesNotExistComment() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentConmmentDeltet(contentId,
+                            commentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_COMMENT_DOES_NOT_EXIST,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 삭제 실패 [댓글 이 삭제된 경우]")
+        public void hasDeletedComment() throws Exception{
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
+            doReturn(Optional.of(MemberContentComment.builder()
+                    .deletedYn(true)
+                    .build()))
+                    .when(memberContentCommentRepository)
+                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentConmmentDeltet(contentId,
+                            commentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_COMMENT_DELETED,exception.getErrorCode());
+        }
+        @Test
+        @DisplayName("멤버 피드 댓글 삭제 성공")
+        public void success() throws Exception{
+            MemberContentComment build = MemberContentComment.builder().build();
+            MemberContentComment spy = spy(build);
+            //given
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
+            doReturn(Optional.of(spy))
+                    .when(memberContentCommentRepository)
+                    .findByIdAndMemberAndMemberContentAndDeletedYn(commentId,m,mc,false);
+            //when
+            memberContentService.contentConmmentDeltet(contentId,commentId);
+            //then
+            verify(memberContentCommentLikeRepository,times(1))
+                    .deleteAllByMemberContentCommentIn(any());
+            verify(spy,times(1)).terminate();
         }
     }
 }

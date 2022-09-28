@@ -6,6 +6,7 @@ import com.workduo.member.content.dto.*;
 import com.workduo.member.content.service.MemberContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -124,7 +125,7 @@ public class MemberContentController {
         );
     }
 
-    // 피드 컨탠트 작성
+    // 피드 컨탠트  코멘트 작성
     @PostMapping("{memberContentId}/comment")
     public ResponseEntity<?> contentComment(
             @PathVariable("memberContentId") Long contentId,
@@ -142,4 +143,54 @@ public class MemberContentController {
         );
     }
 
+     // 피드 커맨트 리스트
+    @GetMapping("{memberContentId}/comment")
+    public ResponseEntity<?> getCommentList(
+            Pageable pageable,
+            @PathVariable("memberContentId") Long memberContentId){
+        ContentCommentList.Response result =
+                ContentCommentList.Response.from(
+                        memberContentService
+                                .getContentCommentList(memberContentId, pageable));
+
+        return new ResponseEntity<>(
+                result,
+                HttpStatus.OK
+        );
+    }
+
+    // 피드 댓글 업데이트
+    @PatchMapping("{memberContentId}/comment/{commentId}")
+    public ResponseEntity<?> getContentComment(
+            @PathVariable("memberContentId") Long memberContentId,
+            @PathVariable("commentId") Long commentId,
+            @RequestBody ContentCommentUpdate.Request req,
+            BindingResult bindingResult
+
+    ){
+        if(bindingResult.hasErrors()){
+            throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+
+        memberContentService.contentCommentUpdate(memberContentId,commentId,req);
+
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
+    //피드 댓글 삭제
+    @DeleteMapping("{memberContentId}/comment/{commentId}")
+    public ResponseEntity<?> deleteContentComment(
+            @PathVariable("memberContentId") Long memberContentId,
+            @PathVariable("commentId") Long commentId
+    ){
+
+        memberContentService.contentConmmentDeltet(memberContentId,commentId);
+
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
 }
