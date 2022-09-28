@@ -29,4 +29,5 @@ public class MemberContentCommentDto {
         this.likeCnt = likeCnt;
         this.createdAt = createdAt;
     }
+
 }
