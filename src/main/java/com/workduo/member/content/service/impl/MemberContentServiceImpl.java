@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -188,8 +189,6 @@ public class MemberContentServiceImpl implements MemberContentService {
         Member m = validCheckLoggedInUser();
         MemberContent mc = getContent(contentId);
 
-        isContentDeleted(mc);
-
         MemberContentComment mcc = MemberContentComment.builder()
                 .member(m)
                 .memberContent(mc)
@@ -200,10 +199,52 @@ public class MemberContentServiceImpl implements MemberContentService {
         memberContentCommentRepository.save(mcc);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberContentCommentDto> getContentCommentList(Long memberContentId, Pageable pageable) {
+        MemberContent mc = getContent(memberContentId);
+        return memberContentQueryRepository.getCommentByContent(memberContentId,pageable);
+    }
+
+    @Override
+    public void contentCommentUpdate(Long memberContentId, Long commentId, ContentCommentUpdate.Request req) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(memberContentId);
+        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+
+        memberContentComment.updateComment(req.getComment());
+    }
+
+    @Override
+    public void contentConmmentDeltet(Long memberContentId, Long commentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(memberContentId);
+        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+
+        memberContentCommentLikeRepository.deleteAllByMemberContentCommentIn(
+                new ArrayList<>(List.of(memberContentComment))
+        );
+        memberContentComment.terminate();
+    }
+
+    private void isCommentDeleted(MemberContentComment mcc){
+        if(mcc.isDeletedYn()){
+            throw new MemberException(MEMBER_COMMENT_DELETED);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    protected MemberContentComment getMemberContentComment(Long commentId, Member m, MemberContent mc) {
+        MemberContentComment memberContentComment = memberContentCommentRepository.
+                findByIdAndMemberAndMemberContentAndDeletedYn(commentId, m, mc,false)
+                .orElseThrow(() -> new MemberException(MEMBER_COMMENT_DOES_NOT_EXIST));
+        isCommentDeleted(memberContentComment);
+        return memberContentComment;
+    }
+
 
     @Transactional(readOnly = true)
     public void validateLikeCancel(Member m,MemberContent mc){
-        isContentDeleted(mc);
         boolean exists = memberContentLikeRepository.existsByMemberAndMemberContent(m, mc);
         if(!exists){
             throw new MemberException(MEMBER_CONTENT_LIKE_DOES_NOT_EXIST);
@@ -212,7 +253,6 @@ public class MemberContentServiceImpl implements MemberContentService {
 
     @Transactional(readOnly = true)
     protected void validateLike(Member m,MemberContent mc){
-        isContentDeleted(mc);
         boolean exists = memberContentLikeRepository.existsByMemberAndMemberContent(m, mc);
         if(exists){
             throw new MemberException(MEMBER_CONTENT_LIKE_ALREADY);
@@ -253,7 +293,9 @@ public class MemberContentServiceImpl implements MemberContentService {
     }
     @Transactional(readOnly = true)
     protected MemberContent getContent(Long contentId){
-        return memberContentRepository.findById(contentId)
-                .orElseThrow(()-> new MemberException(MEMBER_CONTENT_DOES_NOT_EXIST));
+        MemberContent memberContent = memberContentRepository.findById(contentId)
+                .orElseThrow(() -> new MemberException(MEMBER_CONTENT_DOES_NOT_EXIST));
+        isContentDeleted(memberContent);
+        return memberContent;
     }
 }

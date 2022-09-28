@@ -21,4 +21,10 @@ public interface MemberContentService {
     void contentLikeCancel(Long contentId);
 
     void contentCommentCreate(ContentCommentCreate.Request req, Long contentId);
+
+    Page<MemberContentCommentDto> getContentCommentList(Long memberContentId, Pageable pageable);
+
+    void contentCommentUpdate(Long memberContentId, Long commentId, ContentCommentUpdate.Request req);
+
+    void contentConmmentDeltet(Long memberContentId, Long commentId);
 }
