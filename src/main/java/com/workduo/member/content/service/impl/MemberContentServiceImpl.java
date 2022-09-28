@@ -183,6 +183,24 @@ public class MemberContentServiceImpl implements MemberContentService {
         memberContentLikeRepository.deleteByMemberAndMemberContent(m,mc);
     }
 
+    @Override
+    public void contentCommentCreate(ContentCommentCreate.Request req, Long contentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(contentId);
+
+        isContentDeleted(mc);
+
+        MemberContentComment mcc = MemberContentComment.builder()
+                .member(m)
+                .memberContent(mc)
+                .content(req.getComment())
+                .deletedYn(false)
+                .build();
+
+        memberContentCommentRepository.save(mcc);
+    }
+
+
     @Transactional(readOnly = true)
     public void validateLikeCancel(Member m,MemberContent mc){
         isContentDeleted(mc);
