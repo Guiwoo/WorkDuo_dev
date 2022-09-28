@@ -7,6 +7,7 @@ import com.workduo.configuration.jwt.JwtAuthenticationFilter;
 import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
+import com.workduo.member.content.entity.MemberContentComment;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.service.MemberContentService;
 import com.workduo.member.member.dto.MemberLogin;
@@ -303,6 +304,51 @@ class MemberContentControllerTest {
                     .andExpect(jsonPath("$.success").value("T"))
                     .andDo(print());
             //then
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 작성 API 테스트")
+    class contentCommentLike{
+        @Test
+        @DisplayName("멤버 피드 댓글 작성 실패 [리퀘스트 검증 테스트]")
+        public void NotBlankTest() throws Exception{
+            ContentCommentCreate.Request req =
+                    ContentCommentCreate.Request.builder().comment("Test").build();
+
+            var test1
+                    = validator.validate(req);
+            assertThat(test1.size()).isEqualTo(0);
+
+            req.setComment("");
+            var test2 = validator.validate(req);
+            assertThat(test2.size()).isEqualTo(1);
+
+            req.setComment(" ");
+            var test3 = validator.validate(req);
+            assertThat(test3.size()).isEqualTo(1);
+
+            req.setComment(null);
+            var test4 = validator.validate(req);
+            assertThat(test4.size()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 작성 성공")
+        public void contentCommentCreate() throws Exception{
+            ContentCommentCreate.Request req
+                    = ContentCommentCreate.Request.builder().comment("test").build();
+
+            mockMvc.perform(post("/api/v1/member/content/3/comment")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req))
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
         }
     }
 }

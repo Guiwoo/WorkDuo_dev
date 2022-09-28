@@ -2,10 +2,7 @@ package com.workduo.member.content.controller;
 
 import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
-import com.workduo.member.content.dto.ContentCreate;
-import com.workduo.member.content.dto.ContentUpdate;
-import com.workduo.member.content.dto.MemberContentDetailDto;
-import com.workduo.member.content.dto.MemberContentListDto;
+import com.workduo.member.content.dto.*;
 import com.workduo.member.content.service.MemberContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -126,4 +123,23 @@ public class MemberContentController {
                 HttpStatus.OK
         );
     }
+
+    // 피드 컨탠트 작성
+    @PostMapping("{memberContentId}/comment")
+    public ResponseEntity<?> contentComment(
+            @PathVariable("memberContentId") Long contentId,
+            @RequestBody @Valid ContentCommentCreate.Request req,
+            BindingResult bindingResult){
+
+        if(bindingResult.hasErrors()){
+        throw new CustomMethodArgumentNotValidException(bindingResult);
+        }
+
+        memberContentService.contentCommentCreate(req,contentId);
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
+
 }

@@ -1,9 +1,6 @@
 package com.workduo.member.content.service;
 
-import com.workduo.member.content.dto.ContentCreate;
-import com.workduo.member.content.dto.ContentUpdate;
-import com.workduo.member.content.dto.MemberContentDetailDto;
-import com.workduo.member.content.dto.MemberContentListDto;
+import com.workduo.member.content.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,4 +19,6 @@ public interface MemberContentService {
     void contentLike(Long contentId);
 
     void contentLikeCancel(Long contentId);
+
+    void contentCommentCreate(ContentCommentCreate.Request req, Long contentId);
 }

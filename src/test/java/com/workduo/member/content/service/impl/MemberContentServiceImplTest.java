@@ -5,6 +5,7 @@ import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
+import com.workduo.member.content.entity.MemberContentComment;
 import com.workduo.member.content.repository.MemberContentCommentLikeRepository;
 import com.workduo.member.content.repository.MemberContentCommentRepository;
 import com.workduo.member.content.repository.MemberContentLikeRepository;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.workduo.member.content.dto.ContentCommentCreate.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -533,6 +536,77 @@ class MemberContentServiceImplTest {
             //then
             verify(memberContentLikeRepository,times(1))
                     .deleteByMemberAndMemberContent(any(),any());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 등록 테스트")
+    class MemberFeedContent{
+        Long contentId = 169L;
+        Request req = Request.builder()
+                .comment("Comment Create Test").build();
+        @Test
+        @DisplayName("멤버 피드 댓글 등록 실패 [로그인 유저 미 일치]")
+        public void doesNotMatchUser() throws Exception {
+            //given
+            given(commonRequestContext.getMemberEmail()).willReturn("True-Lover");
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentCommentCreate(req,contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 등록 실패 [피드 가 존재하지 않는 경우]")
+        public void doesNotExistFeed() throws Exception{
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()->memberContentService.contentCommentCreate(req,contentId));
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DOES_NOT_EXIST
+                    ,exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 등록 실패 [피드가 삭제된 경우]")
+        public void feedDeleted() throws Exception{
+            //given
+            doReturn(Optional.of(Member.builder().build()))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(MemberContent.builder().deletedYn(true).build()))
+                    .when(memberContentRepository).findById(any());
+            //when
+            MemberException exception = assertThrows(MemberException.class,
+                    ()-> memberContentService.contentCommentCreate(req,12L) );
+            //then
+            assertEquals(MemberErrorCode.MEMBER_CONTENT_DELETED,
+                    exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 등록 성공")
+        public void contentCommentCreateSuccess() throws Exception{
+            //given
+            Member m = Member.builder().id(11L).build();
+            MemberContent mc = MemberContent.builder().id(contentId).build();
+            doReturn(Optional.of(m))
+                    .when(memberRepository).findByEmail(any());
+            doReturn(Optional.of(mc))
+                    .when(memberContentRepository).findById(any());
+            ArgumentCaptor<MemberContentComment> captor =
+                    ArgumentCaptor.forClass(MemberContentComment.class);
+            //when
+            memberContentService.contentCommentCreate(req,contentId);
+
+            //then
+            verify(memberContentCommentRepository,times(1))
+                    .save(captor.capture());
+            assertThat(m).isEqualTo(captor.getValue().getMember());
+            assertThat(mc).isEqualTo(captor.getValue().getMemberContent());
+            assertThat(req.getComment()).isEqualTo(captor.getValue().getContent());
         }
     }
 }
