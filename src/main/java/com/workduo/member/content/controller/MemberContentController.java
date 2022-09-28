@@ -203,4 +203,16 @@ public class MemberContentController {
                 HttpStatus.OK
         );
     }
+    //피드 댓글 좋아요 취소
+    @DeleteMapping("{memberContentId}/comment/{commentId}/like")
+    public ResponseEntity<?> contentCommentLikeCancel(
+            @PathVariable("memberContentId") Long contentId,
+            @PathVariable("commentId") Long commentId
+    ){
+        memberContentService.contentCommentLikeCancel(contentId,commentId);
+        return new ResponseEntity<>(
+                CommonResponse.ok(),
+                HttpStatus.OK
+        );
+    }
 }

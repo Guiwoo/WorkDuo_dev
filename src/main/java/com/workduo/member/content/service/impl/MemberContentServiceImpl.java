@@ -244,7 +244,7 @@ public class MemberContentServiceImpl implements MemberContentService {
         MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
 
         memberContentCommentLikeRepository.deleteAllByMemberContentCommentIn(
-                new ArrayList<>(List.of(memberContentComment))
+                List.of(memberContentComment)
         );
         memberContentComment.terminate();
     }
@@ -266,6 +266,16 @@ public class MemberContentServiceImpl implements MemberContentService {
                 .build();
 
         memberContentCommentLikeRepository.save(build);
+    }
+
+    @Override
+    public void contentCommentLikeCancel(Long contentId, Long commentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(contentId);
+        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+
+        memberContentCommentLikeRepository
+                .deleteAllByMemberContentCommentIn(List.of(memberContentComment));
     }
 
     private void isCommentDeleted(MemberContentComment mcc){

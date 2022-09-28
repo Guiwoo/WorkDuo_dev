@@ -452,4 +452,22 @@ class MemberContentControllerTest {
                     .andDo(print());
         }
     }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 좋아요 취소 API 테스트")
+    class contentCommentLikeCancel{
+        @Test
+        @DisplayName("멤버 피드 댓글 좋아요 취소 성공")
+        public void successCommentList() throws Exception{
+            mockMvc.perform(delete("/api/v1/member/content/3/comment/1/like")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
+        }
+    }
 }

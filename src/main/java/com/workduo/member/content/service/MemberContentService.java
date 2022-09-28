@@ -29,4 +29,6 @@ public interface MemberContentService {
     void contentCommentDelete(Long memberContentId, Long commentId);
 
     void contentCommentLike(Long contentId, Long commentId);
+
+    void contentCommentLikeCancel(Long contentId, Long commentId);
 }
