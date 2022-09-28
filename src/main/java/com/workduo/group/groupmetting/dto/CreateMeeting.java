@@ -2,7 +2,6 @@ package com.workduo.group.groupmetting.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -26,12 +25,10 @@ public class CreateMeeting {
         private String content;
 
         @NotNull(message = "모임 시작하는 날짜는 필수 입력 사항입니다.")
-//        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/seoul")
         private LocalDateTime meetingStartDate;
 
         @NotNull(message = "모임 끝나는 날짜는 필수 입력 사항입니다.")
-//        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/seoul")
         private LocalDateTime meetingEndDate;
 

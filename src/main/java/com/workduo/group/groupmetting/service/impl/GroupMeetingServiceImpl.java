@@ -7,10 +7,7 @@ import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.entity.GroupJoinMember;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.repository.GroupRepository;
-import com.workduo.group.groupmetting.dto.CreateMeeting;
-import com.workduo.group.groupmetting.dto.MeetingInquireDto;
-import com.workduo.group.groupmetting.dto.Time;
-import com.workduo.group.groupmetting.dto.TimeDto;
+import com.workduo.group.groupmetting.dto.*;
 import com.workduo.group.groupmetting.entity.GroupMeeting;
 import com.workduo.group.groupmetting.entity.GroupMeetingParticipant;
 import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
@@ -20,6 +17,8 @@ import com.workduo.group.groupmetting.service.GroupMeetingService;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,6 +117,17 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
                 .groupMeeting(groupMeeting)
                 .build();
         groupMeetingParticipantRepository.save(meetingParticipant);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MeetingDto> groupMeetingList(Pageable pageable, Long groupId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        return groupMeetingQueryRepository.groupMeetingList(pageable, groupId);
     }
 
     private void createMeetingValidate(Member member, CreateMeeting.Request request) {

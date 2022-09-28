@@ -24,7 +24,7 @@ public enum GroupErrorCode {
     GROUP_NOT_SAME_AUTHOR(HttpStatus.BAD_REQUEST, "작성자가 아닙니다."),
     GROUP_MEETING_START_TIME_IS_AFTER(HttpStatus.BAD_REQUEST, "모임의 끝나는 시간이 시작 시간보다 빠를 수 없습니다."),
     GROUP_MEETING_TIME_NOT_HOUR(HttpStatus.BAD_REQUEST, "모임의 시작 시간과 끝나는 시간이 정각이 아닙니다."),
-    GROUP_MEETING_DUPLICATION(HttpStatus.BAD_REQUEST, "이미 이 시간대에 신청했거나 생성한 모임이 있습니다.");
+    GROUP_MEETING_DUPLICATION(HttpStatus.BAD_REQUEST, "동시간대에 참여한 모임이 있거나 생성한 모임이 있습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

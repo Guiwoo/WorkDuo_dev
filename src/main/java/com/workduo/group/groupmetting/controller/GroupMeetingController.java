@@ -4,6 +4,8 @@ import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.groupmetting.dto.CreateMeeting;
 import com.workduo.group.groupmetting.service.GroupMeetingService;
+import com.workduo.util.ApiUtils;
+import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static com.workduo.util.ApiUtils.success;
 
 @Slf4j
 @RestController
@@ -32,9 +36,9 @@ public class GroupMeetingController {
      */
     @GetMapping("/meeting/inquire")
     public ResponseEntity<?> meetingInquire(
-            @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
 
-        return  new ResponseEntity<>(
+        return new ResponseEntity<>(
                 groupMeetingService.meetingInquire(startDate),
                 HttpStatus.OK
         );
@@ -69,11 +73,13 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/{groupId}/meeting")
-    public ResponseEntity<?> meetingList(
+    public ApiResult<?> meetingList(
             @PathVariable("groupId") Long groupId,
             Pageable pageable) {
 
-        return null;
+        return success(
+                groupMeetingService.groupMeetingList(pageable, groupId)
+        );
     }
 
     /**

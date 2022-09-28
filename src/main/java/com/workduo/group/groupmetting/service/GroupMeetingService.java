@@ -1,7 +1,10 @@
 package com.workduo.group.groupmetting.service;
 
 import com.workduo.group.groupmetting.dto.CreateMeeting;
+import com.workduo.group.groupmetting.dto.MeetingDto;
 import com.workduo.group.groupmetting.dto.TimeDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,4 +23,6 @@ public interface GroupMeetingService {
      * @param groupId
      */
     void createMeeting(CreateMeeting.Request request, Long groupId);
+
+    Page<MeetingDto> groupMeetingList(Pageable pageable, Long groupId);
 }
