@@ -160,6 +160,23 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
 
     }
 
+    @Override
+    @Transactional
+    public void groupMeetingDelete(Long groupId, Long meetingId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+        GroupMeeting authorGroupMeeting = getAuthorGroupMeeting(meetingId, group, member);
+
+        if (authorGroupMeeting.isDeletedYn()) {
+            throw new GroupException(GROUP_MEETING_ALREADY_DELETE);
+        }
+
+        groupMeetingParticipantRepository.deleteAllByGroupAndGroupMeeting(group, authorGroupMeeting);
+        authorGroupMeeting.deleteGroupMeeting();
+    }
+
     private void createMeetingValidate(Member member, CreateMeeting.Request request) {
         LocalDateTime meetingStartDate = request.getMeetingStartDate();
         LocalDateTime meetingEndDate = request.getMeetingEndDate();

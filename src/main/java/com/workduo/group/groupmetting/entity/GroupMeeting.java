@@ -58,4 +58,9 @@ public class GroupMeeting extends BaseEntity {
         this.location = location;
         this.maxParticipant = newMaxParticipant;
     }
+
+    public void deleteGroupMeeting() {
+        this.deletedYn = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }

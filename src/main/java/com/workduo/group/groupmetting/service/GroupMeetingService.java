@@ -39,5 +39,18 @@ public interface GroupMeetingService {
      */
     MeetingDto groupMeetingDetail(Long groupId, Long meetingId);
 
+    /**
+     * 그룹 모임 수정
+     * @param groupId
+     * @param meetingId
+     * @param request
+     */
     void groupMeetingUpdate(Long groupId, Long meetingId, UpdateMeeting.Request request);
+
+    /**
+     * 그룹 모임 삭제
+     * @param groupId
+     * @param meetingId
+     */
+    void groupMeetingDelete(Long groupId, Long meetingId);
 }

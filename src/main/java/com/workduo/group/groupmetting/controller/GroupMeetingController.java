@@ -125,11 +125,12 @@ public class GroupMeetingController {
      * @return
      */
     @DeleteMapping("/{groupId}/meeting/{meetingId}")
-    public ResponseEntity<?> deleteMeeting(
+    public ApiResult<?> deleteMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
 
-        return null;
+        groupMeetingService.groupMeetingDelete(groupId, meetingId);
+        return success(null);
     }
 
     /**

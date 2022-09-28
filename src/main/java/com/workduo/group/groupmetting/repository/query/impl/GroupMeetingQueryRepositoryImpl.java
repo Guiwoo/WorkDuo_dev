@@ -38,7 +38,7 @@ public class GroupMeetingQueryRepositoryImpl implements GroupMeetingQueryReposit
         return jpaQueryFactory
                 .select(
                         new QMeetingInquireDto(
-                                startTime(groupMeeting.meetingStartDate),
+                                startTime(),
                                 minuteDiff(
                                     groupMeeting.meetingStartDate,
                                     groupMeeting.meetingEndDate
@@ -173,7 +173,7 @@ public class GroupMeetingQueryRepositoryImpl implements GroupMeetingQueryReposit
         return groupMeeting.group.id.eq(groupId);
     }
 
-    private StringTemplate startTime(Expression<? extends LocalDateTime> startDate) {
+    private StringTemplate startTime() {
         return  Expressions.stringTemplate(
                 "DATE_FORMAT({0}, {1})",
                 groupMeeting.meetingStartDate,
