@@ -157,8 +157,8 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
      */
     @Override
     public Page<MemberContentCommentDto> getCommentByContent(Long memberContentId, Pageable pageable) {
-        List<MemberContentCommentDto> list = jpaQueryFactory.select(
-                        new QMemberContentCommentDto(
+        List<MemberContentCommentDto> list = jpaQueryFactory
+                .select(new QMemberContentCommentDto(
                                 memberContentComment.id,
                                 member.id,
                                 member.username,
@@ -250,6 +250,7 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
         }
         return orders;
     }
+
     private List<OrderSpecifier> findByContentComment() {
         StringPath aliasCommentLikes = Expressions.stringPath("likeCnt");
 
@@ -260,4 +261,5 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
 
         return orders;
     }
+
 }

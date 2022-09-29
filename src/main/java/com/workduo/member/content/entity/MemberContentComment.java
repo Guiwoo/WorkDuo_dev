@@ -32,4 +32,12 @@ public class MemberContentComment extends BaseEntity  {
 
     private boolean deletedYn; // 삭제(탈퇴) 여부
     private LocalDateTime deletedAt; // 삭제(탈퇴) 날짜
+
+    public void updateComment(String comment){
+        this.content = comment;
+    }
+    public void terminate(){
+        this.deletedAt = LocalDateTime.now();
+        this.deletedYn = true;
+    }
 }

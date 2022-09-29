@@ -6,6 +6,7 @@ import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.entity.MemberContentComment;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
+import com.workduo.member.content.entity.MemberContentCommentLike;
 import com.workduo.member.content.entity.MemberContentLike;
 import com.workduo.member.content.repository.MemberContentCommentLikeRepository;
 import com.workduo.member.content.repository.MemberContentCommentRepository;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -183,12 +185,15 @@ public class MemberContentServiceImpl implements MemberContentService {
         memberContentLikeRepository.deleteByMemberAndMemberContent(m,mc);
     }
 
+    /**
+     * 댓글 작성
+     * @param req
+     * @param contentId
+     */
     @Override
     public void contentCommentCreate(ContentCommentCreate.Request req, Long contentId) {
         Member m = validCheckLoggedInUser();
         MemberContent mc = getContent(contentId);
-
-        isContentDeleted(mc);
 
         MemberContentComment mcc = MemberContentComment.builder()
                 .member(m)
@@ -200,10 +205,110 @@ public class MemberContentServiceImpl implements MemberContentService {
         memberContentCommentRepository.save(mcc);
     }
 
+    /**
+     * 댓글 조회
+     * @param memberContentId
+     * @param pageable
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberContentCommentDto> getContentCommentList(Long memberContentId, Pageable pageable) {
+        MemberContent mc = getContent(memberContentId);
+        return memberContentQueryRepository.getCommentByContent(memberContentId,pageable);
+    }
+
+    /**
+     * 댓글 업데이트
+     * @param memberContentId
+     * @param commentId
+     * @param req
+     */
+    @Override
+    public void contentCommentUpdate(Long memberContentId, Long commentId, ContentCommentUpdate.Request req) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(memberContentId);
+        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+
+        memberContentComment.updateComment(req.getComment());
+    }
+    /**
+     * 댓글 삭제
+     * @param memberContentId
+     * @param commentId
+     */
+    @Override
+    public void contentCommentDelete(Long memberContentId, Long commentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(memberContentId);
+        MemberContentComment memberContentComment = getMemberContentComment(commentId, m, mc);
+
+        memberContentCommentLikeRepository.deleteAllByMemberContentCommentIn(
+                List.of(memberContentComment)
+        );
+        memberContentComment.terminate();
+    }
+
+    /**
+     * 댓글 좋아요
+     * @param contentId
+     * @param commentId
+     */
+    @Override
+    public void contentCommentLike(Long contentId, Long commentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(contentId);
+        MemberContentComment memberContentComment = getMemberContentCommentForLike(commentId, mc);
+
+        MemberContentCommentLike build = MemberContentCommentLike.builder()
+                .member(m)
+                .memberContentComment(memberContentComment)
+                .build();
+
+        memberContentCommentLikeRepository.save(build);
+    }
+
+    /**
+     * 컨탠트 댓글 좋아요 취소
+     * @param contentId
+     * @param commentId
+     */
+    @Override
+    public void contentCommentLikeCancel(Long contentId, Long commentId) {
+        Member m = validCheckLoggedInUser();
+        MemberContent mc = getContent(contentId);
+        MemberContentComment memberContentComment = getMemberContentCommentForLike(commentId, mc);
+
+        memberContentCommentLikeRepository
+                .deleteAllByMemberContentCommentIn(List.of(memberContentComment));
+    }
+
+    private void isCommentDeleted(MemberContentComment mcc){
+        if(mcc.isDeletedYn()){
+            throw new MemberException(MEMBER_COMMENT_DELETED);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    protected MemberContentComment getMemberContentComment(Long commentId, Member m, MemberContent mc) {
+        MemberContentComment memberContentComment = memberContentCommentRepository.
+                findByIdAndMemberAndMemberContentAndDeletedYn(commentId, m, mc,false)
+                .orElseThrow(() -> new MemberException(MEMBER_COMMENT_DOES_NOT_EXIST));
+        isCommentDeleted(memberContentComment);
+        return memberContentComment;
+    }
+
+    @Transactional(readOnly = true)
+    protected MemberContentComment getMemberContentCommentForLike(Long commentId, MemberContent mc) {
+        MemberContentComment memberContentComment = memberContentCommentRepository.
+                findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false)
+                .orElseThrow(() -> new MemberException(MEMBER_COMMENT_DOES_NOT_EXIST));
+        isCommentDeleted(memberContentComment);
+        return memberContentComment;
+    }
 
     @Transactional(readOnly = true)
     public void validateLikeCancel(Member m,MemberContent mc){
-        isContentDeleted(mc);
         boolean exists = memberContentLikeRepository.existsByMemberAndMemberContent(m, mc);
         if(!exists){
             throw new MemberException(MEMBER_CONTENT_LIKE_DOES_NOT_EXIST);
@@ -212,7 +317,6 @@ public class MemberContentServiceImpl implements MemberContentService {
 
     @Transactional(readOnly = true)
     protected void validateLike(Member m,MemberContent mc){
-        isContentDeleted(mc);
         boolean exists = memberContentLikeRepository.existsByMemberAndMemberContent(m, mc);
         if(exists){
             throw new MemberException(MEMBER_CONTENT_LIKE_ALREADY);
@@ -253,7 +357,9 @@ public class MemberContentServiceImpl implements MemberContentService {
     }
     @Transactional(readOnly = true)
     protected MemberContent getContent(Long contentId){
-        return memberContentRepository.findById(contentId)
-                .orElseThrow(()-> new MemberException(MEMBER_CONTENT_DOES_NOT_EXIST));
+        MemberContent memberContent = memberContentRepository.findById(contentId)
+                .orElseThrow(() -> new MemberException(MEMBER_CONTENT_DOES_NOT_EXIST));
+        isContentDeleted(memberContent);
+        return memberContent;
     }
 }

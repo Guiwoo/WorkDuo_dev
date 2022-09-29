@@ -309,7 +309,7 @@ class MemberContentControllerTest {
 
     @Nested
     @DisplayName("멤버 피드 댓글 작성 API 테스트")
-    class contentCommentLike{
+    class contentCommentCreate{
         @Test
         @DisplayName("멤버 피드 댓글 작성 실패 [리퀘스트 검증 테스트]")
         public void NotBlankTest() throws Exception{
@@ -342,6 +342,125 @@ class MemberContentControllerTest {
             mockMvc.perform(post("/api/v1/member/content/3/comment")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req))
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 리스트 API 테스트")
+    class contentCommentList{
+        @Test
+        @DisplayName("멤버 피드 댓글 리스트 성공")
+        public void successCommentList() throws Exception{
+            mockMvc.perform(get("/api/v1/member/content/3/comment?page=3&size=10&sort=test")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 업데이트 API 테스트")
+    class contentCommentUpdate{
+
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 실패 [리퀘스트 검증 테스트]")
+        public void NotBlankTest() throws Exception{
+            ContentCommentUpdate.Request req =
+                    ContentCommentUpdate.Request.builder().comment("Test").build();
+
+            var test1
+                    = validator.validate(req);
+            assertThat(test1.size()).isEqualTo(0);
+
+            req.setComment("");
+            var test2 = validator.validate(req);
+            assertThat(test2.size()).isEqualTo(1);
+
+            req.setComment(" ");
+            var test3 = validator.validate(req);
+            assertThat(test3.size()).isEqualTo(1);
+
+            req.setComment(null);
+            var test4 = validator.validate(req);
+            assertThat(test4.size()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("멤버 피드 댓글 업데이트 성공")
+        public void successCommentList() throws Exception{
+
+            ContentCommentUpdate.Request req
+                    = ContentCommentUpdate.Request.builder().comment("test").build();
+
+            mockMvc.perform(patch("/api/v1/member/content/3/comment/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req))
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 삭제 API 테스트")
+    class contentCommentDelete{
+        @Test
+        @DisplayName("멤버 피드 댓글 삭제 성공")
+        public void successCommentList() throws Exception{
+            mockMvc.perform(delete("/api/v1/member/content/3/comment/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 좋아요 API 테스트")
+    class contentCommentLike{
+        @Test
+        @DisplayName("멤버 피드 댓글 좋아요 성공")
+        public void successCommentList() throws Exception{
+            mockMvc.perform(post("/api/v1/member/content/3/comment/1/like")
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(
+                            jsonPath("$.success")
+                                    .value("T")
+                    )
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 피드 댓글 좋아요 취소 API 테스트")
+    class contentCommentLikeCancel{
+        @Test
+        @DisplayName("멤버 피드 댓글 좋아요 취소 성공")
+        public void successCommentList() throws Exception{
+            mockMvc.perform(delete("/api/v1/member/content/3/comment/1/like")
+                            .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isOk())
                     .andExpect(
