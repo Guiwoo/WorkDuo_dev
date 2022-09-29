@@ -60,4 +60,11 @@ public interface GroupMeetingService {
      * @param meetingId
      */
     void groupMeetingParticipant(Long groupId, Long meetingId);
+
+    /**
+     * 그룹 모임 참여 취소
+     * @param groupId
+     * @param meetingId
+     */
+    void groupMeetingCancelParticipant(Long groupId, Long meetingId);
 }

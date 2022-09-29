@@ -28,4 +28,14 @@ public interface GroupMeetingParticipantRepository extends JpaRepository<GroupMe
             @Param("group") Group group, @Param("groupMeeting") GroupMeeting groupMeeting);
 
     boolean existsByMemberAndGroupAndGroupMeeting(Member member, Group group, GroupMeeting groupMeeting);
+
+    @Modifying
+    @Query("delete from GroupMeetingParticipant gmp " +
+            "where gmp.member = :member " +
+            "and gmp.group = :group " +
+            "and gmp.groupMeeting = :groupMeeting")
+    void deleteByMemberAndGroupAndGroupMeeting(
+            @Param("member") Member member,
+            @Param("group") Group group,
+            @Param("groupMeeting") GroupMeeting groupMeeting);
 }
