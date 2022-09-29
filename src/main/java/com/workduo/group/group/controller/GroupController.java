@@ -1,6 +1,5 @@
 package com.workduo.group.group.controller;
 
-import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.service.GroupService;
@@ -8,7 +7,6 @@ import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,18 +26,12 @@ public class GroupController {
     /**
      * 그룹 생성
      * @param request
-     * @param bindingResult
      * @return
      */
     @PostMapping("")
     public ApiResult<?> createGroup(
             List<MultipartFile> multipartFiles,
-            @Validated CreateGroup.Request request,
-            BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @Validated CreateGroup.Request request) {
 
         if (multipartFiles == null || multipartFiles.size() <= 0) {
             throw new RuntimeException("그룹 썸네일은 필수 입력 사항입니다.");

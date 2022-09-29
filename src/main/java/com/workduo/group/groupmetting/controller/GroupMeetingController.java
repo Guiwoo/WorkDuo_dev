@@ -1,7 +1,6 @@
 package com.workduo.group.groupmetting.controller;
 
 import com.workduo.configuration.aop.groupmeeting.GroupMeetingLock;
-import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.groupmetting.dto.CreateMeeting;
 import com.workduo.group.groupmetting.dto.UpdateMeeting;
 import com.workduo.group.groupmetting.service.GroupMeetingService;
@@ -10,11 +9,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 
 import static com.workduo.util.ApiUtils.success;
@@ -49,11 +47,7 @@ public class GroupMeetingController {
     @PostMapping("/{groupId}/meeting")
     public ApiResult<?> createMeeting(
             @PathVariable("groupId") Long groupId,
-            @RequestBody @Validated CreateMeeting.Request request,
-            BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @RequestBody @Validated CreateMeeting.Request request) {
 
         groupMeetingService.createMeeting(request, groupId);
         return success(null);
@@ -97,12 +91,7 @@ public class GroupMeetingController {
     public ApiResult<?> updateMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId,
-            @RequestBody @Validated UpdateMeeting.Request request,
-            BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @RequestBody @Validated UpdateMeeting.Request request) {
 
         groupMeetingService.groupMeetingUpdate(groupId, meetingId, request);
         return success(null);
@@ -159,11 +148,17 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/{groupId}/meeting/{meetingId}/participant")
-    public ResponseEntity<?> participantMeetingList(
+    public ApiResult<?> participantMeetingList(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId,
             Pageable pageable) {
 
-        return null;
+        return success(
+                groupMeetingService.groupMeetingParticipantList(
+                        pageable,
+                        groupId,
+                        meetingId
+                )
+        );
     }
 }

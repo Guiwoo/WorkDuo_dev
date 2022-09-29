@@ -1,6 +1,5 @@
 package com.workduo.group.gropcontent.controller;
 
-import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.gropcontent.dto.createGroupContentComment.CreateComment;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
@@ -10,7 +9,6 @@ import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,19 +45,13 @@ public class GroupContentController {
      * 그룹 피드 생성
      * @param groupId
      * @param request
-     * @param bindingResult
      * @return
      */
     @PostMapping("/{groupId}/content")
     public ApiResult<?> createGroupContent(
             @PathVariable("groupId") Long groupId,
             List<MultipartFile> multipartFiles,
-            @Validated CreateGroupContent.Request request,
-            BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @Validated CreateGroupContent.Request request) {
 
         if (multipartFiles != null && multipartFiles.size() > 5) {
             throw new RuntimeException("사진은 최대 5장까지 업로드 가능합니다.");
@@ -135,19 +127,13 @@ public class GroupContentController {
      * @param groupId
      * @param contentId
      * @param request
-     * @param bindingResult
      * @return
      */
     @PatchMapping("/{groupId}/content/{contentId}")
     public ApiResult<?> groupContentUpdate(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
-            @RequestBody @Validated UpdateContent.Request request,
-            BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @RequestBody @Validated UpdateContent.Request request) {
 
         groupContentService.groupContentUpdate(request, groupId, contentId);
         return success(null);
@@ -180,19 +166,13 @@ public class GroupContentController {
      * @param groupId
      * @param contentId
      * @param request
-     * @param bindingResult
      * @return
      */
     @PostMapping("/{groupId}/content/{contentId}/comment")
     public ApiResult<?> createGroupContentComment(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
-            @RequestBody @Validated CreateComment.Request request,
-            BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @RequestBody @Validated CreateComment.Request request) {
 
         groupContentService.createGroupContentComment(request, groupId, contentId);
         return success(null);
@@ -204,7 +184,6 @@ public class GroupContentController {
      * @param contentId
      * @param commentId
      * @param request
-     * @param bindingResult
      * @return
      */
     @PatchMapping("/{groupId}/content/{contentId}/comment/{commentId}")
@@ -212,12 +191,7 @@ public class GroupContentController {
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             @PathVariable("commentId") Long commentId,
-            @RequestBody @Validated UpdateComment.Request request,
-            BindingResult bindingResult) {
-
-            if (bindingResult.hasErrors()) {
-                throw new CustomMethodArgumentNotValidException(bindingResult);
-            }
+            @RequestBody @Validated UpdateComment.Request request) {
 
             groupContentService.updateGroupContentComment(request, groupId, contentId, commentId);
             return success(null);

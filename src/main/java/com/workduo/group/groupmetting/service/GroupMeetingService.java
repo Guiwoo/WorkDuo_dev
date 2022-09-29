@@ -1,9 +1,6 @@
 package com.workduo.group.groupmetting.service;
 
-import com.workduo.group.groupmetting.dto.CreateMeeting;
-import com.workduo.group.groupmetting.dto.MeetingDto;
-import com.workduo.group.groupmetting.dto.TimeDto;
-import com.workduo.group.groupmetting.dto.UpdateMeeting;
+import com.workduo.group.groupmetting.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -67,4 +64,6 @@ public interface GroupMeetingService {
      * @param meetingId
      */
     void groupMeetingCancelParticipant(Long groupId, Long meetingId);
+
+    Page<ParticipantDto> groupMeetingParticipantList(Pageable pageable, Long groupId, Long meetingId);
 }
