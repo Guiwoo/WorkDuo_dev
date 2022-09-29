@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
 import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
@@ -279,6 +280,26 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
 
         memberCalendar.cancelMeeting();
         groupMeetingParticipantRepository.deleteByMemberAndGroupAndGroupMeeting(member, group, groupMeeting);
+    }
+
+    @Override
+    public Page<ParticipantDto> groupMeetingParticipantList(Pageable pageable, Long groupId, Long meetingId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        GroupMeeting groupMeeting = getGroupMeeting(meetingId, group);
+        if (groupMeeting.isDeletedYn()) {
+            throw new GroupException(GROUP_MEETING_ALREADY_DELETE);
+        }
+
+        Page<GroupMeetingParticipant> groupMeetingParticipants =
+                groupMeetingParticipantRepository
+                        .findByGroupAndGroupMeeting(group, groupMeeting, pageable);
+        return groupMeetingParticipants.map(
+                groupMeetingParticipant -> ParticipantDto.fromEntity(groupMeetingParticipant)
+        );
     }
 
     private void groupMeetingParticipantValidate(Member member, Group group, GroupMeeting groupMeeting) {

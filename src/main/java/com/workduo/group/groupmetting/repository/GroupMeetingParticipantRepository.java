@@ -4,11 +4,15 @@ import com.workduo.group.group.entity.Group;
 import com.workduo.group.groupmetting.entity.GroupMeetingParticipant;
 import com.workduo.group.groupmetting.entity.GroupMeeting;
 import com.workduo.member.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface GroupMeetingParticipantRepository extends JpaRepository<GroupMeetingParticipant, Long> {
@@ -38,4 +42,16 @@ public interface GroupMeetingParticipantRepository extends JpaRepository<GroupMe
             @Param("member") Member member,
             @Param("group") Group group,
             @Param("groupMeeting") GroupMeeting groupMeeting);
+
+    @Query(value = "select gmp from GroupMeetingParticipant gmp " +
+            "join fetch gmp.member " +
+            "where gmp.group = :group " +
+            "and gmp.groupMeeting = :groupMeeting",
+            countQuery = "select count(gmp) from GroupMeetingParticipant gmp " +
+                    "where gmp.group = :group " +
+                    "and gmp.groupMeeting = :groupMeeting")
+    Page<GroupMeetingParticipant> findByGroupAndGroupMeeting(
+            @Param("group") Group group,
+            @Param("groupMeeting") GroupMeeting groupMeeting,
+            Pageable pageable);
 }

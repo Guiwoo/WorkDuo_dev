@@ -32,7 +32,7 @@ public class CreateMeeting {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/seoul")
         private LocalDateTime meetingEndDate;
 
-        @NotBlank(message = "모임장소는필수입력사항입니다.")
+        @NotBlank(message = "모임장소는 필수 입력 사항입니다.")
         private String location;
 
         @Min(value = 1, message = "참여인원은 최소 1명입니다.")
