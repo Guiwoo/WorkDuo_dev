@@ -25,8 +25,8 @@ import static com.querydsl.jpa.JPAExpressions.select;
 import static com.workduo.member.content.entity.QMemberContent.memberContent;
 import static com.workduo.member.content.entity.QMemberContentComment.memberContentComment;
 import static com.workduo.member.content.entity.QMemberContentCommentLike.memberContentCommentLike;
+import static com.workduo.member.content.entity.QMemberContentImage.memberContentImage;
 import static com.workduo.member.content.entity.QMemberContentLike.memberContentLike;
-import static com.workduo.member.contentimage.entitiy.QMemberContentImage.memberContentImage;
 import static com.workduo.member.member.entity.QMember.member;
 
 @Repository
