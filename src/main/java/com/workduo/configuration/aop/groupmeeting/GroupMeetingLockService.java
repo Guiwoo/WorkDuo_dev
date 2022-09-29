@@ -19,7 +19,7 @@ public class GroupMeetingLockService {
 
     private final RedissonClient redissonClient;
 
-    public void lock(Long groupMeetingId, int leaseTime) throws InterruptedException {
+    public void lock(Long groupMeetingId, long leaseTime) throws InterruptedException {
         RLock lock = redissonClient.getLock(getLockKey(groupMeetingId));
         log.info("Trying lock for groupMeetingId : {}", groupMeetingId);
 

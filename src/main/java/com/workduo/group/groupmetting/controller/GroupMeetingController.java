@@ -132,7 +132,7 @@ public class GroupMeetingController {
      * @return
      */
     @PostMapping("/{groupId}/meeting/{meetingId}/participant")
-    @GroupMeetingLock(tryLockTime = 3)
+    @GroupMeetingLock(tryLockTime = 3000L)
     public ApiResult<?> participantMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
