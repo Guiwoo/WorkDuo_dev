@@ -7,10 +7,7 @@ import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.entity.GroupJoinMember;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.repository.GroupRepository;
-import com.workduo.group.groupmetting.dto.CreateMeeting;
-import com.workduo.group.groupmetting.dto.MeetingInquireDto;
-import com.workduo.group.groupmetting.dto.Time;
-import com.workduo.group.groupmetting.dto.TimeDto;
+import com.workduo.group.groupmetting.dto.*;
 import com.workduo.group.groupmetting.entity.GroupMeeting;
 import com.workduo.group.groupmetting.entity.GroupMeetingParticipant;
 import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
@@ -20,6 +17,8 @@ import com.workduo.group.groupmetting.service.GroupMeetingService;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,6 +119,64 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         groupMeetingParticipantRepository.save(meetingParticipant);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MeetingDto> groupMeetingList(Pageable pageable, Long groupId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        return groupMeetingQueryRepository.groupMeetingList(pageable, groupId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingDto groupMeetingDetail(Long groupId, Long meetingId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        return getGroupMeeting(meetingId, groupId, member.getId());
+    }
+
+    @Override
+    @Transactional
+    public void groupMeetingUpdate(Long groupId, Long meetingId, UpdateMeeting.Request request) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        GroupMeeting authorGroupMeeting = getAuthorGroupMeeting(meetingId, group, member);
+        Integer participants = groupMeetingParticipantRepository.countByGroupMeetingAndGroup(authorGroupMeeting, group);
+        authorGroupMeeting.updateGroupMeeting(
+                request.getTitle(),
+                request.getContent(),
+                request.getLocation(),
+                request.getMaxParticipant(),
+                participants);
+
+    }
+
+    @Override
+    @Transactional
+    public void groupMeetingDelete(Long groupId, Long meetingId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+        GroupMeeting authorGroupMeeting = getAuthorGroupMeeting(meetingId, group, member);
+
+        if (authorGroupMeeting.isDeletedYn()) {
+            throw new GroupException(GROUP_MEETING_ALREADY_DELETE);
+        }
+
+        groupMeetingParticipantRepository.deleteAllByGroupAndGroupMeeting(group, authorGroupMeeting);
+        authorGroupMeeting.deleteGroupMeeting();
+    }
+
     private void createMeetingValidate(Member member, CreateMeeting.Request request) {
         LocalDateTime meetingStartDate = request.getMeetingStartDate();
         LocalDateTime meetingEndDate = request.getMeetingEndDate();
@@ -171,6 +228,16 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
     private GroupJoinMember getGroupJoinMember(Group group, Member member) {
         return groupJoinMemberRepository.findByMemberAndGroup(member, group)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_USER));
+    }
+
+    private MeetingDto getGroupMeeting(Long meetingId, Long groupId, Long memberId) {
+        return groupMeetingQueryRepository.findByGroupMeeting(meetingId, groupId, memberId)
+                .orElseThrow(() -> new GroupException(GROUP_MEETING_NOT_FOUND));
+    }
+
+    private GroupMeeting getAuthorGroupMeeting(Long meetingId, Group group, Member member) {
+        return groupMeetingRepository.findByIdAndGroupAndMember(meetingId, group, member)
+                .orElseThrow(() -> new GroupException(GROUP_NOT_SAME_AUTHOR));
     }
 
     private LocalDateTime parseTime(

@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-public class CreateMeeting {
+public class UpdateMeeting {
 
     @Getter
     @Setter
@@ -23,14 +23,6 @@ public class CreateMeeting {
 
         @NotBlank(message = "내용은 필수 입력 사항입니다.")
         private String content;
-
-        @NotNull(message = "모임 시작하는 날짜는 필수 입력 사항입니다.")
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/seoul")
-        private LocalDateTime meetingStartDate;
-
-        @NotNull(message = "모임 끝나는 날짜는 필수 입력 사항입니다.")
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/seoul")
-        private LocalDateTime meetingEndDate;
 
         @NotBlank(message = "모임장소는필수입력사항입니다.")
         private String location;

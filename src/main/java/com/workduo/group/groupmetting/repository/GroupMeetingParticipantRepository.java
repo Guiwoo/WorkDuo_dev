@@ -11,12 +11,16 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupMeetingParticipantRepository extends JpaRepository<GroupMeetingParticipant, Long> {
-    boolean existsByMemberAndGroupMeeting(Member member, GroupMeeting groupMeeting);
-    Integer countByGroupMeeting(GroupMeeting groupMeeting);
 
     @Modifying
     @Query("delete from GroupMeetingParticipant gmp where gmp.group = :group")
     void deleteAllByGroup(Group group);
     void deleteByMember(Member member);
     void deleteByGroupAndMember(Group group, Member member);
+    Integer countByGroupMeetingAndGroup(GroupMeeting groupMeeting, Group group);
+    @Modifying
+    @Query("delete from GroupMeetingParticipant gmp " +
+            "where gmp.group = :group " +
+            "and gmp.groupMeeting = :groupMeeting")
+    void deleteAllByGroupAndGroupMeeting(Group group, GroupMeeting groupMeeting);
 }
