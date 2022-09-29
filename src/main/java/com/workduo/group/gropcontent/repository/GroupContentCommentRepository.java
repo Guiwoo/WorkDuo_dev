@@ -5,6 +5,7 @@ import com.workduo.group.gropcontent.entity.GroupContentComment;
 import com.workduo.member.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -19,9 +20,9 @@ public interface GroupContentCommentRepository extends JpaRepository<GroupConten
             "and c.member = :member " +
             "and c.id = :groupContentCommentId")
     Optional<GroupContentComment> findByGroupContentCommentIdGroupContentAndMember(
-            Long groupContentCommentId,
-            GroupContent groupContent,
-            Member member);
+            @Param("groupContentCommentId") Long groupContentCommentId,
+            @Param("groupContent") GroupContent groupContent,
+            @Param("member") Member member);
 
     Optional<GroupContentComment> findByIdAndGroupContent(Long id, GroupContent groupContent);
 }

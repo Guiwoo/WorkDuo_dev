@@ -53,4 +53,11 @@ public interface GroupMeetingService {
      * @param meetingId
      */
     void groupMeetingDelete(Long groupId, Long meetingId);
+
+    /**
+     * 그룹 모임 참여
+     * @param groupId
+     * @param meetingId
+     */
+    void groupMeetingParticipant(Long groupId, Long meetingId);
 }

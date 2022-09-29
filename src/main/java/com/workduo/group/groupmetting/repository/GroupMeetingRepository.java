@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface GroupMeetingRepository extends JpaRepository<GroupMeeting, Long> {
 
     Optional<GroupMeeting> findByIdAndGroupAndMember(Long id, Group group, Member member);
+    Optional<GroupMeeting> findByIdAndGroup(Long id, Group group);
 }

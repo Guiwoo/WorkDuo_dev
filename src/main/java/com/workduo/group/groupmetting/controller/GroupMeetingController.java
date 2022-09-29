@@ -1,11 +1,11 @@
 package com.workduo.group.groupmetting.controller;
 
 import com.workduo.common.CommonResponse;
+import com.workduo.configuration.aop.groupmeeting.GroupMeetingLock;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.groupmetting.dto.CreateMeeting;
 import com.workduo.group.groupmetting.dto.UpdateMeeting;
 import com.workduo.group.groupmetting.service.GroupMeetingService;
-import com.workduo.util.ApiUtils;
 import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static com.workduo.util.ApiUtils.success;
 
@@ -36,12 +35,11 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/meeting/inquire")
-    public ResponseEntity<?> meetingInquire(
+    public ApiResult<?> meetingInquire(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
 
-        return new ResponseEntity<>(
-                groupMeetingService.meetingInquire(startDate),
-                HttpStatus.OK
+        return success(
+                groupMeetingService.meetingInquire(startDate)
         );
     }
 
@@ -51,7 +49,7 @@ public class GroupMeetingController {
      * @return
      */
     @PostMapping("/{groupId}/meeting")
-    public ResponseEntity<?> createMeeting(
+    public ApiResult<?> createMeeting(
             @PathVariable("groupId") Long groupId,
             @RequestBody @Validated CreateMeeting.Request request,
             BindingResult bindingResult) {
@@ -60,11 +58,7 @@ public class GroupMeetingController {
         }
 
         groupMeetingService.createMeeting(request, groupId);
-
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -135,16 +129,15 @@ public class GroupMeetingController {
 
     /**
      * 그룹 모임 참여
-     * @param groupId
-     * @param meetingId
      * @return
      */
     @PostMapping("/{groupId}/meeting/{meetingId}/participant")
-    public ResponseEntity<?> participantMeeting(
+    @GroupMeetingLock(tryLockTime = 3)
+    public ApiResult<?> participantMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
-
-        return null;
+        groupMeetingService.groupMeetingParticipant(groupId, meetingId);
+        return success(null);
     }
 
     /**
