@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
 import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
@@ -131,6 +132,14 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
                 .groupMeeting(groupMeeting)
                 .build();
         groupMeetingParticipantRepository.save(meetingParticipant);
+
+        MemberCalendar memberCalendar = MemberCalendar.builder()
+                .member(member)
+                .group(group)
+                .groupMeeting(groupMeeting)
+                .meetingActiveStatus(MEETING_ACTIVE_STATUS_ING)
+                .build();
+        memberCalendarRepository.save(memberCalendar);
     }
 
     /**
@@ -210,6 +219,7 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
             throw new GroupException(GROUP_MEETING_ALREADY_DELETE);
         }
 
+        memberCalendarRepository.updateMemberCalendarByGroupMeeting(authorGroupMeeting);
         groupMeetingParticipantRepository.deleteAllByGroupAndGroupMeeting(group, authorGroupMeeting);
         authorGroupMeeting.deleteGroupMeeting();
     }
@@ -247,7 +257,36 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         memberCalendarRepository.save(memberCalendar);
     }
 
+    /**
+     * 그룹 모임 참여 취소
+     * @param groupId
+     * @param meetingId
+     */
+    @Override
+    @Transactional
+    public void groupMeetingCancelParticipant(Long groupId, Long meetingId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        GroupMeeting groupMeeting = getGroupMeeting(meetingId, group);
+
+        MemberCalendar memberCalendar = getMemberCalendar(member, group, groupMeeting);
+        if (memberCalendar.getMeetingActiveStatus() != MEETING_ACTIVE_STATUS_ING) {
+            throw new RuntimeException("해당 모임은 취소된 모임입니다.");
+        }
+
+        memberCalendar.cancelMeeting();
+        groupMeetingParticipantRepository.deleteByMemberAndGroupAndGroupMeeting(member, group, groupMeeting);
+    }
+
     private void groupMeetingParticipantValidate(Member member, Group group, GroupMeeting groupMeeting) {
+
+        if (groupMeeting.isDeletedYn()) {
+            throw new GroupException(GROUP_MEETING_ALREADY_DELETE);
+        }
+
         boolean exists =
                 groupMeetingParticipantRepository
                         .existsByMemberAndGroupAndGroupMeeting(member, group, groupMeeting);
@@ -334,6 +373,11 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
     private GroupMeeting getAuthorGroupMeeting(Long meetingId, Group group, Member member) {
         return groupMeetingRepository.findByIdAndGroupAndMember(meetingId, group, member)
                 .orElseThrow(() -> new GroupException(GROUP_NOT_SAME_AUTHOR));
+    }
+
+    private MemberCalendar getMemberCalendar(Member member, Group group, GroupMeeting groupMeeting) {
+        return memberCalendarRepository.findByMemberAndGroupAndGroupMeeting(member, group, groupMeeting)
+                .orElseThrow(() -> new RuntimeException("등록된 일정이 없습니다."));
     }
 
     private LocalDateTime parseTime(

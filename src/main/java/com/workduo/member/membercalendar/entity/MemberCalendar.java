@@ -8,6 +8,8 @@ import lombok.*;
 
 import javax.persistence.*;
 
+import static com.workduo.member.membercalendar.type.MeetingActiveStatus.MEETING_ACTIVE_STATUS_CANCEL;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -34,4 +36,8 @@ public class MemberCalendar {
 
     @Enumerated(EnumType.STRING)
     private MeetingActiveStatus meetingActiveStatus;
+
+    public void cancelMeeting() {
+        this.meetingActiveStatus = MEETING_ACTIVE_STATUS_CANCEL;
+    }
 }

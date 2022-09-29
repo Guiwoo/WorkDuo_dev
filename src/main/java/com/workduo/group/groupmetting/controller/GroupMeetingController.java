@@ -1,6 +1,5 @@
 package com.workduo.group.groupmetting.controller;
 
-import com.workduo.common.CommonResponse;
 import com.workduo.configuration.aop.groupmeeting.GroupMeetingLock;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.groupmetting.dto.CreateMeeting;
@@ -11,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -145,11 +143,12 @@ public class GroupMeetingController {
      * @return
      */
     @DeleteMapping("/{groupId}/meeting/{meetingId}/participant")
-    public ResponseEntity<?> cancelParticipantMeeting(
+    public ApiResult<?> cancelParticipantMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
 
-        return null;
+        groupMeetingService.groupMeetingCancelParticipant(groupId, meetingId);
+        return success(null);
     }
 
     /**
