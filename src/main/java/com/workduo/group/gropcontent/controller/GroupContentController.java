@@ -1,22 +1,15 @@
 package com.workduo.group.gropcontent.controller;
 
-import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.gropcontent.dto.createGroupContentComment.CreateComment;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
-import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailContentComment;
-import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContent;
-import com.workduo.group.gropcontent.dto.listgroupcontent.ListGroupContent;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import com.workduo.group.gropcontent.dto.updategroupcontentcomment.UpdateComment;
 import com.workduo.group.gropcontent.service.GroupContentService;
-import com.workduo.util.ApiUtils;
 import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -46,9 +39,7 @@ public class GroupContentController {
             Pageable pageable) {
 
         return success(
-                ListGroupContent.Response.from(
-                        groupContentService.groupContentList(pageable, groupId)
-                )
+                groupContentService.groupContentList(pageable, groupId)
         );
     }
 
@@ -90,9 +81,7 @@ public class GroupContentController {
             @PathVariable("contentId") Long contentId) {
 
         return success(
-                DetailGroupContent.Response.from(
-                        groupContentService.detailGroupContent(groupId, contentId)
-                )
+                groupContentService.detailGroupContent(groupId, contentId)
         );
     }
 
@@ -178,12 +167,10 @@ public class GroupContentController {
             Pageable pageable) {
 
         return success(
-                DetailContentComment.Response.from(
-                        groupContentService.groupContentCommentList(
-                                pageable,
-                                groupId,
-                                contentId
-                        )
+                groupContentService.groupContentCommentList(
+                    pageable,
+                    groupId,
+                    contentId
                 )
         );
     }

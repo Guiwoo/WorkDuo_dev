@@ -231,7 +231,7 @@ public class GroupContentControllerTest {
                         return request;
                     })
                     .contentType(MediaType.MULTIPART_FORM_DATA))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
                     .andExpect(jsonPath("$.result").isEmpty())
                     .andDo(print());

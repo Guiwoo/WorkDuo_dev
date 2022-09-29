@@ -1,16 +1,13 @@
 package com.workduo.group.group.controller;
 
-import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
-import com.workduo.group.group.dto.*;
+import com.workduo.group.group.dto.CreateGroup;
+import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.service.GroupService;
-import com.workduo.util.ApiUtils;
 import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -88,9 +85,7 @@ public class GroupController {
     public ApiResult<?> detailGroup(
             @PathVariable("groupId") Long groupId) {
 
-        return success(
-                DetailGroup.Response.from(groupService.groupDetail(groupId))
-        );
+        return success(groupService.groupDetail(groupId));
     }
 
     /**
@@ -100,9 +95,7 @@ public class GroupController {
     public ApiResult<?> groupList(
             Pageable pageable,
             ListGroup.Request condition) {
-        return success(
-                ListGroup.Response.from(groupService.groupList(pageable, condition))
-        );
+        return success(groupService.groupList(pageable, condition));
     }
 
     /**
@@ -155,9 +148,7 @@ public class GroupController {
             @PathVariable("groupId") Long groupId) {
 
         return success(
-                ParticipantGroup.Response.from(
-                        groupService.groupParticipantList(pageable, groupId)
-                )
+                groupService.groupParticipantList(pageable, groupId)
         );
     }
 }

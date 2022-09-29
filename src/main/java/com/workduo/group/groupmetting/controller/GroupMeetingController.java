@@ -72,9 +72,7 @@ public class GroupMeetingController {
             @PathVariable("groupId") Long groupId,
             Pageable pageable) {
 
-        return success(
-                groupMeetingService.groupMeetingList(pageable, groupId)
-        );
+        return success(groupMeetingService.groupMeetingList(pageable, groupId));
     }
 
     /**

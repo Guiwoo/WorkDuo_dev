@@ -13,11 +13,11 @@ public class ApiUtils {
     @Setter
     public static class ApiResult<T> {
         private final String success;
-        private final T response;
+        private final T result;
 
         private ApiResult(String success, T response) {
             this.success = success;
-            this.response = response;
+            this.result = response;
         }
     }
 }
