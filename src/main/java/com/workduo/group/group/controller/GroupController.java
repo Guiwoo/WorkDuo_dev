@@ -1,20 +1,21 @@
 package com.workduo.group.group.controller;
 
-import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
-import com.workduo.group.group.dto.*;
+import com.workduo.group.group.dto.CreateGroup;
+import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.service.GroupService;
+import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import static com.workduo.util.ApiUtils.success;
 
 @Slf4j
 @RestController
@@ -31,7 +32,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("")
-    public ResponseEntity<?> createGroup(
+    public ApiResult<?> createGroup(
             List<MultipartFile> multipartFiles,
             @Validated CreateGroup.Request request,
             BindingResult bindingResult) {
@@ -46,10 +47,7 @@ public class GroupController {
 
         groupService.createGroup(request, multipartFiles);
 
-        return new ResponseEntity<>(
-                CreateGroup.Response.from(),
-                HttpStatus.CREATED
-        );
+        return success(null);
     }
 
     /**
@@ -58,14 +56,11 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}")
-    public ResponseEntity<?> deleteGroup(
+    public ApiResult<?> deleteGroup(
             @PathVariable("groupId") Long groupId) {
         groupService.deleteGroup(groupId);
 
-        return new ResponseEntity<>(
-                CancelGroup.Response.from(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -74,14 +69,11 @@ public class GroupController {
      * @return
      */
     @DeleteMapping("/{groupId}")
-    public ResponseEntity<?> withdrawGroup(
+    public ApiResult<?> withdrawGroup(
             @PathVariable("groupId") Long groupId) {
         groupService.withdrawGroup(groupId);
 
-        return new ResponseEntity<>(
-                CancelGroup.Response.from()
-                , HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -90,26 +82,20 @@ public class GroupController {
      * @return
      */
     @GetMapping("/{groupId}")
-    public ResponseEntity<?> detailGroup(
+    public ApiResult<?> detailGroup(
             @PathVariable("groupId") Long groupId) {
 
-        return new ResponseEntity<>(
-                DetailGroup.Response.from(groupService.groupDetail(groupId))
-                , HttpStatus.OK
-        );
+        return success(groupService.groupDetail(groupId));
     }
 
     /**
      * 그룹 리스트
      */
     @GetMapping("")
-    public ResponseEntity<?> groupList(
+    public ApiResult<?> groupList(
             Pageable pageable,
             ListGroup.Request condition) {
-        return new ResponseEntity<>(
-                ListGroup.Response.from(groupService.groupList(pageable, condition))
-                , HttpStatus.OK
-        );
+        return success(groupService.groupList(pageable, condition));
     }
 
     /**
@@ -118,14 +104,11 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}/like")
-    public ResponseEntity<?> groupLike(
+    public ApiResult<?> groupLike(
             @PathVariable("groupId") Long groupId) {
 
         groupService.groupLike(groupId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -134,14 +117,11 @@ public class GroupController {
      * @return
      */
     @DeleteMapping("/{groupId}/like")
-    public ResponseEntity<?> groupUnLike(
+    public ApiResult<?> groupUnLike(
             @PathVariable("groupId") Long groupId) {
 
         groupService.groupUnLike(groupId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -150,14 +130,11 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}/participant")
-    public ResponseEntity<?> groupParticipant(
+    public ApiResult<?> groupParticipant(
             @PathVariable("groupId") Long groupId) {
 
         groupService.groupParticipant(groupId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -166,14 +143,12 @@ public class GroupController {
      * @return
      */
     @GetMapping("participant/{groupId}")
-    public ResponseEntity<?> groupParticipantList(
+    public ApiResult<?> groupParticipantList(
             Pageable pageable,
             @PathVariable("groupId") Long groupId) {
 
-        return new ResponseEntity<>(
-                ParticipantGroup.Response.from(
-                        groupService.groupParticipantList(pageable, groupId)
-                ),
-                HttpStatus.OK);
+        return success(
+                groupService.groupParticipantList(pageable, groupId)
+        );
     }
 }

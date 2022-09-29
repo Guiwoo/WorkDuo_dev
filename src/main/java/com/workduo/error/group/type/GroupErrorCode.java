@@ -27,7 +27,10 @@ public enum GroupErrorCode {
     GROUP_MEETING_DUPLICATION(HttpStatus.BAD_REQUEST, "동시간대에 참여한 모임이 있거나 생성한 모임이 있습니다."),
     GROUP_MEETING_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 모임은 없는 모임입니다."),
     GROUP_MEETING_ALREADY_DELETE(HttpStatus.BAD_REQUEST, "해당 모임은 삭제된 모임입니다."),
-    GROUP_MEETING_LESS_THEN_PARTICIPANT(HttpStatus.BAD_REQUEST, "모임의 정원이 모임의 참여 인원보다 적을 수 없습니다.");
+    GROUP_MEETING_ALREADY_PARTICIPANT(HttpStatus.BAD_REQUEST, "이미 참여한 모임입니다."),
+    GROUP_MEETING_LESS_THEN_PARTICIPANT(HttpStatus.BAD_REQUEST, "모임의 정원이 모임의 참여 인원보다 적을 수 없습니다."),
+    GROUP_MEETING_FULL_CAPACITY(HttpStatus.BAD_REQUEST, "모임의 정원이 초과하였습니다."),
+    GROUP_MEETING_LOCK_FAIL(HttpStatus.BAD_REQUEST, "현재 모임의 신청인원이 몰려 제대로 처리되지 못 하였습니다. 다시 신청해주세요.");
 
     private final HttpStatus httpStatus;
     private final String message;

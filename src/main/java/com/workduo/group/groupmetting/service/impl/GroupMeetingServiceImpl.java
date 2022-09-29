@@ -16,6 +16,8 @@ import com.workduo.group.groupmetting.repository.query.GroupMeetingQueryReposito
 import com.workduo.group.groupmetting.service.GroupMeetingService;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
+import com.workduo.member.membercalendar.entity.MemberCalendar;
+import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,12 +33,14 @@ import static com.workduo.error.group.type.GroupErrorCode.*;
 import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
 import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
 import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
+import static com.workduo.member.membercalendar.type.MeetingActiveStatus.MEETING_ACTIVE_STATUS_ING;
 
 @Service
 @RequiredArgsConstructor
 public class GroupMeetingServiceImpl implements GroupMeetingService {
 
     private final MemberRepository memberRepository;
+    private final MemberCalendarRepository memberCalendarRepository;
     private final GroupRepository groupRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
     private final GroupMeetingRepository groupMeetingRepository;
@@ -44,6 +48,11 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
     private final GroupMeetingQueryRepository groupMeetingQueryRepository;
     private final CommonRequestContext context;
 
+    /**
+     * 유저 모임 일정
+     * @param startDate
+     * @return
+     */
     @Override
     @Transactional(readOnly = true)
     public TimeDto meetingInquire(LocalDate startDate) {
@@ -89,6 +98,11 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         return timeDto;
     }
 
+    /**
+     * 그릅 모임 생성
+     * @param request
+     * @param groupId
+     */
     @Override
     @Transactional
     public void createMeeting(CreateMeeting.Request request, Long groupId) {
@@ -119,6 +133,12 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         groupMeetingParticipantRepository.save(meetingParticipant);
     }
 
+    /**
+     * 그룹 모임 리스트
+     * @param pageable
+     * @param groupId
+     * @return
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<MeetingDto> groupMeetingList(Pageable pageable, Long groupId) {
@@ -130,6 +150,12 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         return groupMeetingQueryRepository.groupMeetingList(pageable, groupId);
     }
 
+    /**
+     * 그룹 모임 상세
+     * @param groupId
+     * @param meetingId
+     * @return
+     */
     @Override
     @Transactional(readOnly = true)
     public MeetingDto groupMeetingDetail(Long groupId, Long meetingId) {
@@ -138,9 +164,15 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
 
         commonMeetingValidate(group, member);
 
-        return getGroupMeeting(meetingId, groupId, member.getId());
+        return getGroupMeetingDto(meetingId, groupId, member.getId());
     }
 
+    /**
+     * 그룹 모임 수정
+     * @param groupId
+     * @param meetingId
+     * @param request
+     */
     @Override
     @Transactional
     public void groupMeetingUpdate(Long groupId, Long meetingId, UpdateMeeting.Request request) {
@@ -160,6 +192,11 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
 
     }
 
+    /**
+     * 그룹 모임 삭제
+     * @param groupId
+     * @param meetingId
+     */
     @Override
     @Transactional
     public void groupMeetingDelete(Long groupId, Long meetingId) {
@@ -177,6 +214,56 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
         authorGroupMeeting.deleteGroupMeeting();
     }
 
+    /**
+     * 그룹 모임 참여
+     * @param groupId
+     * @param meetingId
+     */
+    @Override
+    @Transactional
+    public void groupMeetingParticipant(Long groupId, Long meetingId) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        commonMeetingValidate(group, member);
+
+        GroupMeeting groupMeeting = getGroupMeeting(meetingId, group);
+
+        groupMeetingParticipantValidate(member, group, groupMeeting);
+
+        GroupMeetingParticipant participant = GroupMeetingParticipant.builder()
+                .member(member)
+                .group(group)
+                .groupMeeting(groupMeeting)
+                .build();
+        groupMeetingParticipantRepository.save(participant);
+
+        MemberCalendar memberCalendar = MemberCalendar.builder()
+                .member(member)
+                .group(group)
+                .groupMeeting(groupMeeting)
+                .meetingActiveStatus(MEETING_ACTIVE_STATUS_ING)
+                .build();
+        memberCalendarRepository.save(memberCalendar);
+    }
+
+    private void groupMeetingParticipantValidate(Member member, Group group, GroupMeeting groupMeeting) {
+        boolean exists =
+                groupMeetingParticipantRepository
+                        .existsByMemberAndGroupAndGroupMeeting(member, group, groupMeeting);
+
+        if (exists) {
+            throw new GroupException(GROUP_MEETING_ALREADY_PARTICIPANT);
+        }
+
+        Integer participants = groupMeetingParticipantRepository.countByGroupMeetingAndGroup(groupMeeting, group);
+        if (participants >= groupMeeting.getMaxParticipant()) {
+            throw new GroupException(GROUP_MEETING_FULL_CAPACITY);
+        }
+
+        duplicateTime(member, groupMeeting.getMeetingStartDate(), groupMeeting.getMeetingEndDate());
+    }
+
     private void createMeetingValidate(Member member, CreateMeeting.Request request) {
         LocalDateTime meetingStartDate = request.getMeetingStartDate();
         LocalDateTime meetingEndDate = request.getMeetingEndDate();
@@ -189,6 +276,10 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
             throw new GroupException(GROUP_MEETING_TIME_NOT_HOUR);
         }
 
+        duplicateTime(member, meetingStartDate, meetingEndDate);
+    }
+
+    private void duplicateTime(Member member, LocalDateTime meetingStartDate, LocalDateTime meetingEndDate) {
         LocalDateTime startDate = parseTime(meetingStartDate, 0, 0, 0, 0);
         LocalDateTime endDate = parseTime(meetingStartDate, 23, 59, 59,0);
 
@@ -230,8 +321,13 @@ public class GroupMeetingServiceImpl implements GroupMeetingService {
                 .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND_USER));
     }
 
-    private MeetingDto getGroupMeeting(Long meetingId, Long groupId, Long memberId) {
+    private MeetingDto getGroupMeetingDto(Long meetingId, Long groupId, Long memberId) {
         return groupMeetingQueryRepository.findByGroupMeeting(meetingId, groupId, memberId)
+                .orElseThrow(() -> new GroupException(GROUP_MEETING_NOT_FOUND));
+    }
+
+    private GroupMeeting getGroupMeeting(Long meetingId, Group group) {
+        return groupMeetingRepository.findByIdAndGroup(meetingId, group)
                 .orElseThrow(() -> new GroupException(GROUP_MEETING_NOT_FOUND));
     }
 

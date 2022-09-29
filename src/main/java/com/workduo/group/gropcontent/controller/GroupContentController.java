@@ -1,26 +1,23 @@
 package com.workduo.group.gropcontent.controller;
 
-import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.gropcontent.dto.createGroupContentComment.CreateComment;
 import com.workduo.group.gropcontent.dto.creategroupcontent.CreateGroupContent;
-import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailContentComment;
-import com.workduo.group.gropcontent.dto.detailgroupcontent.DetailGroupContent;
-import com.workduo.group.gropcontent.dto.listgroupcontent.ListGroupContent;
 import com.workduo.group.gropcontent.dto.updategroupcontent.UpdateContent;
 import com.workduo.group.gropcontent.dto.updategroupcontentcomment.UpdateComment;
 import com.workduo.group.gropcontent.service.GroupContentService;
+import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import static com.workduo.util.ApiUtils.success;
 
 @Slf4j
 @RestController
@@ -37,15 +34,12 @@ public class GroupContentController {
      * @return
      */
     @GetMapping("/{groupId}/content")
-    public ResponseEntity<?> groupContentList(
+    public ApiResult<?> groupContentList(
             @PathVariable("groupId") Long groupId,
             Pageable pageable) {
 
-        return new ResponseEntity<>(
-                ListGroupContent.Response.from(
-                        groupContentService.groupContentList(pageable, groupId)
-                ),
-                HttpStatus.OK
+        return success(
+                groupContentService.groupContentList(pageable, groupId)
         );
     }
 
@@ -57,7 +51,7 @@ public class GroupContentController {
      * @return
      */
     @PostMapping("/{groupId}/content")
-    public ResponseEntity<?> createGroupContent(
+    public ApiResult<?> createGroupContent(
             @PathVariable("groupId") Long groupId,
             List<MultipartFile> multipartFiles,
             @Validated CreateGroupContent.Request request,
@@ -72,10 +66,7 @@ public class GroupContentController {
         }
 
         groupContentService.createGroupContent(groupId, request, multipartFiles);
-        return new ResponseEntity<>(
-                CommonResponse.ok()
-                ,HttpStatus.CREATED
-        );
+        return success(null);
     }
 
     /**
@@ -85,15 +76,12 @@ public class GroupContentController {
      * @return
      */
     @GetMapping("/{groupId}/content/{contentId}")
-    public ResponseEntity<?> detailGroupContent(
+    public ApiResult<?> detailGroupContent(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId) {
 
-        return new ResponseEntity<>(
-                DetailGroupContent.Response.from(
-                        groupContentService.detailGroupContent(groupId, contentId)
-                ),
-                HttpStatus.OK
+        return success(
+                groupContentService.detailGroupContent(groupId, contentId)
         );
     }
 
@@ -104,15 +92,12 @@ public class GroupContentController {
      * @return
      */
     @PostMapping("/{groupId}/content/{contentId}/like")
-    public ResponseEntity<?> groupContentLike(
+    public ApiResult<?> groupContentLike(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId) {
 
         groupContentService.groupContentLike(groupId, contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -122,15 +107,12 @@ public class GroupContentController {
      * @return
      */
     @DeleteMapping("/{groupId}/content/{contentId}/like")
-    public ResponseEntity<?> groupContentUnLike(
+    public ApiResult<?> groupContentUnLike(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId) {
 
         groupContentService.groupContentUnLike(groupId, contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -140,15 +122,12 @@ public class GroupContentController {
      * @return
      */
     @DeleteMapping("/{groupId}/content/{contentId}")
-    public ResponseEntity<?> groupContentDelete(
+    public ApiResult<?> groupContentDelete(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId) {
 
         groupContentService.groupContentDelete(groupId, contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -160,7 +139,7 @@ public class GroupContentController {
      * @return
      */
     @PatchMapping("/{groupId}/content/{contentId}")
-    public ResponseEntity<?> groupContentUpdate(
+    public ApiResult<?> groupContentUpdate(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             @RequestBody @Validated UpdateContent.Request request,
@@ -171,10 +150,7 @@ public class GroupContentController {
         }
 
         groupContentService.groupContentUpdate(request, groupId, contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -185,20 +161,17 @@ public class GroupContentController {
      * @return
      */
     @GetMapping("/{groupId}/content/{contentId}/comment")
-    public ResponseEntity<?> groupContentCommentList(
+    public ApiResult<?> groupContentCommentList(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             Pageable pageable) {
 
-        return new ResponseEntity<>(
-                DetailContentComment.Response.from(
-                        groupContentService.groupContentCommentList(
-                                pageable,
-                                groupId,
-                                contentId
-                        )
-                ),
-                HttpStatus.OK
+        return success(
+                groupContentService.groupContentCommentList(
+                    pageable,
+                    groupId,
+                    contentId
+                )
         );
     }
 
@@ -211,7 +184,7 @@ public class GroupContentController {
      * @return
      */
     @PostMapping("/{groupId}/content/{contentId}/comment")
-    public ResponseEntity<?> createGroupContentComment(
+    public ApiResult<?> createGroupContentComment(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             @RequestBody @Validated CreateComment.Request request,
@@ -222,7 +195,7 @@ public class GroupContentController {
         }
 
         groupContentService.createGroupContentComment(request, groupId, contentId);
-        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.OK);
+        return success(null);
     }
 
     /**
@@ -235,7 +208,7 @@ public class GroupContentController {
      * @return
      */
     @PatchMapping("/{groupId}/content/{contentId}/comment/{commentId}")
-    public ResponseEntity<?> updateGroupContentComment(
+    public ApiResult<?> updateGroupContentComment(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             @PathVariable("commentId") Long commentId,
@@ -247,10 +220,7 @@ public class GroupContentController {
             }
 
             groupContentService.updateGroupContentComment(request, groupId, contentId, commentId);
-            return new ResponseEntity<>(
-                    CommonResponse.ok(),
-                    HttpStatus.OK
-            );
+            return success(null);
     }
 
     /**
@@ -261,16 +231,13 @@ public class GroupContentController {
      * @return
      */
     @DeleteMapping("/{groupId}/content/{contentId}/comment/{commentId}")
-    public ResponseEntity<?> deleteGroupContentComment(
+    public ApiResult<?> deleteGroupContentComment(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             @PathVariable("commentId") Long commentId) {
 
         groupContentService.deleteGroupContentComment(groupId, contentId, commentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -281,17 +248,14 @@ public class GroupContentController {
      * @return
      */
     @PostMapping("/{groupId}/content/{contentId}/comment/{commentId}/like")
-    public ResponseEntity<?> groupContentCommentLike(
+    public ApiResult<?> groupContentCommentLike(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             @PathVariable("commentId") Long commentId) {
 
         groupContentService.groupContentCommentLike(groupId, contentId, commentId);
 
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     /**
@@ -302,16 +266,13 @@ public class GroupContentController {
      * @return
      */
     @DeleteMapping("/{groupId}/content/{contentId}/comment/{commentId}/like")
-    public ResponseEntity<?> groupContentCommentUnLike(
+    public ApiResult<?> groupContentCommentUnLike(
             @PathVariable("groupId") Long groupId,
             @PathVariable("contentId") Long contentId,
             @PathVariable("commentId") Long commentId) {
 
         groupContentService.groupContentCommentUnLike(groupId, contentId, commentId);
 
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 }
