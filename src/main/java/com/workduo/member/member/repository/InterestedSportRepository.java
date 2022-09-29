@@ -1,6 +1,6 @@
-package com.workduo.member.interestedsport.repository;
+package com.workduo.member.member.repository;
 
-import com.workduo.member.interestedsport.entity.MemberInterestedSport;
+import com.workduo.member.member.entity.MemberInterestedSport;
 import com.workduo.member.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 

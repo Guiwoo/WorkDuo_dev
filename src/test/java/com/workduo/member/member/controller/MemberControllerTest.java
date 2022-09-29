@@ -192,7 +192,7 @@ class MemberControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(reqeust))
                     )
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isOk())
                     .andDo(print());
         }
     }

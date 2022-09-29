@@ -1,14 +1,11 @@
 package com.workduo.member.content.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
-import com.workduo.member.area.entity.MemberActiveArea;
 import com.workduo.member.content.dto.ContentUpdate;
-import com.workduo.member.contentimage.entitiy.MemberContentImage;
 import com.workduo.member.member.entity.Member;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

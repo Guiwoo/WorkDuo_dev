@@ -1,7 +1,6 @@
 package com.workduo.member.member.entity;
 
 import com.workduo.configuration.jpa.entitiy.BaseEntity;
-import com.workduo.member.area.entity.MemberActiveArea;
 import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.type.MemberStatus;
 import lombok.*;

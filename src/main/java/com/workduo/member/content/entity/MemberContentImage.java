@@ -1,8 +1,5 @@
-package com.workduo.member.contentimage.entitiy;
+package com.workduo.member.content.entity;
 
-import com.workduo.group.gropcontent.entity.GroupContent;
-import com.workduo.group.gropcontent.entity.GroupContentImage;
-import com.workduo.member.content.entity.MemberContent;
 import lombok.*;
 
 import javax.persistence.*;

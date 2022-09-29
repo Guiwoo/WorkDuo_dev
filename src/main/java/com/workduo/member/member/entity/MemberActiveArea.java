@@ -1,7 +1,7 @@
-package com.workduo.member.interestedsport.entity;
+package com.workduo.member.member.entity;
 
+import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.member.member.entity.Member;
-import com.workduo.sport.sport.entity.Sport;
 import lombok.*;
 
 import javax.persistence.*;
@@ -11,11 +11,11 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "member_interested_sport")
-public class MemberInterestedSport {
+@Table(name = "member_active_area")
+public class MemberActiveArea {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_interested_sport_id")
+    @Column(name = "member_active_area_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -23,6 +23,6 @@ public class MemberInterestedSport {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sport_id")
-    private Sport sport;
+    @JoinColumn(name = "sgg")
+    private SiggArea siggArea;
 }

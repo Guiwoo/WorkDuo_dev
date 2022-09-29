@@ -9,6 +9,8 @@ import com.workduo.member.history.service.LoginHistoryService;
 import com.workduo.member.member.dto.*;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
 import com.workduo.member.member.service.MemberService;
+import com.workduo.util.ApiUtils;
+import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.workduo.util.ApiUtils.*;
 
 
 @RestController
@@ -33,9 +37,10 @@ public class MemberController {
     private final MemberRefreshService refreshService;
     private final LoginHistoryService loginHistoryService;
     private final GroupService groupService;
+
     //로그인
     @PostMapping("/login")
-    public ResponseEntity<?> apiLogin(
+    public ApiResult<?> apiLogin(
             HttpServletRequest request,
             @RequestBody @Validated MemberLogin.Request req,
             BindingResult bindingResult
@@ -51,14 +56,12 @@ public class MemberController {
         Map<String,String> map = new HashMap<>();
         map.put("token",token);
 
-        return new ResponseEntity<>(MemberLogin.Response.builder()
-                        .success("T")
-                        .result(map)
-                        .build(), HttpStatus.OK);
+        return success(token);
     }
+
     //회원가입
     @PostMapping("")
-    public ResponseEntity<?> apiCreate(
+    public ApiResult<?> apiCreate(
             @RequestBody @Validated MemberCreate.Request req,
             BindingResult bindingResult
     ){
@@ -66,12 +69,12 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.createUser(req);
-        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.CREATED);
+        return success(null);
     }
 
     //회원정보수정
     @PatchMapping("")
-    public ResponseEntity<?> apiEdit(
+    public ApiResult<?> apiEdit(
             @RequestBody @Validated MemberEdit.Request req,
             BindingResult bindingResult
     ){
@@ -79,11 +82,12 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.editUser(req);
-        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.OK);
+        return success(null);
     }
+
     //비밀번호 변경
     @PatchMapping("/password")
-    public ResponseEntity<?> apiPasswordEdit(
+    public ApiResult<?> apiPasswordEdit(
             @RequestBody @Validated MemberChangePassword.Request req,
             BindingResult bindingResult
     ){
@@ -91,12 +95,14 @@ public class MemberController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberService.changePassword(req);
-        return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.OK);
+
+        return success(null);
     }
+
     //회원탈퇴
     @DeleteMapping("")
-    public ResponseEntity<?> apiDelete(){
+    public ApiResult<?> apiDelete(){
         memberService.withdraw(groupService);
-        return new ResponseEntity<>(CommonResponse.ok(),HttpStatus.OK);
+        return success(null);
     }
 }

@@ -22,6 +22,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.LongSupplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -163,7 +167,7 @@ class MemberContentControllerTest {
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
-                    .andExpect(jsonPath("$.result.content.size()").value(1))
+                    .andExpect(jsonPath("$.response.content.size()").value(1))
                     .andDo(print());
 
         }
@@ -205,8 +209,8 @@ class MemberContentControllerTest {
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
-                    .andExpect(jsonPath("$.result.size()").value(12))
-                    .andExpect(jsonPath("$.result.comments.content[0].likeCnt").value(123467688))
+                    .andExpect(jsonPath("$.response.size()").value(12))
+                    .andExpect(jsonPath("$.response.comments.content[0].likeCnt").value(123467688))
                     .andDo(print());
 
         }
@@ -358,14 +362,22 @@ class MemberContentControllerTest {
         @Test
         @DisplayName("멤버 피드 댓글 리스트 성공")
         public void successCommentList() throws Exception{
+
+            MemberContentCommentDto test = MemberContentCommentDto.builder()
+                    .id(1L)
+                    .content("test")
+                    .build();
+
+            PageImpl<MemberContentCommentDto> memberContentCommentDtos = new PageImpl<>(List.of(test));
+            given(memberContentService.getContentCommentList(any(),any()))
+                    .willReturn(memberContentCommentDtos);
+
             mockMvc.perform(get("/api/v1/member/content/3/comment?page=3&size=10&sort=test")
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isOk())
-                    .andExpect(
-                            jsonPath("$.success")
-                                    .value("T")
-                    )
+                    .andExpect(jsonPath("$.success").value("T"))
+                    .andExpect(jsonPath("$.response.content.size()").value(1))
                     .andDo(print());
         }
     }

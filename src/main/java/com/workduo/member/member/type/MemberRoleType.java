@@ -1,4 +1,4 @@
-package com.workduo.member.memberrole.type;
+package com.workduo.member.member.type;
 
 public enum MemberRoleType {
     ROLE_MEMBER,

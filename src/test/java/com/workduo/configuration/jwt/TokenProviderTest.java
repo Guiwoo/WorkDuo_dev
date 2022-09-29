@@ -1,8 +1,7 @@
 package com.workduo.configuration.jwt;
 
 import com.workduo.member.member.service.MemberService;
-import com.workduo.member.memberrole.dto.MemberRoleDto;
-import com.workduo.member.memberrole.entity.MemberRole;
+import com.workduo.member.member.dto.MemberRoleDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.DisplayName;
