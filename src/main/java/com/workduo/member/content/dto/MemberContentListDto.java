@@ -53,14 +53,12 @@ public class MemberContentListDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Response{
-        private String success;
         private Page<MemberContentListDto> result;
 
         public static Response from(
                 Page<MemberContentListDto> lists
         ){
             return Response.builder()
-                    .success("T")
                     .result(lists)
                     .build();
         }

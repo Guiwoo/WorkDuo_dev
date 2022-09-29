@@ -1,6 +1,6 @@
-package com.workduo.member.memberrole.dto;
+package com.workduo.member.member.dto;
 
-import com.workduo.member.memberrole.type.MemberRoleType;
+import com.workduo.member.member.type.MemberRoleType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

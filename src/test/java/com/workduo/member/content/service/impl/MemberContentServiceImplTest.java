@@ -11,12 +11,10 @@ import com.workduo.member.content.repository.MemberContentCommentRepository;
 import com.workduo.member.content.repository.MemberContentLikeRepository;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
-import com.workduo.member.contentimage.entitiy.MemberContentImage;
-import com.workduo.member.contentimage.repository.MemberContentImageRepository;
+import com.workduo.member.content.repository.MemberContentImageRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.util.AwsS3Utils;
-import org.hibernate.boot.TempTableDdlTransactionHandling;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,11 +23,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.multipart.MultipartFile;
@@ -964,7 +960,7 @@ class MemberContentServiceImplTest {
                     .deletedYn(true)
                     .build()))
                     .when(memberContentCommentRepository)
-                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
+                    .findByIdAndMemberContentAndDeletedYn(commentId,mc,false);
             //when
             MemberException exception = assertThrows(MemberException.class,
                     ()->memberContentService.contentCommentLike(contentId,
@@ -983,7 +979,7 @@ class MemberContentServiceImplTest {
             doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
             doReturn(Optional.of(spy))
                     .when(memberContentCommentRepository)
-                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
+                    .findByIdAndMemberContentAndDeletedYn(commentId,mc,false);
             //when
             memberContentService.contentCommentLike(contentId,commentId);
             //then
@@ -1069,7 +1065,7 @@ class MemberContentServiceImplTest {
                     .deletedYn(true)
                     .build()))
                     .when(memberContentCommentRepository)
-                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
+                    .findByIdAndMemberContentAndDeletedYn(commentId,mc,false);
             //when
             MemberException exception = assertThrows(MemberException.class,
                     ()->memberContentService.contentCommentLikeCancel(contentId,
@@ -1087,7 +1083,7 @@ class MemberContentServiceImplTest {
             doReturn(Optional.of(mc)).when(memberContentRepository).findById(any());
             doReturn(Optional.of(build))
                     .when(memberContentCommentRepository)
-                    .findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false);
+                    .findByIdAndMemberContentAndDeletedYn(commentId,mc,false);
             //when
             memberContentService.contentCommentLikeCancel(contentId,commentId);
             //then

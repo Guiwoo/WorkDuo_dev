@@ -14,8 +14,8 @@ import com.workduo.member.content.repository.MemberContentLikeRepository;
 import com.workduo.member.content.repository.MemberContentRepository;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
 import com.workduo.member.content.service.MemberContentService;
-import com.workduo.member.contentimage.entitiy.MemberContentImage;
-import com.workduo.member.contentimage.repository.MemberContentImageRepository;
+import com.workduo.member.content.entity.MemberContentImage;
+import com.workduo.member.content.repository.MemberContentImageRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.util.AwsS3Utils;
@@ -28,10 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.workduo.error.member.type.MemberErrorCode.*;
 
@@ -301,7 +299,7 @@ public class MemberContentServiceImpl implements MemberContentService {
     @Transactional(readOnly = true)
     protected MemberContentComment getMemberContentCommentForLike(Long commentId, MemberContent mc) {
         MemberContentComment memberContentComment = memberContentCommentRepository.
-                findByIdAndAndMemberContentAnAndDeletedYn(commentId,mc,false)
+                findByIdAndMemberContentAndDeletedYn(commentId,mc,false)
                 .orElseThrow(() -> new MemberException(MEMBER_COMMENT_DOES_NOT_EXIST));
         isCommentDeleted(memberContentComment);
         return memberContentComment;

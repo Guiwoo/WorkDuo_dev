@@ -4,6 +4,8 @@ import com.workduo.common.CommonResponse;
 import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.service.MemberContentService;
+import com.workduo.util.ApiUtils;
+import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
@@ -20,7 +22,7 @@ import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 
-;
+;import static com.workduo.util.ApiUtils.success;
 
 @RestController
 @Slf4j
@@ -32,7 +34,7 @@ public class MemberContentController {
 
     // 피드 생성
     @PostMapping("")
-    public ResponseEntity<?> apiCreateContent(
+    public ApiResult<?> apiCreateContent(
             List<MultipartFile> multipartFiles,
             @Validated ContentCreate.Request req,
             BindingResult bindingResult
@@ -46,36 +48,27 @@ public class MemberContentController {
         }
 
         memberContentService.createContent(req,multipartFiles);
-
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-                );
+        return success(null);
     }
 
     // 피드 리스트
     @GetMapping("/list")
-    public ResponseEntity<?> getContents(Pageable pageable){
+    public ApiResult<?> getContents(Pageable pageable){
         Page<MemberContentListDto> contentList = memberContentService.getContentList(pageable);
-        return new ResponseEntity<>(
-                MemberContentListDto.Response.from(contentList),
-                HttpStatus.OK
-        );
+        return success(contentList);
     }
 
     // 피드 상세
     @GetMapping("{memberContentId}")
-    public ResponseEntity<?> getSpecificContent(
+    public ApiResult<?> getSpecificContent(
             @PathVariable("memberContentId") Long memberContentId){
         MemberContentDetailDto contentDetail = memberContentService.getContentDetail(memberContentId);
-        return new ResponseEntity<>(
-                MemberContentDetailDto.Response.from(contentDetail),
-                HttpStatus.OK
-        );
+        return success(contentDetail);
     }
+
     //피드 수정
     @PatchMapping("{memberContentId}")
-    public ResponseEntity<?> updateContent(
+    public ApiResult<?> updateContent(
             @PathVariable("memberContentId") Long memberContentId,
             @RequestBody @Valid ContentUpdate.Request req,
             BindingResult bindingResult){
@@ -83,51 +76,39 @@ public class MemberContentController {
             throw new CustomMethodArgumentNotValidException(bindingResult);
         }
         memberContentService.contentUpdate(memberContentId,req);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     // 피드삭제
     @DeleteMapping("{memberContentId}")
-    public ResponseEntity<?> deleteContent(
+    public ApiResult<?> deleteContent(
             @PathVariable("memberContentId") Long contentId
     ){
         memberContentService.contentDelete(contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     // 피드 좋아요
     @PostMapping("{memberContentId}/like")
-    public ResponseEntity<?> contentLike(
+    public ApiResult<?> contentLike(
             @PathVariable("memberContentId") Long contentId
     ){
         memberContentService.contentLike(contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     // 피드 좋아요 취소
     @DeleteMapping("{memberContentId}/like")
-    public ResponseEntity<?> contentLikeCancel(
+    public ApiResult<?> contentLikeCancel(
             @PathVariable("memberContentId") Long contentId
     ){
         memberContentService.contentLikeCancel(contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
     // 피드 컨탠트  코멘트 작성
     @PostMapping("{memberContentId}/comment")
-    public ResponseEntity<?> contentComment(
+    public ApiResult<?> contentComment(
             @PathVariable("memberContentId") Long contentId,
             @RequestBody @Valid ContentCommentCreate.Request req,
             BindingResult bindingResult){
@@ -137,31 +118,22 @@ public class MemberContentController {
         }
 
         memberContentService.contentCommentCreate(req,contentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 
      // 피드 커맨트 리스트
     @GetMapping("{memberContentId}/comment")
-    public ResponseEntity<?> getCommentList(
+    public ApiResult<?> getCommentList(
             Pageable pageable,
             @PathVariable("memberContentId") Long memberContentId){
-        ContentCommentList.Response result =
-                ContentCommentList.Response.from(
-                        memberContentService
-                                .getContentCommentList(memberContentId, pageable));
 
-        return new ResponseEntity<>(
-                result,
-                HttpStatus.OK
-        );
+        return success(memberContentService
+                .getContentCommentList(memberContentId, pageable));
     }
 
     // 피드 댓글 업데이트
     @PatchMapping("{memberContentId}/comment/{commentId}")
-    public ResponseEntity<?> getContentComment(
+    public ApiResult<?> getContentComment(
             @PathVariable("memberContentId") Long memberContentId,
             @PathVariable("commentId") Long commentId,
             @RequestBody ContentCommentUpdate.Request req,
@@ -174,45 +146,34 @@ public class MemberContentController {
 
         memberContentService.contentCommentUpdate(memberContentId,commentId,req);
 
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
+
     //피드 댓글 삭제
     @DeleteMapping("{memberContentId}/comment/{commentId}")
-    public ResponseEntity<?> deleteContentComment(
+    public ApiResult<?> deleteContentComment(
             @PathVariable("memberContentId") Long memberContentId,
             @PathVariable("commentId") Long commentId
     ){
         memberContentService.contentCommentDelete(memberContentId,commentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
     //피드 댓글 좋아요
     @PostMapping("{memberContentId}/comment/{commentId}/like")
-    public ResponseEntity<?> contentCommentLike(
+    public ApiResult<?> contentCommentLike(
             @PathVariable("memberContentId") Long contentId,
             @PathVariable("commentId") Long commentId
     ){
         memberContentService.contentCommentLike(contentId,commentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
     //피드 댓글 좋아요 취소
     @DeleteMapping("{memberContentId}/comment/{commentId}/like")
-    public ResponseEntity<?> contentCommentLikeCancel(
+    public ApiResult<?> contentCommentLikeCancel(
             @PathVariable("memberContentId") Long contentId,
             @PathVariable("commentId") Long commentId
     ){
         memberContentService.contentCommentLikeCancel(contentId,commentId);
-        return new ResponseEntity<>(
-                CommonResponse.ok(),
-                HttpStatus.OK
-        );
+        return success(null);
     }
 }

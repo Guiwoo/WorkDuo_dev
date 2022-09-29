@@ -15,8 +15,7 @@ public interface MemberContentCommentRepository extends JpaRepository<MemberCont
 
     Optional<MemberContentComment> findByIdAndMemberAndMemberContentAndDeletedYn(
             Long mcc,Member m, MemberContent mc,boolean deleted);
-
-    Optional<MemberContentComment> findByIdAndAndMemberContentAnAndDeletedYn(Long id,MemberContent mc,boolean dyn);
+    Optional<MemberContentComment> findByIdAndMemberContentAndDeletedYn(Long id,MemberContent mc,boolean dyn);
     List<MemberContentComment> findAllByMemberContent(MemberContent memberContent);
     @Modifying
     @Query("delete from MemberContentComment mcc where mcc.memberContent = :memberContent")

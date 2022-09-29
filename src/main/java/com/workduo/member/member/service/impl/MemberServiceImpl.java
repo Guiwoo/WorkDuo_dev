@@ -11,12 +11,12 @@ import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.group.group.type.GroupRole;
 import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
-import com.workduo.member.area.entity.MemberActiveArea;
-import com.workduo.member.area.repository.MemberActiveAreaRepository;
-import com.workduo.member.existmember.entity.ExistMember;
-import com.workduo.member.existmember.repository.ExistMemberRepository;
-import com.workduo.member.interestedsport.entity.MemberInterestedSport;
-import com.workduo.member.interestedsport.repository.InterestedSportRepository;
+import com.workduo.member.member.entity.MemberActiveArea;
+import com.workduo.member.member.repository.MemberActiveAreaRepository;
+import com.workduo.member.member.entity.ExistMember;
+import com.workduo.member.member.repository.ExistMemberRepository;
+import com.workduo.member.member.entity.MemberInterestedSport;
+import com.workduo.member.member.repository.InterestedSportRepository;
 import com.workduo.member.member.dto.MemberChangePassword;
 import com.workduo.member.member.dto.MemberCreate;
 import com.workduo.member.member.dto.MemberEdit;
@@ -28,9 +28,9 @@ import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.member.service.MemberService;
 import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
-import com.workduo.member.memberrole.entity.MemberRole;
-import com.workduo.member.memberrole.repository.MemberRoleRepository;
-import com.workduo.member.memberrole.type.MemberRoleType;
+import com.workduo.member.member.entity.MemberRole;
+import com.workduo.member.member.repository.MemberRoleRepository;
+import com.workduo.member.member.type.MemberRoleType;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import lombok.RequiredArgsConstructor;
@@ -282,7 +282,7 @@ public class MemberServiceImpl implements MemberService {
         sportList.forEach(
                 (id)->{
                     if(!activeList.contains(id)){
-                        com.workduo.member.interestedsport.entity.MemberInterestedSport i = com.workduo.member.interestedsport.entity.MemberInterestedSport.builder()
+                        MemberInterestedSport i = MemberInterestedSport.builder()
                                 .member(m)
                                 .sport(getSport(id))
                                 .build();

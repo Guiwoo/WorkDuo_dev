@@ -1,19 +1,15 @@
 package com.workduo.member.member.dto;
 
-import com.workduo.area.siggarea.entity.SiggArea;
-import com.workduo.group.group.dto.CancelGroup;
-import com.workduo.member.area.entity.MemberActiveArea;
-import com.workduo.member.existmember.entity.ExistMember;
+import com.workduo.member.member.entity.ExistMember;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.type.MemberStatus;
-import com.workduo.member.memberrole.entity.MemberRole;
-import com.workduo.member.memberrole.type.MemberRoleType;
+import com.workduo.member.member.entity.MemberRole;
+import com.workduo.member.member.type.MemberRoleType;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
-import java.util.Map;
 
 public class MemberCreate {
     @Getter

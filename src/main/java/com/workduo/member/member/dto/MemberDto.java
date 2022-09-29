@@ -2,11 +2,9 @@ package com.workduo.member.member.dto;
 
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.type.MemberStatus;
-import com.workduo.member.memberrole.type.MemberRoleType;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter

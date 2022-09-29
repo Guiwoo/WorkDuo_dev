@@ -1,6 +1,6 @@
-package com.workduo.member.contentimage.repository;
+package com.workduo.member.content.repository;
 
-import com.workduo.member.contentimage.entitiy.MemberContentImage;
+import com.workduo.member.content.entity.MemberContentImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

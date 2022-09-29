@@ -1,7 +1,7 @@
-package com.workduo.member.memberrole.repository;
+package com.workduo.member.member.repository;
 
 import com.workduo.member.member.entity.Member;
-import com.workduo.member.memberrole.entity.MemberRole;
+import com.workduo.member.member.entity.MemberRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -50,14 +50,12 @@ public class MemberContentDetailDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Response{
-        private String success;
         private MemberContentDetailDto result;
 
         public static Response from(
                 MemberContentDetailDto contents
         ){
             return Response.builder()
-                    .success("T")
                     .result(contents)
                     .build();
         }

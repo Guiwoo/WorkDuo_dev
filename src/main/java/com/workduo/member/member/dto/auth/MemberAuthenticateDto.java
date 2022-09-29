@@ -1,7 +1,7 @@
 package com.workduo.member.member.dto.auth;
 
-import com.workduo.member.memberrole.dto.MemberRoleDto;
-import com.workduo.member.memberrole.entity.MemberRole;
+import com.workduo.member.member.dto.MemberRoleDto;
+import com.workduo.member.member.entity.MemberRole;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
