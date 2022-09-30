@@ -18,9 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.workduo.util.ApiUtils.*;
@@ -68,9 +70,10 @@ public class MemberController {
     //회원정보수정
     @PatchMapping("")
     public ApiResult<?> apiEdit(
-            @RequestBody @Validated MemberEdit.Request req
+            MultipartFile multipartFileList,
+            @Validated MemberEdit.Request req
     ){
-        memberService.editUser(req);
+        memberService.editUser(req,multipartFileList);
         return success(null);
     }
 
