@@ -24,6 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -228,20 +229,22 @@ class MemberControllerTest {
         @Test
         @DisplayName("계정 수정 성공")
         void editSuccess() throws Exception {
-            List<String> sggList = new ArrayList<>(List.of("1"));
-            List<Integer> sportList = new ArrayList<>(List.of(1));
-            MemberEdit.Request reqeust = MemberEdit.Request
-                    .builder()
-                    .username("test")
-                    .phoneNumber("1")
-                    .siggAreaList(sggList)
-                    .nickname("feelingGood")
-                    .sportList(sportList)
-                    .build();
-            doNothing().when(memberService).editUser(reqeust);
+            MockMultipartFile image = new MockMultipartFile(
+                    "multipartFiles",
+                    "imagefile.jpeg",
+                    "image/jpeg",
+                    "<<jpeg data>>".getBytes()
+            );
+
+            MemberEdit.Request reqeust = MemberEdit.Request.builder().build();
+            doNothing().when(memberService).editUser(reqeust,image);
             mockMvc.perform(patch("/api/v1/member")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(reqeust))
+                            .param("username", "test")
+                            .param("phoneNumber", "1")
+                            .param("siggAreaList", "1,2")
+                            .param("nickname", "feelingGood")
+                            .param("sportList", "1,2")
+                            .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
                     .andDo(print());

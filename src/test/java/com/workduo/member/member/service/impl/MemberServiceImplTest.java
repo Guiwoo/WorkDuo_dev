@@ -4,6 +4,8 @@ import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jwt.memberrefreshtoken.repository.MemberRefreshTokenRepository;
+import com.workduo.error.global.exception.CustomS3Exception;
+import com.workduo.error.global.type.GlobalExceptionType;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
@@ -23,6 +25,7 @@ import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import com.workduo.member.member.repository.MemberRoleRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
+import com.workduo.util.AwsS3Utils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,12 +33,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.workduo.error.global.type.GlobalExceptionType.FILE_DELETE_FAIL;
+import static com.workduo.error.global.type.GlobalExceptionType.FILE_EXTENSION_MALFORMED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,6 +68,8 @@ class MemberServiceImplTest {
     private SiggAreaRepository siggAreaRepository;
     @Mock
     private InterestedSportRepository interestedSportRepository;
+    @Mock
+    private AwsS3Utils awsS3Utils;
     @Mock
     private SportRepository sportRepository;
     @Mock
@@ -341,6 +349,14 @@ class MemberServiceImplTest {
                 .nickname("feelingGood")
                 .sportList(sportList)
                 .build();
+
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFiles",
+                "imagefile.jpeg",
+                "image/jpeg",
+                "<<jpeg data>>".getBytes()
+        );
+
         @Test
         @DisplayName("회원정보 수정 실패[이메일 이 없는경우]")
         void emailDoesNotExist(){
@@ -348,7 +364,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest)
+                    ()-> memberService.editUser(editRequest,image)
             );
             //then
             assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
@@ -363,7 +379,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest)
+                    ()-> memberService.editUser(editRequest,image)
             );
             //then
             assertEquals(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
@@ -378,7 +394,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest)
+                    ()-> memberService.editUser(editRequest,image)
             );
             //then
             assertEquals(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE,exception.getErrorCode());
@@ -394,7 +410,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest)
+                    ()-> memberService.editUser(editRequest,image)
             );
             //then
             assertEquals(MemberErrorCode.MEMBER_PHONE_DUPLICATE,exception.getErrorCode());
@@ -410,7 +426,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest)
+                    ()-> memberService.editUser(editRequest,image)
             );
             //then
             assertEquals(MemberErrorCode.MEMBER_SIGG_ERROR,exception.getErrorCode());
@@ -427,26 +443,49 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest)
+                    ()-> memberService.editUser(editRequest,image)
             );
             //then
             assertEquals(MemberErrorCode.MEMBER_SPORT_ERROR,exception.getErrorCode());
         }
 
         @Test
+        @DisplayName("회원정보 수정 실패[aws s3 업로드 실패시 ]")
+        void failUploadToS3(){
+            Member m = Member.builder().profileImg("aws.com/hehe/i/updated ?").email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+            given(siggAreaRepository.existsBySgg(any())).willReturn(true);
+            given(sportRepository.existsById(any())).willReturn(true);
+
+            //when
+            CustomS3Exception exception = assertThrows(
+                    CustomS3Exception.class,
+                    ()-> memberService.editUser(editRequest,image)
+            );
+            //then
+            assertEquals(FILE_DELETE_FAIL,exception.getErrorCode());
+        }
+
+        @Test
         @DisplayName("회원정보 수정 성공")
         void successEditProfile(){
-            Member m = Member.builder().email("test").build();
+            Member m = Member.builder().profileImg("aws.com/hehe/i/updated ?").email("test").build();
             doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
             given(commonRequestContext.getMemberEmail()).willReturn("test");
             given(siggAreaRepository.existsBySgg(any())).willReturn(true);
             given(siggAreaRepository.findBySgg(any())).willReturn(Optional.of(SiggArea.builder().build()));
             given(sportRepository.existsById(any())).willReturn(true);
             given(sportRepository.findById(any())).willReturn(Optional.of(Sport.builder().build()));
-            memberService.editUser(editRequest);
+            given(awsS3Utils.deleteFile(any())).willReturn(true);
+            given(awsS3Utils.uploadFile(any(),any()))
+                    .willReturn(List.of("hehe/i/updated ?"));
+
+            memberService.editUser(editRequest,image);
             //then
             verify(sportRepository,times(sportList.size())).findById(any());
             verify(siggAreaRepository,times(sggList.size())).findBySgg(any());
+            verify(awsS3Utils,times(1)).uploadFile(any(), any());
         }
     }
     @Nested
