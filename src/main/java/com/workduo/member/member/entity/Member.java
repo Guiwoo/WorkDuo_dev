@@ -27,6 +27,8 @@ public class Member extends BaseEntity {
     private String nickname; // 별명
     private String phoneNumber; // 핸드폰
     private String status; // 상태메세지
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.REMOVE)
+    private List<MemberRole> memberRoles = new ArrayList<>();
 
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY , cascade = CascadeType.REMOVE)
     private List<MemberActiveArea> activeAreas = new ArrayList<>();

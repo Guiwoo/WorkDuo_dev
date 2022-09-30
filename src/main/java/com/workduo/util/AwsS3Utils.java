@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -77,18 +78,19 @@ public class AwsS3Utils {
         }
 
         DeleteObjectsRequest deleteObjectsRequest =
-                new DeleteObjectsRequest(bucket).withKeys(keyVersions);
-
-        int deleteSize;
+                new DeleteObjectsRequest(bucket).withKeys(keyVersions).withQuiet(false);
+        int successfulDeletes = 0;
 
         try {
             DeleteObjectsResult response = amazonS3Client.deleteObjects(deleteObjectsRequest);
-            deleteSize = response.getDeletedObjects().size();
+
+            successfulDeletes = response.getDeletedObjects().size();
+            System.out.println(successfulDeletes + " objects successfully deleted.");
         } catch (CustomS3Exception e) {
             throw new CustomS3Exception(FILE_DELETE_FAIL);
         }
 
-        return deleteSize == paths.size() ? true : false;
+        return successfulDeletes == paths.size();
     }
 
     private String createFileName(String fileName) {
@@ -101,5 +103,12 @@ public class AwsS3Utils {
         } catch (Exception e) {
             throw new CustomS3Exception(FILE_EXTENSION_MALFORMED);
         }
+    }
+    public static String parseAwsUrl(String url){
+        if(StringUtils.hasText(url)){
+            String[] profileImg = url.split(".com/");
+            return profileImg[1];
+        }
+        return null;
     }
 }
