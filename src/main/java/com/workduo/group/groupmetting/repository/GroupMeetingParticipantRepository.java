@@ -20,7 +20,9 @@ public interface GroupMeetingParticipantRepository extends JpaRepository<GroupMe
     @Modifying
     @Query("delete from GroupMeetingParticipant gmp where gmp.group = :group")
     void deleteAllByGroup(@Param("group") Group group);
-    void deleteByMember(Member member);
+    @Modifying
+    @Query("delete from GroupMeetingParticipant gmp where gmp.member = :member")
+    void deleteByMember(@Param("member") Member member);
     void deleteByGroupAndMember(Group group, Member member);
     Integer countByGroupMeetingAndGroup(GroupMeeting groupMeeting, Group group);
 
