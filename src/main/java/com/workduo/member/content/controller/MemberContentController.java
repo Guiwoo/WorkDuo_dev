@@ -36,12 +36,9 @@ public class MemberContentController {
     @PostMapping("")
     public ApiResult<?> apiCreateContent(
             List<MultipartFile> multipartFiles,
-            @Validated ContentCreate.Request req,
-            BindingResult bindingResult
+            @Validated ContentCreate.Request req
     ) throws Exception {
-        if(bindingResult.hasErrors()){
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+
         // 추후 업데이트 가 필요
         if (multipartFiles != null && multipartFiles.size() > 5) {
             throw new RuntimeException("사진은 최대 5장까지 업로드 가능합니다.");
@@ -70,11 +67,7 @@ public class MemberContentController {
     @PatchMapping("{memberContentId}")
     public ApiResult<?> updateContent(
             @PathVariable("memberContentId") Long memberContentId,
-            @RequestBody @Valid ContentUpdate.Request req,
-            BindingResult bindingResult){
-        if(bindingResult.hasErrors()){
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @RequestBody @Valid ContentUpdate.Request req){
         memberContentService.contentUpdate(memberContentId,req);
         return success(null);
     }
@@ -110,12 +103,7 @@ public class MemberContentController {
     @PostMapping("{memberContentId}/comment")
     public ApiResult<?> contentComment(
             @PathVariable("memberContentId") Long contentId,
-            @RequestBody @Valid ContentCommentCreate.Request req,
-            BindingResult bindingResult){
-
-        if(bindingResult.hasErrors()){
-        throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+            @RequestBody @Valid ContentCommentCreate.Request req){
 
         memberContentService.contentCommentCreate(req,contentId);
         return success(null);
@@ -136,13 +124,8 @@ public class MemberContentController {
     public ApiResult<?> getContentComment(
             @PathVariable("memberContentId") Long memberContentId,
             @PathVariable("commentId") Long commentId,
-            @RequestBody ContentCommentUpdate.Request req,
-            BindingResult bindingResult
-
+            @RequestBody ContentCommentUpdate.Request req
     ){
-        if(bindingResult.hasErrors()){
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
 
         memberContentService.contentCommentUpdate(memberContentId,commentId,req);
 
