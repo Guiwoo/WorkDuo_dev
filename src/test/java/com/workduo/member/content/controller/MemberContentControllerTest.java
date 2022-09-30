@@ -167,7 +167,7 @@ class MemberContentControllerTest {
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
-                    .andExpect(jsonPath("$.response.content.size()").value(1))
+                    .andExpect(jsonPath("$.result.content.size()").value(1))
                     .andDo(print());
 
         }
@@ -209,8 +209,8 @@ class MemberContentControllerTest {
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
-                    .andExpect(jsonPath("$.response.size()").value(12))
-                    .andExpect(jsonPath("$.response.comments.content[0].likeCnt").value(123467688))
+                    .andExpect(jsonPath("$.result.size()").value(12))
+                    .andExpect(jsonPath("$.result.comments.content[0].likeCnt").value(123467688))
                     .andDo(print());
 
         }
@@ -377,7 +377,7 @@ class MemberContentControllerTest {
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value("T"))
-                    .andExpect(jsonPath("$.response.content.size()").value(1))
+                    .andExpect(jsonPath("$.result.content.size()").value(1))
                     .andDo(print());
         }
     }

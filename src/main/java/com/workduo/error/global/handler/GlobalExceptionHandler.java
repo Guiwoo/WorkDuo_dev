@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -26,7 +27,15 @@ public class GlobalExceptionHandler {
 //        ValidErrorResult result = ValidErrorResult.of(e.getBindingResult());
 //        return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 //    }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<?> methodArgumentTypeException(MethodArgumentTypeMismatchException e) {
+        GlobalErrorResult result = GlobalErrorResult.builder()
+                .success("F")
+                .message(e.getMessage())
+                .build();
 
+        return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
             Exception.class

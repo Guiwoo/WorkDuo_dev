@@ -42,12 +42,9 @@ public class MemberController {
     @PostMapping("/login")
     public ApiResult<?> apiLogin(
             HttpServletRequest request,
-            @RequestBody @Validated MemberLogin.Request req,
-            BindingResult bindingResult
+            @RequestBody @Validated MemberLogin.Request req
             ) throws Exception {
-        if(bindingResult.hasErrors()){
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+
         MemberAuthenticateDto m = memberService.authenticateUser(req);
         String token = tokenProvider.generateToken(m.getEmail(),m.getRoles());
         refreshService.validateRefreshToken(m);
@@ -62,12 +59,8 @@ public class MemberController {
     //회원가입
     @PostMapping("")
     public ApiResult<?> apiCreate(
-            @RequestBody @Validated MemberCreate.Request req,
-            BindingResult bindingResult
+            @RequestBody @Validated MemberCreate.Request req
     ){
-        if(bindingResult.hasErrors()){
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
         memberService.createUser(req);
         return success(null);
     }
@@ -75,12 +68,8 @@ public class MemberController {
     //회원정보수정
     @PatchMapping("")
     public ApiResult<?> apiEdit(
-            @RequestBody @Validated MemberEdit.Request req,
-            BindingResult bindingResult
+            @RequestBody @Validated MemberEdit.Request req
     ){
-        if(bindingResult.hasErrors()){
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
         memberService.editUser(req);
         return success(null);
     }
@@ -88,12 +77,9 @@ public class MemberController {
     //비밀번호 변경
     @PatchMapping("/password")
     public ApiResult<?> apiPasswordEdit(
-            @RequestBody @Validated MemberChangePassword.Request req,
-            BindingResult bindingResult
+            @RequestBody @Validated MemberChangePassword.Request req
     ){
-        if(bindingResult.hasErrors()){
-            throw new CustomMethodArgumentNotValidException(bindingResult);
-        }
+
         memberService.changePassword(req);
 
         return success(null);
