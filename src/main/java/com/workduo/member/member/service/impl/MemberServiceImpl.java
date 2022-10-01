@@ -1,5 +1,6 @@
 package com.workduo.member.member.service.impl;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
@@ -33,12 +34,16 @@ import com.workduo.member.member.repository.MemberRoleRepository;
 import com.workduo.member.member.type.MemberRoleType;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
+import com.workduo.util.AwsS3Provider;
+import io.jsonwebtoken.lang.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +51,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.workduo.error.global.type.GlobalExceptionType.FILE_DELETE_FAIL;
+import static com.workduo.error.global.type.GlobalExceptionType.FILE_EXTENSION_MALFORMED;
 import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_STOP;
 import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_WITHDRAW;
 
@@ -53,7 +60,6 @@ import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_WITHDRAW
 @RequiredArgsConstructor
 @Transactional
 public class MemberServiceImpl implements MemberService {
-
     private final MemberRepository memberRepository;
     private final ExistMemberRepository existMemberRepository;
     private final MemberRoleRepository memberRoleRepository;
@@ -67,15 +73,17 @@ public class MemberServiceImpl implements MemberService {
     private final MemberCalendarRepository memberCalendarRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
     private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
+    private final AwsS3Provider awsS3Provider;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByEmailOnLoadByUserName(email)
                 .orElseThrow(() -> new UsernameNotFoundException("❌ 유저 를 찾을수 없습니다, 로그인 되었지만 삭제 되었습니다."));
-        List<MemberRole> roles = memberRoleRepository.findByMember(member);
+
         MemberAuthDto authDto = MemberAuthDto.builder()
                 .username(member.getUsername())
                 .password(member.getPassword())
-                .roles(roles)
+                .roles(member.getMemberRoles())
                 .build();
 
         return new PrincipalDetails(authDto);
@@ -93,34 +101,50 @@ public class MemberServiceImpl implements MemberService {
 
         return MemberAuthenticateDto.builder().email(m.getEmail()).roles(all).build();
     }
+
+    /**
+     * 유저 아이디 생성
+     * @param create
+     */
     @Override
     public void createUser(MemberCreate.Request create) {
         validationCreateData(create);
-        // Need to add aws s3 img file path ,or default path should be added
+
         Member m = MemberCreate.createReqToMember(create);
         m.updatePassword(passwordEncoder.encode(create.getPassword()));
         memberRepository.save(m);
-        // 롤 저장
+
         MemberRole r = MemberCreate.createReqToMemberRole(m,MemberRoleType.ROLE_MEMBER);
         memberRoleRepository.save(r);
-        // 이메일 테이블 저장
+
         ExistMember e = MemberCreate.createReqToExistMember(create.getEmail());
         existMemberRepository.save(e);
-        //시도 저장
+
         saveActiveArea(m,create.getSiggAreaList());
-        //운동 저장
         saveInterestedSport(m,create.getSportList());
     }
+
+    /**
+     * 유저 정보 수정
+     * @param edit
+     * @param multipartFile
+     */
     @Override
-    public void editUser(MemberEdit.Request edit) {
+    public void editUser(MemberEdit.Request edit, MultipartFile multipartFile) {
         Member m = validCheckLoggedInUser();
+
         validationEditDate(edit,m);
+        profileImgUpdate(edit, multipartFile, m);
         m.updateUserInfo(edit);
-        //지역 변경 해줘야함 테이블에서 찾아서 지울꺼 지우고 업데이트할꺼 하고
+
         updateActiveArea(m,edit.getSiggAreaList());
-        //운동 변경
         updateInterestedSport(m,edit.getSportList());
     }
+
+    /**
+     * 멤버 비밀번호 변경
+     * @param req
+     */
     @Override
     public void changePassword(MemberChangePassword.Request req) {
         Member m  = validCheckLoggedInUser();
@@ -133,34 +157,18 @@ public class MemberServiceImpl implements MemberService {
         m.updatePassword(passwordEncoder.encode(req.getPassword()));
     }
 
+    /**
+     * 멤버 탈퇴
+     * @param groupService
+     */
     @Override
     public void withdraw(GroupService groupService) {
         Member m = validCheckLoggedInUser();
         validCheckActiveMember(m);
-        //리프레시 토큰 테이블
-        memberRefreshTokenRepository.deleteById(m.getEmail());
-        //멤버 이메일 중복체크 테이블
-        existMemberRepository.deleteById(m.getEmail());
-        // 멤버 롤 테이블
-        memberRoleRepository.deleteByMember(m);
-        // 멤버 활동 지역 테이블
-        memberActiveAreaRepository.deleteByMember(m);
-        // 멤버 관심 운동 테이블
-        interestedSportRepository.deleteByMember(m);
 
-        //맴버 피드 도 업데이트 해줘야함
+        deleteAboutMember(m);
+        deleteAboutGroup(groupService, m);
 
-        //그룹 쪽 지우러 가보자
-        List<GroupJoinMember> groupJoinMemberList = groupJoinMemberRepository.findAllByMember(m);
-        groupJoinMemberList.forEach(
-                (groupJoinMember) -> {
-                    if(groupJoinMember.getGroupRole() == GroupRole.GROUP_ROLE_LEADER){
-                        groupService.deleteGroup(groupJoinMember.getGroup().getId());
-                    }
-                }
-        );
-        groupMeetingParticipantRepository.deleteByMember(m);
-        memberCalendarRepository.deleteByMember(m);
         m.terminate();
     }
 
@@ -222,7 +230,33 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);
         }
     }
-
+    private void deleteAboutGroup(GroupService groupService, Member m) {
+        List<GroupJoinMember> groupJoinMemberList = groupJoinMemberRepository.findAllByMember(m);
+        groupJoinMemberList.forEach(
+                (groupJoinMember) -> {
+                    if(groupJoinMember.getGroupRole() == GroupRole.GROUP_ROLE_LEADER){
+                        groupService.deleteGroup(groupJoinMember.getGroup().getId());
+                    }
+                }
+        );
+        groupMeetingParticipantRepository.deleteByMember(m);
+    }
+    private void deleteAboutMember(Member m) {
+        //리프레시 토큰 테이블
+        memberRefreshTokenRepository.deleteById(m.getEmail());
+        //멤버 이메일 중복체크 테이블
+        existMemberRepository.deleteById(m.getEmail());
+        //멤버 롤 테이블
+        memberRoleRepository.deleteByMember(m);
+        //멤버 활동 지역 테이블
+        memberActiveAreaRepository.deleteByMember(m);
+        //멤버 관심 운동 테이블
+        interestedSportRepository.deleteByMember(m);
+        //멤버 일정 지우기
+        memberCalendarRepository.deleteByMember(m);
+        //맴버 피드 는 내비두자 지우지 말고(만약 지워야 한다면)
+        //피드 댓글, 피드 댓글 좋아요, 피드 좋아요 모두 날려줘야함
+    }
     private void saveActiveArea(Member m, List<String> siggList){
         siggList.forEach(
                 (id)->{
@@ -334,5 +368,26 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberException(MemberErrorCode.MEMBER_EMAIL_FORM);
         };
         return existMemberRepository.existsByMemberEmail(email);
+    }
+    private String generatePath(Long memberId) {
+        return "member/" + memberId+"/";
+    }
+    private void profileImgUpdate(MemberEdit.Request edit, MultipartFile multipartFile, Member m) {
+        if(!multipartFile.isEmpty()){
+            if(StringUtils.hasText(m.getProfileImg())){
+                String parseAwsUrl = AwsS3Provider.parseAwsUrl(m.getProfileImg());
+                //aws 기존 주소 삭제하고 업데이트
+                awsS3Provider.deleteFile(List.of(parseAwsUrl));
+            }
+
+            String path = generatePath(m.getId());
+            List<String> result = awsS3Provider.uploadFile(List.of(multipartFile), path);
+
+            if(Collections.isEmpty(result)){
+                throw new AmazonS3Exception("파일 업로드에 실패하였습니다.");
+            }
+
+            edit.setProfileImg(result.get(0));
+        }
     }
 }

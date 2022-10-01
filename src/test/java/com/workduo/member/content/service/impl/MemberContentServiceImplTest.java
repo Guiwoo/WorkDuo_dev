@@ -6,15 +6,11 @@ import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.entity.MemberContentComment;
-import com.workduo.member.content.repository.MemberContentCommentLikeRepository;
-import com.workduo.member.content.repository.MemberContentCommentRepository;
-import com.workduo.member.content.repository.MemberContentLikeRepository;
-import com.workduo.member.content.repository.MemberContentRepository;
+import com.workduo.member.content.repository.*;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
-import com.workduo.member.content.repository.MemberContentImageRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,9 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.workduo.member.content.dto.ContentCommentCreate.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.workduo.member.content.dto.ContentCommentCreate.Request;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -63,7 +60,7 @@ class MemberContentServiceImplTest {
     @Mock
     private EntityManager em;
     @Mock
-    private AwsS3Utils awsS3Utils;
+    private AwsS3Provider awsS3Provider;
     @Mock
     private MemberContentQueryRepositoryImpl memberContentQueryRepository;
 
@@ -110,7 +107,7 @@ class MemberContentServiceImplTest {
             doReturn("abc").when(commonRequestContext).getMemberEmail();
             doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
 
-            doReturn(new ArrayList<String>()).when(awsS3Utils).uploadFile(any(),any());
+            doReturn(new ArrayList<String>()).when(awsS3Provider).uploadFile(any(),any());
             doNothing().when(em).flush();
             memberContentService.createContent(req,list);
 
@@ -157,9 +154,7 @@ class MemberContentServiceImplTest {
             assertThat(contentList.getSize()).isEqualTo(1);
             assertThat(contentList.isLast()).isTrue();
             contentList.forEach(
-                    (x)->{
-                        assertThat(x.getTitle()).isEqualTo("test title");
-                    }
+                    (x)-> assertThat(x.getTitle()).isEqualTo("test title")
             );
         }
     }
@@ -296,10 +291,6 @@ class MemberContentServiceImplTest {
     class TestDeleteContent{
         Long contentId = 169L;
         Member m = Member.builder().id(2L).build();
-        ContentUpdate.Request req = ContentUpdate.Request.builder()
-                .title("Holy")
-                .content("Moly")
-                .build();
         @Test
         @DisplayName("멤버 피드 삭제 실패 [로그인 유저 미 일치]")
         public void doseNotMatchUser(){
@@ -377,7 +368,6 @@ class MemberContentServiceImplTest {
     @DisplayName("멤버 피드 좋아요 테스트")
     class TestContentLike{
         Long contentId = 169L;
-        Member m = Member.builder().id(2L).build();
         @Test
         @DisplayName("멤버 피드 좋아요 실패 [로그인 유저 미 일치]")
         public void doesNotMatchUser() throws Exception {
@@ -459,7 +449,6 @@ class MemberContentServiceImplTest {
     @DisplayName("멤버 피드 좋아요 취소 테스트")
     class TestContentLikeCancel{
         Long contentId = 169L;
-        Member m = Member.builder().id(2L).build();
 
         @Test
         @DisplayName("멤버 피드 좋아요 취소 실패 [로그인 유저 미 일치]")

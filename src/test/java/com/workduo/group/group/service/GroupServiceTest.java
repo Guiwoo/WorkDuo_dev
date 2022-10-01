@@ -14,15 +14,15 @@ import com.workduo.group.group.dto.GroupDto;
 import com.workduo.group.group.dto.GroupParticipantsDto;
 import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.entity.Group;
+import com.workduo.group.group.entity.GroupCreateMember;
 import com.workduo.group.group.entity.GroupJoinMember;
+import com.workduo.group.group.repository.GroupCreateMemberRepository;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.repository.GroupLikeRepository;
 import com.workduo.group.group.repository.GroupRepository;
 import com.workduo.group.group.repository.query.GroupQueryRepository;
 import com.workduo.group.group.service.impl.GroupServiceImpl;
 import com.workduo.group.group.type.GroupStatus;
-import com.workduo.group.group.entity.GroupCreateMember;
-import com.workduo.group.group.repository.GroupCreateMemberRepository;
 import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
@@ -32,7 +32,7 @@ import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
 import com.workduo.sport.sportcategory.dto.SportCategoryDto;
 import com.workduo.sport.sportcategory.entity.SportCategory;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -98,7 +98,7 @@ public class GroupServiceTest {
     @Mock
     private EntityManager entityManager;
     @Mock
-    private AwsS3Utils awsS3Utils;
+    private AwsS3Provider awsS3Provider;
 
     @Spy
     @InjectMocks
@@ -117,7 +117,7 @@ public class GroupServiceTest {
     GroupJoinMember alreadyWithdrawMember;
     Group deletedGroup;
     List<MultipartFile> image = new ArrayList<>();
-    
+
     @BeforeEach
     public void init() {
         image.add(new MockMultipartFile(
@@ -259,7 +259,7 @@ public class GroupServiceTest {
             doReturn(group).when(groupRepository)
                     .save(any());
             groupService.generatePath(1L);
-            doReturn(new ArrayList<>(List.of("test"))).when(awsS3Utils)
+            doReturn(new ArrayList<>(List.of("test"))).when(awsS3Provider)
                             .uploadFile(any(), anyString());
 
             // when

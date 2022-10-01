@@ -37,7 +37,9 @@ public interface MemberCalendarRepository extends JpaRepository<MemberCalendar, 
             @Param("member") Member member,
             @Param("group") Group group);
 
-    void deleteByMember(Member m);
+    @Modifying
+    @Query("delete from MemberCalendar mc where mc.member = :member")
+    void deleteByMember(@Param("member") Member m);
 
     @Query("select mc from MemberCalendar mc " +
             "where mc.member = :member " +

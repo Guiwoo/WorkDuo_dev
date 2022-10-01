@@ -56,7 +56,7 @@ class MemberCalendarControllerTest {
             mockMvc.perform(get("/api/v1/member/calendar?date=2022")
                             .contentType(MediaType.APPLICATION_JSON)
                     )
-                    .andExpect(status().isBadRequest())
+                    .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.success").value("F"))
                     .andDo(print());
 
@@ -88,7 +88,7 @@ class MemberCalendarControllerTest {
             mockMvc.perform(get("/api/v1/member/calendar/list?date=2022")
                             .contentType(MediaType.APPLICATION_JSON)
                     )
-                    .andExpect(status().isBadRequest())
+                    .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.success").value("F"))
                     .andDo(print());
 

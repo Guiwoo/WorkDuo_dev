@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -171,9 +172,16 @@ class MemberCalendarServiceImplTest {
         @Test
         @DisplayName("멤버 일정 일 서비스 성공")
         public void success() throws Exception{
+
             Member m = Member.builder().build();
-            CalendarDayDto d = CalendarDayDto.builder().build();
-            CalendarDayDto d2 = CalendarDayDto.builder().build();
+            CalendarDayDto d = CalendarDayDto.builder()
+                    .startDate(LocalDateTime.now())
+                    .endDate(LocalDateTime.now())
+                    .build();
+            CalendarDayDto d2 = CalendarDayDto.builder()
+                    .startDate(LocalDateTime.now())
+                    .endDate(LocalDateTime.now())
+                    .build();
             //given
             given(memberRepository.findByEmail(any()))
                     .willReturn(Optional.of(m));
