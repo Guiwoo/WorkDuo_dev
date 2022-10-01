@@ -21,7 +21,7 @@ import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.repository.GroupRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -53,7 +53,7 @@ public class GroupContentServiceImpl implements GroupContentService {
     private final GroupContentQueryRepository groupContentQueryRepository;
     private final MemberRepository memberRepository;
     private final GroupRepository groupRepository;
-    private final AwsS3Utils awsS3Utils;
+    private final AwsS3Provider awsS3Provider;
     private final CommonRequestContext context;
     private final EntityManager entityManager;
 
@@ -105,7 +105,7 @@ public class GroupContentServiceImpl implements GroupContentService {
 
         if (multipartFiles != null) {
             String path = generatePath(groupId, groupContent.getId());
-            List<String> files = awsS3Utils.uploadFile(multipartFiles, path);
+            List<String> files = awsS3Provider.uploadFile(multipartFiles, path);
             List<GroupContentImage> groupContentImages =
                     GroupContentImage.createGroupContentImage(groupContent, files);
 

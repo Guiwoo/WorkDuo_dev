@@ -31,7 +31,7 @@ import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sportcategory.entity.SportCategory;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -90,7 +90,7 @@ public class GroupContentServiceTest {
     @Mock
     private CommonRequestContext context;
     @Mock
-    private AwsS3Utils awsS3Utils;
+    private AwsS3Provider awsS3Provider;
     @Mock
     private EntityManager entityManager;
 
@@ -216,7 +216,7 @@ public class GroupContentServiceTest {
             doReturn(groupContent).when(groupContentRepository)
                     .save(any());
             groupContentService.generatePath(anyLong(), anyLong());
-            doReturn(new ArrayList<>(List.of("test"))).when(awsS3Utils)
+            doReturn(new ArrayList<>(List.of("test"))).when(awsS3Provider)
                     .uploadFile(any(), anyString());
 
             CreateGroupContent.Request request = CreateGroupContent.Request.builder()

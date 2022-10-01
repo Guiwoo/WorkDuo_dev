@@ -1,10 +1,10 @@
 package com.workduo.member.member.service.impl;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jwt.memberrefreshtoken.repository.MemberRefreshTokenRepository;
-import com.workduo.error.global.exception.CustomS3Exception;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.group.entity.GroupJoinMember;
@@ -34,7 +34,7 @@ import com.workduo.member.member.repository.MemberRoleRepository;
 import com.workduo.member.member.type.MemberRoleType;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import io.jsonwebtoken.lang.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -73,7 +73,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberCalendarRepository memberCalendarRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
     private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
-    private final AwsS3Utils awsS3Utils;
+    private final AwsS3Provider awsS3Provider;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -375,18 +375,16 @@ public class MemberServiceImpl implements MemberService {
     private void profileImgUpdate(MemberEdit.Request edit, MultipartFile multipartFile, Member m) {
         if(!multipartFile.isEmpty()){
             if(StringUtils.hasText(m.getProfileImg())){
-                String parseAwsUrl = AwsS3Utils.parseAwsUrl(m.getProfileImg());
+                String parseAwsUrl = AwsS3Provider.parseAwsUrl(m.getProfileImg());
                 //aws 기존 주소 삭제하고 업데이트
-                boolean b = awsS3Utils.deleteFile(List.of(parseAwsUrl));
-                if(!b){
-                    throw new CustomS3Exception(FILE_DELETE_FAIL);
-                }
+                awsS3Provider.deleteFile(List.of(parseAwsUrl));
             }
+
             String path = generatePath(m.getId());
-            List<String> result = awsS3Utils.uploadFile(List.of(multipartFile), path);
+            List<String> result = awsS3Provider.uploadFile(List.of(multipartFile), path);
 
             if(Collections.isEmpty(result)){
-                throw new CustomS3Exception(FILE_EXTENSION_MALFORMED);
+                throw new AmazonS3Exception("파일 업로드에 실패하였습니다.");
             }
 
             edit.setProfileImg(result.get(0));

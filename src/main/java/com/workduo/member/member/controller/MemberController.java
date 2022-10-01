@@ -1,31 +1,27 @@
 package com.workduo.member.member.controller;
 
-import com.workduo.common.CommonResponse;
 import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshService;
-import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.member.history.service.LoginHistoryService;
-import com.workduo.member.member.dto.*;
+import com.workduo.member.member.dto.MemberChangePassword;
+import com.workduo.member.member.dto.MemberCreate;
+import com.workduo.member.member.dto.MemberEdit;
+import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
 import com.workduo.member.member.service.MemberService;
-import com.workduo.util.ApiUtils;
 import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static com.workduo.util.ApiUtils.*;
+import static com.workduo.util.ApiUtils.success;
 
 
 @RestController

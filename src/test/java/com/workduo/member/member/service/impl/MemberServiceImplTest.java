@@ -1,31 +1,26 @@
 package com.workduo.member.member.service.impl;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.workduo.area.siggarea.entity.SiggArea;
 import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jwt.memberrefreshtoken.repository.MemberRefreshTokenRepository;
-import com.workduo.error.global.exception.CustomS3Exception;
-import com.workduo.error.global.type.GlobalExceptionType;
 import com.workduo.error.member.exception.MemberException;
 import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
-import com.workduo.member.member.repository.MemberActiveAreaRepository;
-import com.workduo.member.member.repository.ExistMemberRepository;
-import com.workduo.member.member.repository.InterestedSportRepository;
 import com.workduo.member.member.dto.MemberChangePassword;
 import com.workduo.member.member.dto.MemberCreate;
 import com.workduo.member.member.dto.MemberEdit;
 import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.entity.Member;
-import com.workduo.member.member.repository.MemberRepository;
+import com.workduo.member.member.repository.*;
 import com.workduo.member.member.type.MemberStatus;
 import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
-import com.workduo.member.member.repository.MemberRoleRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,8 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.workduo.error.global.type.GlobalExceptionType.FILE_DELETE_FAIL;
-import static com.workduo.error.global.type.GlobalExceptionType.FILE_EXTENSION_MALFORMED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -69,7 +62,7 @@ class MemberServiceImplTest {
     @Mock
     private InterestedSportRepository interestedSportRepository;
     @Mock
-    private AwsS3Utils awsS3Utils;
+    private AwsS3Provider awsS3Provider;
     @Mock
     private SportRepository sportRepository;
     @Mock
@@ -459,12 +452,12 @@ class MemberServiceImplTest {
             given(sportRepository.existsById(any())).willReturn(true);
 
             //when
-            CustomS3Exception exception = assertThrows(
-                    CustomS3Exception.class,
+            AmazonS3Exception exception = assertThrows(
+                    AmazonS3Exception.class,
                     ()-> memberService.editUser(editRequest,image)
             );
             //then
-            assertEquals(FILE_DELETE_FAIL,exception.getErrorCode());
+            assertEquals("파일 업로드에 실패하였습니다.",exception.getErrorMessage());
         }
 
         @Test
@@ -477,15 +470,15 @@ class MemberServiceImplTest {
             given(siggAreaRepository.findBySgg(any())).willReturn(Optional.of(SiggArea.builder().build()));
             given(sportRepository.existsById(any())).willReturn(true);
             given(sportRepository.findById(any())).willReturn(Optional.of(Sport.builder().build()));
-            given(awsS3Utils.deleteFile(any())).willReturn(true);
-            given(awsS3Utils.uploadFile(any(),any()))
+            given(awsS3Provider.deleteFile(any())).willReturn(true);
+            given(awsS3Provider.uploadFile(any(),any()))
                     .willReturn(List.of("hehe/i/updated ?"));
 
             memberService.editUser(editRequest,image);
             //then
             verify(sportRepository,times(sportList.size())).findById(any());
             verify(siggAreaRepository,times(sggList.size())).findBySgg(any());
-            verify(awsS3Utils,times(1)).uploadFile(any(), any());
+            verify(awsS3Provider,times(1)).uploadFile(any(), any());
         }
     }
     @Nested

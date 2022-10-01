@@ -18,7 +18,7 @@ import com.workduo.member.content.entity.MemberContentImage;
 import com.workduo.member.content.repository.MemberContentImageRepository;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,7 +45,7 @@ public class MemberContentServiceImpl implements MemberContentService {
     private final MemberContentCommentLikeRepository memberContentCommentLikeRepository;
     private final MemberContentCommentRepository memberContentCommentRepository;
     private final MemberContentLikeRepository memberContentLikeRepository;
-    private final AwsS3Utils awsS3Utils;
+    private final AwsS3Provider awsS3Provider;
     private final MemberContentQueryRepositoryImpl memberContentQueryRepository;
 
     /**
@@ -71,7 +71,7 @@ public class MemberContentServiceImpl implements MemberContentService {
         // 이미지 쪽 도 만들어야지
         if (multipartFiles != null) {
             String path = generatePath(member.getId(), content.getId());
-            List<String> files = awsS3Utils.uploadFile(multipartFiles, path);
+            List<String> files = awsS3Provider.uploadFile(multipartFiles, path);
             List<MemberContentImage> contentImages =
                     MemberContentImage.createMemberContentImage(content, files);
             memberContentImageRepository.saveAll(contentImages);

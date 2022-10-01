@@ -25,7 +25,7 @@ import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
 import com.workduo.sport.sport.entity.Sport;
 import com.workduo.sport.sport.repository.SportRepository;
-import com.workduo.util.AwsS3Utils;
+import com.workduo.util.AwsS3Provider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -63,7 +63,7 @@ public class GroupServiceImpl implements GroupService {
     private final SportRepository sportRepository;
     private final SiggAreaRepository siggAreaRepository;
     private final CommonRequestContext context;
-    private final AwsS3Utils awsS3Utils;
+    private final AwsS3Provider awsS3Provider;
     private final EntityManager entityManager;
 
     /**
@@ -93,7 +93,7 @@ public class GroupServiceImpl implements GroupService {
         entityManager.flush();
 
         String path = generatePath(group.getId());
-        List<String> files = awsS3Utils.uploadFile(multipartFiles, path);
+        List<String> files = awsS3Provider.uploadFile(multipartFiles, path);
         group.updateThumbnail(files.get(0));
 
         GroupJoinMember groupJoinMember = GroupJoinMember.builder()

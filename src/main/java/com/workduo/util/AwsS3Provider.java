@@ -3,7 +3,6 @@ package com.workduo.util;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.workduo.error.global.exception.CustomS3Exception;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import static com.workduo.error.global.type.GlobalExceptionType.*;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class AwsS3Utils {
+public class AwsS3Provider {
 
     private final AmazonS3Client amazonS3Client;
 
@@ -59,8 +59,8 @@ public class AwsS3Utils {
                                 )
                                 .withCannedAcl(CannedAccessControlList.PublicRead)
                 );
-            } catch (Exception e) {
-                throw new CustomS3Exception(S3_FAIL_UPLOAD);
+            } catch (AmazonS3Exception | IOException e) {
+                throw new AmazonS3Exception(e.getMessage());
             }
 
             files.add(BASE_URL + path + fileName);
@@ -79,18 +79,14 @@ public class AwsS3Utils {
 
         DeleteObjectsRequest deleteObjectsRequest =
                 new DeleteObjectsRequest(bucket).withKeys(keyVersions).withQuiet(false);
-        int successfulDeletes = 0;
 
         try {
             DeleteObjectsResult response = amazonS3Client.deleteObjects(deleteObjectsRequest);
-
-            successfulDeletes = response.getDeletedObjects().size();
-            System.out.println(successfulDeletes + " objects successfully deleted.");
-        } catch (CustomS3Exception e) {
-            throw new CustomS3Exception(FILE_DELETE_FAIL);
+        }catch (MultiObjectDeleteException e){
+            throw new AmazonS3Exception(e.getMessage());
         }
 
-        return successfulDeletes == paths.size();
+        return true;
     }
 
     private String createFileName(String fileName) {
@@ -101,7 +97,7 @@ public class AwsS3Utils {
         try {
             return fileName.substring(fileName.lastIndexOf("."));
         } catch (Exception e) {
-            throw new CustomS3Exception(FILE_EXTENSION_MALFORMED);
+            throw new AmazonS3Exception(e.getMessage());
         }
     }
     public static String parseAwsUrl(String url){
