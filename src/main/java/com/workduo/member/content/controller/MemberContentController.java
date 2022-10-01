@@ -1,28 +1,22 @@
 package com.workduo.member.content.controller;
 
-import com.workduo.common.CommonResponse;
-import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.service.MemberContentService;
-import com.workduo.util.ApiUtils;
 import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.security.Principal;
 import java.util.List;
 
-;import static com.workduo.util.ApiUtils.success;
+import static com.workduo.util.ApiUtils.success;
+
+;
 
 @RestController
 @Slf4j
