@@ -74,7 +74,8 @@ public class SecurityConfiguration {
                 .antMatchers(
                         "/h2-console/**",
                         "/api/v1/member/login",
-                        "/api/v1/member/logout"
+                        "/api/v1/member/logout",
+                        "/api/v1/area/**"
                 ).permitAll()
                 .antMatchers(HttpMethod.POST,"/api/v1/member")
                 .permitAll()
