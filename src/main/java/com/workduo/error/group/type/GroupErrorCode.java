@@ -13,6 +13,7 @@ public enum GroupErrorCode {
     GROUP_NOT_FOUND_COMMENT(HttpStatus.BAD_REQUEST, "그룹에 해당하는 댓글이 없습니다."),
     GROUP_MAXIMUM_EXCEEDED(HttpStatus.BAD_REQUEST, "그룹생성 최대개수를 초과하였습니다."),
     GROUP_MAXIMUM_PARTICIPANT(HttpStatus.BAD_REQUEST, "그룹의 정원이 초과하였습니다."),
+    GROUP_LESS_THEN_PARTICIPANT(HttpStatus.BAD_REQUEST, "그룹의 정원이 그룹의 참여 인원보다 적을 수 없습니다."),
     GROUP_LEADER_NOT_WITHDRAW(HttpStatus.BAD_REQUEST, "그룹장은 그룹을 탈퇴할 수 없습니다."),
     GROUP_ALREADY_WITHDRAW(HttpStatus.BAD_REQUEST, "이미 탈퇴한 그룹입니다."),
     GROUP_ALREADY_DELETE_GROUP(HttpStatus.BAD_REQUEST, "이미 삭제된 그룹입니다."),
