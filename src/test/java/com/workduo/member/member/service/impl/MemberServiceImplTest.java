@@ -353,13 +353,6 @@ class MemberServiceImplTest {
                 .sportList(sportList)
                 .build();
 
-        MockMultipartFile image = new MockMultipartFile(
-                "multipartFiles",
-                "imagefile.jpeg",
-                "image/jpeg",
-                "<<jpeg data>>".getBytes()
-        );
-
         @Test
         @DisplayName("회원정보 수정 실패[이메일 이 없는경우]")
         void emailDoesNotExist(){
@@ -367,7 +360,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest,image)
+                    ()-> memberService.editUser(editRequest)
             );
             //then
             assertEquals(MEMBER_EMAIL_ERROR,exception.getErrorCode());
@@ -382,7 +375,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest,image)
+                    ()-> memberService.editUser(editRequest)
             );
             //then
             assertEquals(MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
@@ -397,7 +390,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest,image)
+                    ()-> memberService.editUser(editRequest)
             );
             //then
             assertEquals(MEMBER_NICKNAME_DUPLICATE,exception.getErrorCode());
@@ -413,7 +406,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest,image)
+                    ()-> memberService.editUser(editRequest)
             );
             //then
             assertEquals(MEMBER_PHONE_DUPLICATE,exception.getErrorCode());
@@ -429,7 +422,7 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest,image)
+                    ()-> memberService.editUser(editRequest)
             );
             //then
             assertEquals(MEMBER_SIGG_ERROR,exception.getErrorCode());
@@ -446,28 +439,10 @@ class MemberServiceImplTest {
             //when
             MemberException exception = assertThrows(
                     MemberException.class,
-                    ()-> memberService.editUser(editRequest,image)
+                    ()-> memberService.editUser(editRequest)
             );
             //then
             assertEquals(MEMBER_SPORT_ERROR,exception.getErrorCode());
-        }
-
-        @Test
-        @DisplayName("회원정보 수정 실패[aws s3 업로드 실패시 ]")
-        void failUploadToS3(){
-            Member m = Member.builder().profileImg("aws.com/hehe/i/updated ?").email("test").build();
-            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
-            given(commonRequestContext.getMemberEmail()).willReturn("test");
-            given(siggAreaRepository.existsBySgg(any())).willReturn(true);
-            given(sportRepository.existsById(any())).willReturn(true);
-
-            //when
-            AmazonS3Exception exception = assertThrows(
-                    AmazonS3Exception.class,
-                    ()-> memberService.editUser(editRequest,image)
-            );
-            //then
-            assertEquals("파일 업로드에 실패하였습니다.",exception.getErrorMessage());
         }
 
         @Test
@@ -480,16 +455,59 @@ class MemberServiceImplTest {
             given(siggAreaRepository.findBySgg(any())).willReturn(Optional.of(SiggArea.builder().build()));
             given(sportRepository.existsById(any())).willReturn(true);
             given(sportRepository.findById(any())).willReturn(Optional.of(Sport.builder().build()));
+//            given(awsS3Provider.deleteFile(any())).willReturn(true);
+//            given(awsS3Provider.uploadFile(any(),any()))
+//                    .willReturn(List.of("hehe/i/updated ?"));
+
+            memberService.editUser(editRequest);
+            //then
+            verify(sportRepository,times(sportList.size())).findById(any());
+            verify(siggAreaRepository,times(sggList.size())).findBySgg(any());
+//            verify(awsS3Provider,times(1)).uploadFile(any(), any());
+        }
+    }
+    @Nested
+    @DisplayName("이미지 업데이트 테스트")
+    class testImgUpdate{
+
+        MockMultipartFile image = new MockMultipartFile(
+                "multipartFiles",
+                "imagefile.jpeg",
+                "image/jpeg",
+                "<<jpeg data>>".getBytes()
+        );
+
+        @Test
+        @DisplayName("이미지 업데이트 실패[aws s3 업로드 실패시 ]")
+        void failUploadToS3(){
+            Member m = Member.builder().profileImg("aws.com/hehe/i/updated ?").email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
+
+            //when
+            AmazonS3Exception exception = assertThrows(
+                    AmazonS3Exception.class,
+                    ()-> memberService.updateImage(image)
+            );
+            //then
+            assertEquals("파일 업로드에 실패하였습니다.",exception.getErrorMessage());
+        }
+
+        @Test
+        @DisplayName("회원정보 수정 실패[aws s3 업로드 실패시 ]")
+        void successUploadToS3(){
+            Member m = Member.builder().profileImg("aws.com/hehe/i/updated ?").email("test").build();
+            doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
+            given(commonRequestContext.getMemberEmail()).willReturn("test");
             given(awsS3Provider.deleteFile(any())).willReturn(true);
             given(awsS3Provider.uploadFile(any(),any()))
                     .willReturn(List.of("hehe/i/updated ?"));
 
-            memberService.editUser(editRequest,image);
+            memberService.updateImage(image);
             //then
-            verify(sportRepository,times(sportList.size())).findById(any());
-            verify(siggAreaRepository,times(sggList.size())).findBySgg(any());
             verify(awsS3Provider,times(1)).uploadFile(any(), any());
         }
+
     }
     @Nested
     @DisplayName("비밀번호 수정 메서드 테스트")

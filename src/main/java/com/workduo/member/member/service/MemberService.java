@@ -10,8 +10,10 @@ import org.springframework.web.multipart.MultipartFile;
 public interface MemberService extends UserDetailsService {
     MemberAuthenticateDto authenticateUser(MemberLogin.Request member);
     void createUser(MemberCreate.Request create);
-    void editUser(MemberEdit.Request req, MultipartFile multipartFile);
+    void editUser(MemberEdit.Request req);
     void changePassword(MemberChangePassword.Request req);
     void withdraw(GroupService groupService);
     MemberProfileDto getUser(Long memberId, Pageable pageable);
+
+    void updateImage(MultipartFile multipartFileList);
 }

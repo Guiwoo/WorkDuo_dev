@@ -130,11 +130,10 @@ public class MemberServiceImpl implements MemberService {
      * @param multipartFile
      */
     @Override
-    public void editUser(MemberEdit.Request edit, MultipartFile multipartFile) {
+    public void editUser(MemberEdit.Request edit) {
         Member m = validCheckLoggedInUser();
 
         validationEditDate(edit,m);
-        profileImgUpdate(edit, multipartFile, m);
         m.updateUserInfo(edit);
 
         updateActiveArea(m,edit.getSiggAreaList());
@@ -188,6 +187,18 @@ public class MemberServiceImpl implements MemberService {
 
         return MemberProfileDto.from(m,list);
     }
+
+    /**
+     * image update api 분리
+     * @param multipartFileList
+     */
+    @Override
+    public void updateImage(MultipartFile multipartFileList) {
+        Member m = validCheckLoggedInUser();
+
+        profileImgUpdate(multipartFileList,m);
+    }
+
     // Helper 메서드
     @Transactional(readOnly = true)
     public void validCheckActiveMember(Member m){
@@ -396,7 +407,7 @@ public class MemberServiceImpl implements MemberService {
     private String generatePath(Long memberId) {
         return "member/" + memberId+"/";
     }
-    private void profileImgUpdate(MemberEdit.Request edit, MultipartFile multipartFile, Member m) {
+    private void profileImgUpdate(MultipartFile multipartFile, Member m) {
         if(!multipartFile.isEmpty()){
             if(StringUtils.hasText(m.getProfileImg())){
                 String parseAwsUrl = AwsS3Provider.parseAwsUrl(m.getProfileImg());
@@ -411,7 +422,7 @@ public class MemberServiceImpl implements MemberService {
                 throw new AmazonS3Exception("파일 업로드에 실패하였습니다.");
             }
 
-            edit.setProfileImg(result.get(0));
+            m.updateImage(result.get(0));
         }
     }
 }

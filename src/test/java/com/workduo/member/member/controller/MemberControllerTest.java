@@ -203,7 +203,7 @@ class MemberControllerTest {
     class EditProfie {
         @Test
         @DisplayName("계정 수정 실패[리퀘스트 검증 테스트]")
-        void editFailDoesNotExistData() throws Exception {
+        void editFailDoesNotExistData() {
             List<String> errors = new ArrayList<>(
                     List.of(
                             "유저이름 은 필수 입력 사항 입니다.",
@@ -229,15 +229,9 @@ class MemberControllerTest {
         @Test
         @DisplayName("계정 수정 성공")
         void editSuccess() throws Exception {
-            MockMultipartFile image = new MockMultipartFile(
-                    "multipartFiles",
-                    "imagefile.jpeg",
-                    "image/jpeg",
-                    "<<jpeg data>>".getBytes()
-            );
 
             MemberEdit.Request reqeust = MemberEdit.Request.builder().build();
-            doNothing().when(memberService).editUser(reqeust,image);
+            doNothing().when(memberService).editUser(reqeust);
             mockMvc.perform(patch("/api/v1/member")
                             .param("username", "test")
                             .param("phoneNumber", "1")
