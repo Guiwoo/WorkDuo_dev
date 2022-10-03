@@ -62,4 +62,7 @@ public class Member extends BaseEntity {
         this.memberStatus = MemberStatus.MEMBER_STATUS_WITHDRAW;
         this.deletedAt = LocalDateTime.now();
     }
+    public void updateImage(String imgPath) {
+        this.profileImg = imgPath;
+    }
 }

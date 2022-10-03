@@ -73,10 +73,14 @@ public class MemberController {
     //회원정보수정
     @PatchMapping("")
     public ApiResult<?> apiEdit(
-            MultipartFile multipartFileList,
             @Validated MemberEdit.Request req
     ){
-        memberService.editUser(req,multipartFileList);
+        memberService.editUser(req);
+        return success(null);
+    }
+    @PatchMapping("image")
+    public ApiResult<?> apiProfileImageEdit(MultipartFile multipartFileList){
+        memberService.updateImage(multipartFileList);
         return success(null);
     }
 
