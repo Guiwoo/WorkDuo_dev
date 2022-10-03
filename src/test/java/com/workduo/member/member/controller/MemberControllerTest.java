@@ -315,4 +315,18 @@ class MemberControllerTest {
             ;
         }
     }
+
+    @Nested
+    @DisplayName("회원 정보 API 테스트")
+    class getMember{
+        @Test
+        @DisplayName("회원 정보 API 테스트 성공")
+        public void success() throws Exception{
+            //given
+            //when
+            mockMvc.perform(get("/api/v1/member/13"))
+                    .andExpect(status().isOk());
+            //then
+        }
+    }
 }

@@ -6,10 +6,11 @@ import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.configuration.jwt.memberrefreshtoken.repository.MemberRefreshTokenRepository;
 import com.workduo.error.member.exception.MemberException;
-import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
+import com.workduo.member.content.repository.query.MemberContentQueryRepository;
+import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
 import com.workduo.member.member.dto.MemberChangePassword;
 import com.workduo.member.member.dto.MemberCreate;
 import com.workduo.member.member.dto.MemberEdit;
@@ -28,13 +29,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.workduo.error.member.type.MemberErrorCode.*;
+import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_STOP;
+import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_WITHDRAW;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,6 +83,8 @@ class MemberServiceImplTest {
     private GroupJoinMemberRepository groupJoinMemberRepository;
     @Mock
     private GroupMeetingParticipantRepository groupMeetingParticipantRepository;
+    @Mock
+    private MemberContentQueryRepositoryImpl memberContentQueryRepository;
     @InjectMocks
     MemberServiceImpl memberService;
     @Nested
@@ -92,7 +102,7 @@ class MemberServiceImplTest {
             MemberException exception =  assertThrows(MemberException.class,
                     ()->memberService.authenticateUser(req));
             //then
-            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_EMAIL_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -104,13 +114,13 @@ class MemberServiceImplTest {
                     .build();
             //given
             given(memberRepository.findByEmail(any())).willReturn(
-                    Optional.of(Member.builder().memberStatus(MemberStatus.MEMBER_STATUS_STOP).build())
+                    Optional.of(Member.builder().memberStatus(MEMBER_STATUS_STOP).build())
             );
             //when
             MemberException exception =  assertThrows(MemberException.class,
                     ()->memberService.authenticateUser(req));
             //then
-            assertEquals(MemberErrorCode.MEMBER_STOP_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_STOP_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -128,7 +138,7 @@ class MemberServiceImplTest {
             MemberException exception =  assertThrows(MemberException.class,
                     ()->memberService.authenticateUser(req));
             //then
-            assertEquals(MemberErrorCode.MEMBER_WITHDRAW_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_WITHDRAW_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -147,7 +157,7 @@ class MemberServiceImplTest {
             MemberException exception =  assertThrows(MemberException.class,
                     ()->memberService.authenticateUser(req));
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -194,7 +204,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_EMAIL_FORM,exception.getErrorCode());
+            assertEquals(MEMBER_EMAIL_FORM,exception.getErrorCode());
         }
 
         @Test
@@ -208,7 +218,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_EMAIL_DUPLICATE,exception.getErrorCode());
+            assertEquals(MEMBER_EMAIL_DUPLICATE,exception.getErrorCode());
         }
 
         @Test
@@ -221,7 +231,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE,exception.getErrorCode());
+            assertEquals(MEMBER_NICKNAME_DUPLICATE,exception.getErrorCode());
         }
         @Test
         @DisplayName("회원가입 실패[전화번호 중복인경우]")
@@ -233,7 +243,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PHONE_DUPLICATE,exception.getErrorCode());
+            assertEquals(MEMBER_PHONE_DUPLICATE,exception.getErrorCode());
         }
 
         @Test
@@ -246,7 +256,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -259,7 +269,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -272,7 +282,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -285,7 +295,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -298,7 +308,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_SIGG_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_SIGG_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -311,7 +321,7 @@ class MemberServiceImplTest {
                     ()->memberService.createUser(createReqeust)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_SPORT_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_SPORT_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -360,7 +370,7 @@ class MemberServiceImplTest {
                     ()-> memberService.editUser(editRequest,image)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_EMAIL_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_EMAIL_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -375,7 +385,7 @@ class MemberServiceImplTest {
                     ()-> memberService.editUser(editRequest,image)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
+            assertEquals(MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
         }
         @Test
         @DisplayName("회원정보 수정 실패[닉네임 중복된 경우]")
@@ -390,7 +400,7 @@ class MemberServiceImplTest {
                     ()-> memberService.editUser(editRequest,image)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE,exception.getErrorCode());
+            assertEquals(MEMBER_NICKNAME_DUPLICATE,exception.getErrorCode());
         }
 
         @Test
@@ -406,7 +416,7 @@ class MemberServiceImplTest {
                     ()-> memberService.editUser(editRequest,image)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PHONE_DUPLICATE,exception.getErrorCode());
+            assertEquals(MEMBER_PHONE_DUPLICATE,exception.getErrorCode());
         }
 
         @Test
@@ -422,7 +432,7 @@ class MemberServiceImplTest {
                     ()-> memberService.editUser(editRequest,image)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_SIGG_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_SIGG_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -439,7 +449,7 @@ class MemberServiceImplTest {
                     ()-> memberService.editUser(editRequest,image)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_SPORT_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_SPORT_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -500,7 +510,7 @@ class MemberServiceImplTest {
                     ()-> memberService.changePassword(req)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
+            assertEquals(MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
         }
 
         @Test
@@ -516,7 +526,7 @@ class MemberServiceImplTest {
                     ()-> memberService.changePassword(req)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_DUPLICATE,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_DUPLICATE,exception.getErrorCode());
         }
 
 
@@ -532,7 +542,7 @@ class MemberServiceImplTest {
                     ()->memberService.changePassword(req)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -548,7 +558,7 @@ class MemberServiceImplTest {
                     ()->memberService.changePassword(req)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -564,7 +574,7 @@ class MemberServiceImplTest {
                     ()->memberService.changePassword(req)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -580,7 +590,7 @@ class MemberServiceImplTest {
                     ()->memberService.changePassword(req)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_PASSWORD_POLICY,exception.getErrorCode());
+            assertEquals(MEMBER_PASSWORD_POLICY,exception.getErrorCode());
         }
 
         @Test
@@ -613,14 +623,14 @@ class MemberServiceImplTest {
                     ()-> memberService.withdraw(groupService)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
+            assertEquals(MEMBER_ERROR_NEED_LOGIN,exception.getErrorCode());
         }
         @Test
         @DisplayName("회원탈퇴 실패 [이미 정지된 회원]")
         void failToWithdrawAlreadyStop(){
             //given
             Member m = Member.builder()
-                    .memberStatus(MemberStatus.MEMBER_STATUS_STOP)
+                    .memberStatus(MEMBER_STATUS_STOP)
                     .email("abc")
                     .build();
             doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
@@ -631,14 +641,14 @@ class MemberServiceImplTest {
                     ()-> memberService.withdraw(groupService)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_STOP_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_STOP_ERROR,exception.getErrorCode());
         }
         @Test
         @DisplayName("회원탈퇴 실패 [이미 탈퇴 회원]")
         void failToWithdrawAlreadyWithdraw(){
             //given
             Member m = Member.builder()
-                    .memberStatus(MemberStatus.MEMBER_STATUS_STOP)
+                    .memberStatus(MEMBER_STATUS_STOP)
                     .email("abc")
                     .build();
             doReturn(Optional.of(m)).when(memberRepository).findByEmail(any());
@@ -649,7 +659,7 @@ class MemberServiceImplTest {
                     ()-> memberService.withdraw(groupService)
             );
             //then
-            assertEquals(MemberErrorCode.MEMBER_STOP_ERROR,exception.getErrorCode());
+            assertEquals(MEMBER_STOP_ERROR,exception.getErrorCode());
         }
 
         @Test
@@ -672,5 +682,71 @@ class MemberServiceImplTest {
                     .deleteByMember(any());
         }
 
+    }
+
+    @Nested
+    @DisplayName("회원정보 받아오기 메서드 테스트")
+    class getMember{
+        Long memberId = 13L;
+        PageRequest pageRequest = PageRequest.of(0, 20);
+        @Test
+        @DisplayName("회원정보 받아오기 메서드 실패 [존재하지 않는 Id] ")
+        public void fail1() throws Exception{
+            MemberException exception =  assertThrows(
+                    MemberException.class,
+                    ()-> memberService.getUser(memberId,pageRequest)
+            );
+            assertThat(exception.getErrorCode())
+                    .isEqualTo(MEMBER_EMAIL_ERROR);
+        }
+
+        @Test
+        @DisplayName("회원정보 받아오기 메서드 실패 [회원 정지된 경우] ")
+        public void fail2() throws Exception{
+            Member build = Member.builder()
+                    .memberStatus(MEMBER_STATUS_STOP)
+                    .build();
+            given(memberRepository.findByEmail(any()))
+                    .willReturn(Optional.of(build));
+
+            MemberException exception =  assertThrows(
+                    MemberException.class,
+                    ()-> memberService.getUser(memberId,pageRequest)
+            );
+            assertThat(exception.getErrorCode())
+                    .isEqualTo(MEMBER_STOP_ERROR);
+        }
+
+        @Test
+        @DisplayName("회원정보 받아오기 메서드 실패 [회원 탈퇴한 경우] ")
+        public void fail3() throws Exception{
+            Member build = Member.builder()
+                    .memberStatus(MEMBER_STATUS_WITHDRAW)
+                    .build();
+            given(memberRepository.findByEmail(any()))
+                    .willReturn(Optional.of(build));
+
+            MemberException exception =  assertThrows(
+                    MemberException.class,
+                    ()-> memberService.getUser(memberId,pageRequest)
+            );
+            assertThat(exception.getErrorCode())
+                    .isEqualTo(MEMBER_WITHDRAW_ERROR);
+        }
+
+        @Test
+        @DisplayName("회원정보 받아오기 메서드 성공")
+        public void success () throws Exception{
+            //given
+            Member build = Member.builder().build();
+
+            given(memberRepository.findByEmail(any()))
+                    .willReturn(Optional.of(build));
+            //when
+            memberService.getUser(memberId,pageRequest);
+            //then
+            verify(memberContentQueryRepository,times(1))
+                    .getMemberContentList(any(),any());
+        }
     }
 }

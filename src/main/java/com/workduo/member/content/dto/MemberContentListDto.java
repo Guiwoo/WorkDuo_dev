@@ -1,5 +1,6 @@
 package com.workduo.member.content.dto;
 
+import com.workduo.member.content.entity.MemberContent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,6 +44,23 @@ public class MemberContentListDto {
                 .deletedYn(memberContentDto.isDeletedYn())
                 .createdAt(memberContentDto.getCreatedAt())
                 .count(memberContentDto.getCount())
+                .memberContentImages(memberContentImageDto)
+                .build();
+
+    }
+
+    public static MemberContentListDto fromContent(
+            MemberContent memberContentDto,
+            List<MemberContentImageDto> memberContentImageDto
+    ){
+        return MemberContentListDto.builder()
+                .id(memberContentDto.getId())
+                .title(memberContentDto.getTitle())
+                .content(memberContentDto.getContent())
+                .noticeYn(memberContentDto.isNoticeYn())
+                .sortValue(memberContentDto.getSortValue())
+                .deletedYn(memberContentDto.isDeletedYn())
+                .createdAt(memberContentDto.getCreatedAt())
                 .memberContentImages(memberContentImageDto)
                 .build();
 

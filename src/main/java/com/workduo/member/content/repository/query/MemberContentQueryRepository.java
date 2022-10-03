@@ -1,9 +1,7 @@
 package com.workduo.member.content.repository.query;
 
-import com.workduo.member.content.dto.MemberContentCommentDto;
-import com.workduo.member.content.dto.MemberContentDto;
-import com.workduo.member.content.dto.MemberContentImageDto;
-import com.workduo.member.content.dto.MemberContentListDto;
+import com.workduo.member.content.dto.*;
+import com.workduo.member.content.entity.MemberContent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,4 +13,5 @@ public interface MemberContentQueryRepository {
     List<MemberContentImageDto> getAllImageByMemberContent(List<Long> memberContentIdList);
     MemberContentDto getContentDetail(Long memberContentId);
     Page<MemberContentCommentDto> getCommentByContent(Long memberContentId, Pageable pageable);
+    Page<MemberContentWithImage> getMemberContentList(Long memberId, Pageable pageable);
 }
