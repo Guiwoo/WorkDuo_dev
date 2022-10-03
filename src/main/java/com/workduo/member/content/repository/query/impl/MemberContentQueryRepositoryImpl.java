@@ -2,11 +2,14 @@ package com.workduo.member.content.repository.query.impl;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.workduo.member.content.dto.*;
+import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.repository.query.MemberContentQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -110,6 +114,7 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
         return PageableExecutionUtils.getPage(list, pageable, total::fetchOne);
     }
 
+
     /**
      * 멤버 디테일
      * @param memberContentId
@@ -198,6 +203,53 @@ public class MemberContentQueryRepositoryImpl implements MemberContentQueryRepos
                 list,
                 pageable,
                 countQuery::fetchOne);
+    }
+
+    @Override
+    public Page<MemberContentWithImage> getMemberContentList(Long memberId, Pageable pageable) {
+        List<MemberContent> result = jpaQueryFactory
+                .select(memberContent)
+                .from(memberContent)
+                .where(filterByMemberId(memberId))
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .orderBy(memberContent.createdAt.desc())
+                .fetch();
+
+        // 리턴용 리스트
+        List<MemberContentWithImage> list = new ArrayList<>();
+        // 컨탠트 아이디 닮을 리스트
+        List<Long> contentIdList = new ArrayList<>();
+        // 리스트에 넣어주면서, 이미지 담을 컬렉션 생성
+        for (MemberContent mc : result) {
+            contentIdList.add(mc.getId());
+            list.add(MemberContentWithImage.from(mc,new ArrayList<>()));
+        }
+        // 이미지 한방 쿼리 작성
+        List<MemberContentImageDto> allImageByMemberContent
+                = getAllImageByMemberContent(contentIdList);
+
+        for (MemberContentImageDto memberContentImageDto : allImageByMemberContent) {
+            for(MemberContentWithImage mcl : list){
+                if(memberContentImageDto.getMemberContentId() == mcl.getMemberContentId()){
+                    mcl.getMemberContentImageDto().add(memberContentImageDto);
+                    break;
+                }
+            }
+        }
+
+
+        JPAQuery<Long> count = jpaQueryFactory.select(memberContent.count()).from(memberContent)
+                .where(filterByMemberId(memberId));
+
+        return PageableExecutionUtils.getPage(
+                list,
+                pageable,
+                count::fetchOne);
+    }
+
+    private BooleanExpression filterByMemberId(Long memberId) {
+        return memberContent.member.id.eq(memberId);
     }
 
     @Override

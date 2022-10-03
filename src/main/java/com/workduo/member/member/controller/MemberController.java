@@ -4,15 +4,13 @@ import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshService;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.member.history.service.LoginHistoryService;
-import com.workduo.member.member.dto.MemberChangePassword;
-import com.workduo.member.member.dto.MemberCreate;
-import com.workduo.member.member.dto.MemberEdit;
-import com.workduo.member.member.dto.MemberLogin;
+import com.workduo.member.member.dto.*;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
 import com.workduo.member.member.service.MemberService;
 import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,6 +59,15 @@ public class MemberController {
     ){
         memberService.createUser(req);
         return success(null);
+    }
+
+    @GetMapping("{memberId}")
+    public ApiResult<?> apiGEt(
+            @PathVariable("memberId") Long memberId,
+            Pageable pageable
+    ){
+        MemberProfileDto user = memberService.getUser(memberId, pageable);
+        return success(user);
     }
 
     //회원정보수정

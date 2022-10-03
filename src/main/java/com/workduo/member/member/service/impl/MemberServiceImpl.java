@@ -12,16 +12,15 @@ import com.workduo.group.group.repository.GroupJoinMemberRepository;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.group.group.type.GroupRole;
 import com.workduo.group.groupmetting.repository.GroupMeetingParticipantRepository;
+import com.workduo.member.content.dto.MemberContentWithImage;
+import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
+import com.workduo.member.member.dto.*;
 import com.workduo.member.member.entity.MemberActiveArea;
 import com.workduo.member.member.repository.MemberActiveAreaRepository;
 import com.workduo.member.member.entity.ExistMember;
 import com.workduo.member.member.repository.ExistMemberRepository;
 import com.workduo.member.member.entity.MemberInterestedSport;
 import com.workduo.member.member.repository.InterestedSportRepository;
-import com.workduo.member.member.dto.MemberChangePassword;
-import com.workduo.member.member.dto.MemberCreate;
-import com.workduo.member.member.dto.MemberEdit;
-import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.dto.auth.MemberAuthDto;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
 import com.workduo.member.member.dto.auth.PrincipalDetails;
@@ -37,6 +36,8 @@ import com.workduo.sport.sport.repository.SportRepository;
 import com.workduo.util.AwsS3Provider;
 import io.jsonwebtoken.lang.Collections;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,8 +52,6 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.workduo.error.global.type.GlobalExceptionType.FILE_DELETE_FAIL;
-import static com.workduo.error.global.type.GlobalExceptionType.FILE_EXTENSION_MALFORMED;
 import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_STOP;
 import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_WITHDRAW;
 
@@ -73,6 +72,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberCalendarRepository memberCalendarRepository;
     private final GroupJoinMemberRepository groupJoinMemberRepository;
     private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
+    private final MemberContentQueryRepositoryImpl memberContentQueryRepository;
     private final AwsS3Provider awsS3Provider;
 
     @Override
@@ -172,6 +172,23 @@ public class MemberServiceImpl implements MemberService {
         m.terminate();
     }
 
+    /**
+     * 멤버 프로파일 가져오기
+     *
+     * @param memberId
+     * @return
+     */
+    @Override
+    public MemberProfileDto getUser(Long memberId, Pageable pageable) {
+        Member m = getMember(memberId);
+        validCheckActiveMember(m);
+
+        Page<MemberContentWithImage> list =
+                memberContentQueryRepository.getMemberContentList(memberId, pageable);
+
+        return MemberProfileDto.from(m,list);
+    }
+    // Helper 메서드
     @Transactional(readOnly = true)
     public void validCheckActiveMember(Member m){
         if(m.getMemberStatus() == MEMBER_STATUS_STOP){
@@ -192,6 +209,13 @@ public class MemberServiceImpl implements MemberService {
         }
         return m;
     }
+
+    private Member getMember(Long memberId) {
+        Member m = memberRepository.findById(memberId)
+                .orElseThrow(()->new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));
+        return m;
+    }
+
     @Transactional(readOnly = true)
     public void  validationCreateData(MemberCreate.Request create) {
         if(emailDuplicateCheck(create.getEmail())){

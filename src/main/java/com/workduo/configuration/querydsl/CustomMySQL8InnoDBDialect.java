@@ -11,5 +11,6 @@ public class CustomMySQL8InnoDBDialect extends MySQL8Dialect {
 
         this.registerFunction("DATE_FORMAT", new StandardSQLFunction("DATE_FORMAT", StandardBasicTypes.STRING));
         this.registerFunction("TIMESTAMPDIFF", new StandardSQLFunction("TIMESTAMPDIFF", StandardBasicTypes.INTEGER));
+        this.registerFunction("ANY_VALUE", new StandardSQLFunction("TIMESTAMPDIFF", StandardBasicTypes.STRING));
     }
 }

@@ -77,6 +77,8 @@ public class SecurityConfiguration {
                         "/api/v1/member/logout"
                 ).permitAll()
                 .antMatchers(HttpMethod.POST,"/api/v1/member")
+                .permitAll()
+                .antMatchers(HttpMethod.GET,"/api/v1/member/{memberId}")
                 .permitAll();
 
         http.authorizeRequests()
