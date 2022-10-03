@@ -2,6 +2,7 @@ package com.workduo.group.group.controller;
 
 import com.workduo.group.group.dto.CreateGroup;
 import com.workduo.group.group.dto.ListGroup;
+import com.workduo.group.group.dto.UpdateGroup;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.util.ApiUtils.ApiResult;
 import lombok.RequiredArgsConstructor;
@@ -142,5 +143,37 @@ public class GroupController {
         return success(
                 groupService.groupParticipantList(pageable, groupId)
         );
+    }
+
+    /**
+     * 그룹 썸네일 수정
+     * @param groupId
+     * @param multipartFiles
+     * @return
+     */
+    @PatchMapping("/{groupId}/thumbnail")
+    public ApiResult<?> groupThumbnailUpdate(
+            @PathVariable("groupId") Long groupId,
+            List<MultipartFile> multipartFiles) {
+
+        if (multipartFiles == null || multipartFiles.size() <= 0) {
+            throw new RuntimeException("그룹 썸네일은 필수 입력 사항입니다.");
+        }
+
+        return success(groupService.groupThumbnailUpdate(groupId, multipartFiles));
+    }
+
+    /**
+     * 그룹 수정
+     * @param groupId
+     * @param request
+     * @return
+     */
+    @PatchMapping("/{groupId}")
+    public ApiResult<?> groupUpdate(
+            @PathVariable("groupId") Long groupId,
+            @RequestBody @Validated UpdateGroup.Request request) {
+
+        return success(groupService.groupUpdate(groupId, request));
     }
 }

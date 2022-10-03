@@ -5,9 +5,7 @@ import com.workduo.area.siggarea.repository.SiggAreaRepository;
 import com.workduo.common.CommonRequestContext;
 import com.workduo.error.group.exception.GroupException;
 import com.workduo.error.member.exception.MemberException;
-import com.workduo.group.group.dto.GroupDto;
-import com.workduo.group.group.dto.GroupParticipantsDto;
-import com.workduo.group.group.dto.ListGroup;
+import com.workduo.group.group.dto.*;
 import com.workduo.group.group.entity.Group;
 import com.workduo.group.group.entity.GroupJoinMember;
 import com.workduo.group.group.entity.GroupLike;
@@ -36,6 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.workduo.error.group.type.GroupErrorCode.*;
@@ -265,6 +265,57 @@ public class GroupServiceImpl implements GroupService {
 
         groupParticipantValidate(member, group, groupJoinMember);
         return groupQueryRepository.findByGroupParticipantList(pageable, groupId);
+    }
+
+    /**
+     * 그룹 썸네일 수정
+     * @param groupId
+     * @param multipartFiles
+     * @return
+     */
+    @Override
+    @Transactional
+    public GroupThumbnail groupThumbnailUpdate(Long groupId, List<MultipartFile> multipartFiles) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        boolean existsGroupLeader =
+                groupCreateMemberRepository.existsByMemberAndGroup(member, group);
+
+        if (!existsGroupLeader) {
+            throw new GroupException(GROUP_NOT_LEADER);
+        }
+
+        List<String> paths = new ArrayList<>(
+                Arrays.asList(AwsS3Provider.parseAwsUrl(group.getThumbnailPath()))
+        );
+
+        awsS3Provider.deleteFile(paths);
+
+        String path = generatePath(group.getId());
+        List<String> files = awsS3Provider.uploadFile(multipartFiles, path);
+        group.updateThumbnail(files.get(0));
+
+        return GroupThumbnail.fromEntity(group);
+    }
+
+    @Override
+    @Transactional
+    public UpdateGroup.Response groupUpdate(Long groupId, UpdateGroup.Request request) {
+        Member member = getMember(context.getMemberEmail());
+        Group group = getGroup(groupId);
+
+        boolean existsGroupLeader =
+                groupCreateMemberRepository.existsByMemberAndGroup(member, group);
+
+        if (!existsGroupLeader) {
+            throw new GroupException(GROUP_NOT_LEADER);
+        }
+
+        Integer countByGroup = groupJoinMemberRepository.countByGroup(group);
+        group.groupUpdate(request, countByGroup);
+
+        return UpdateGroup.Response.fromEntity(group);
     }
 
     private void groupParticipantValidate(Member member, Group group, GroupJoinMember groupJoinMember) {

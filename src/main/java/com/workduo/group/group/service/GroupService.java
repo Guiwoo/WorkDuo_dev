@@ -65,4 +65,21 @@ public interface GroupService {
      * @return
      */
     Page<GroupParticipantsDto> groupParticipantList(Pageable pageable, Long groupId);
+
+    /**
+     * 그룹 썸네일 수정
+     * @param groupId
+     * @param multipartFiles
+     * @return
+     */
+    GroupThumbnail groupThumbnailUpdate(Long groupId, List<MultipartFile> multipartFiles);
+
+    /**
+     * 그룹 수정
+     * @param groupId
+     * @param request
+     * @return
+     */
+    UpdateGroup.Response groupUpdate(Long groupId, UpdateGroup.Request request);
+
 }
