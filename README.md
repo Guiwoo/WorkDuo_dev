@@ -3,6 +3,9 @@
 
 **[서비스 소개 페이지 바로가기](https://alive-tern-b83.notion.site/7e43c82a2ab146789ee99eea6124d139).**
 
+## 워크듀오 흐름도
+![WorkDuoFlow.](/workduo_img.png)
+
 ## 워크듀오 구성도
 **[워크듀오 구성](https://alive-tern-b83.notion.site/workduo-55b0477f47c74e0683678ba35d311968).**
 
