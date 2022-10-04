@@ -5,10 +5,11 @@ spring:
     active: dev
 
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
+#    driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_HOST}
     username: ${DB_NAME}
     password: ${DB_PASSWORD}
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
 
   redis:
     port: ${REDIS_PORT}
@@ -47,8 +48,9 @@ spring:
 #        password:
 #        driver-class-name: org.h2.Driver
 logging:
+  config: classpath:logback-spring.xml
   level:
-    org.hibernate.SQL: debug
+#    org.hibernate.SQL: debug
     com.amazonaws.util.EC2MetadataUtils: ERROR
 
 
