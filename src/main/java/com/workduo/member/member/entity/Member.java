@@ -49,7 +49,6 @@ public class Member extends BaseEntity {
         this.nickname = edit.getNickname();
         this.phoneNumber = edit.getPhoneNumber();
         this.status = edit.getStatus();
-        this.profileImg = edit.getProfileImg();
     }
     public void terminate(){
         this.email = "";

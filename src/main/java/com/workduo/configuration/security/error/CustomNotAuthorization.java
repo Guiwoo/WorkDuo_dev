@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workduo.error.global.result.GlobalErrorResult;
 import com.workduo.error.global.type.GlobalExceptionType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,3 +31,4 @@ public class CustomNotAuthorization implements AccessDeniedHandler {
         );
     }
 }
+

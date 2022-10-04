@@ -5,9 +5,14 @@ import com.workduo.group.group.dto.ListGroup;
 import com.workduo.group.group.dto.UpdateGroup;
 import com.workduo.group.group.service.GroupService;
 import com.workduo.util.ApiUtils.ApiResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +25,7 @@ import static com.workduo.util.ApiUtils.success;
 @RestController
 @RequestMapping("/api/v1/group")
 @RequiredArgsConstructor
+@Tag(name="그룹 서비스",description = "그룹 생성,삭제,조인,조회 등 관련 API 입니다.")
 public class GroupController {
 
     private final GroupService groupService;
@@ -29,10 +35,11 @@ public class GroupController {
      * @param request
      * @return
      */
-    @PostMapping("")
+    @PostMapping(value = "",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "그룹 생성 이 가능합니다." ,description = "그룹 생성이 가능합니다.")
     public ApiResult<?> createGroup(
-            List<MultipartFile> multipartFiles,
-            @Validated CreateGroup.Request request) {
+            @Parameter(description = "multipart/form-data 형식의 이미지 리스트를 input 으로 받습니다 1장") List<MultipartFile> multipartFiles,
+            @Validated @ParameterObject CreateGroup.Request request) {
 
         if (multipartFiles == null || multipartFiles.size() <= 0) {
             throw new RuntimeException("그룹 썸네일은 필수 입력 사항입니다.");
@@ -49,6 +56,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}")
+    @Operation(summary = "그룹 해지 가 가능합니다." ,description = "오직 그룹장 만 이 가능합니다.")
     public ApiResult<?> deleteGroup(
             @PathVariable("groupId") Long groupId) {
         groupService.deleteGroup(groupId);
@@ -62,6 +70,7 @@ public class GroupController {
      * @return
      */
     @DeleteMapping("/{groupId}")
+    @Operation(summary = "그룹 탈퇴 가 가능합니다." ,description = "그룹장 을 제외한 그룹 가입 멤버 들 만 가능 합니다.")
     public ApiResult<?> withdrawGroup(
             @PathVariable("groupId") Long groupId) {
         groupService.withdrawGroup(groupId);
@@ -75,6 +84,7 @@ public class GroupController {
      * @return
      */
     @GetMapping("/{groupId}")
+    @Operation(summary = "그룹 상세 조회 가 가능합니다." ,description = "그룹 상세 조회 가 가능합니다.")
     public ApiResult<?> detailGroup(
             @PathVariable("groupId") Long groupId) {
 
@@ -85,8 +95,10 @@ public class GroupController {
      * 그룹 리스트
      */
     @GetMapping("")
+    @Operation(summary = "그룹 리스트 조회 가 가능합니다." ,
+            description = "그룹 리스트 조회 가 가능합니다. condition 이 없다면 최신 생성일 순 으로 조회합니다.")
     public ApiResult<?> groupList(
-            Pageable pageable,
+            @ParameterObject Pageable pageable,
             ListGroup.Request condition) {
         return success(groupService.groupList(pageable, condition));
     }
@@ -97,6 +109,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}/like")
+    @Operation(summary = "그룹 좋아요 가 가능합니다." ,description = "그룹 좋아요 가 가능합니다.")
     public ApiResult<?> groupLike(
             @PathVariable("groupId") Long groupId) {
 
@@ -110,6 +123,7 @@ public class GroupController {
      * @return
      */
     @DeleteMapping("/{groupId}/like")
+    @Operation(summary = "그룹 좋아요 취소 가 가능합니다." ,description = "그룹 좋아요 취소 가 가능합니다.")
     public ApiResult<?> groupUnLike(
             @PathVariable("groupId") Long groupId) {
 
@@ -123,6 +137,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}/participant")
+    @Operation(summary = "그룹 참여 가 가능합니다." ,description = "그룹 참여 가 가능합니다.")
     public ApiResult<?> groupParticipant(
             @PathVariable("groupId") Long groupId) {
 
@@ -136,8 +151,9 @@ public class GroupController {
      * @return
      */
     @GetMapping("participant/{groupId}")
+    @Operation(summary = "그룹 참여자 리스트 조회 가능합니다." ,description = "그룹 참여자 리스트 조회 가 가능합니다.")
     public ApiResult<?> groupParticipantList(
-            Pageable pageable,
+            @ParameterObject Pageable pageable,
             @PathVariable("groupId") Long groupId) {
 
         return success(
@@ -152,8 +168,10 @@ public class GroupController {
      * @return
      */
     @PatchMapping("/{groupId}/thumbnail")
+    @Operation(summary = "그룹 썸네일 수정" ,description = "그룹 썸네일 수정 이 가능합니다. 1장 의 이미지 가 필요합니다.")
     public ApiResult<?> groupThumbnailUpdate(
             @PathVariable("groupId") Long groupId,
+            @Parameter(description = "multipart/form-data 형식의 이미지 리스트를 input 으로 받습니다 1장")
             List<MultipartFile> multipartFiles) {
 
         if (multipartFiles == null || multipartFiles.size() <= 0) {
@@ -170,6 +188,7 @@ public class GroupController {
      * @return
      */
     @PatchMapping("/{groupId}")
+    @Operation(summary = "그룹 정보 수정" ,description = "그룹 정보 수정 이 가능 합니다.")
     public ApiResult<?> groupUpdate(
             @PathVariable("groupId") Long groupId,
             @RequestBody @Validated UpdateGroup.Request request) {

@@ -1,8 +1,12 @@
 package com.workduo.configuration.jwt;
 
 import com.workduo.common.CommonRequestContext;
+import com.workduo.error.global.type.GlobalExceptionType;
+import com.workduo.error.member.exception.MemberException;
+import com.workduo.error.member.type.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,6 +19,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static com.workduo.error.global.type.GlobalExceptionType.responseJsonString;
 
 @Slf4j
 @Component
@@ -33,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = resolveTokenFromRequest(request);
 
-        if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
+        if (!ObjectUtils.isEmpty(token) && tokenProvider.validateToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String memberEmail = tokenProvider.getEmail(token);

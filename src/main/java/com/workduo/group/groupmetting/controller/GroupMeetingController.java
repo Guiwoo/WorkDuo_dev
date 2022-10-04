@@ -5,8 +5,12 @@ import com.workduo.group.groupmetting.dto.CreateMeeting;
 import com.workduo.group.groupmetting.dto.UpdateMeeting;
 import com.workduo.group.groupmetting.service.GroupMeetingService;
 import com.workduo.util.ApiUtils.ApiResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +25,7 @@ import static com.workduo.util.ApiUtils.success;
 @RestController
 @RequestMapping("/api/v1/group")
 @RequiredArgsConstructor
+@Tag(name="그룹 미팅 서비스",description = "그룹 미팅 생성,삭제,조인,조회 등 관련 API 입니다.")
 public class GroupMeetingController {
 
     private final GroupMeetingService groupMeetingService;
@@ -31,8 +36,12 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/meeting/inquire")
+    @Operation(summary = "유저 모임 조회" ,description = "유저 모임 조회")
     public ApiResult<?> meetingInquire(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "일정 조회 시 YYYY-MM-DD 의 입력 이 필요합니다."
+                    ,example = "2022-10-03")
+            LocalDate startDate) {
 
         return success(
                 groupMeetingService.meetingInquire(startDate)
@@ -45,6 +54,7 @@ public class GroupMeetingController {
      * @return
      */
     @PostMapping("/{groupId}/meeting")
+    @Operation(summary = "그룹 모임 생성" ,description = "그룹 모임 생성")
     public ApiResult<?> createMeeting(
             @PathVariable("groupId") Long groupId,
             @RequestBody @Validated CreateMeeting.Request request) {
@@ -60,9 +70,10 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/{groupId}/meeting")
+    @Operation(summary = "그룹 모임 리스트 조회" ,description = "그룹 모임 리스트 조회, 그룹 모임 의 생성 최신순 으로 조회 됩니다.")
     public ApiResult<?> meetingList(
             @PathVariable("groupId") Long groupId,
-            Pageable pageable) {
+            @ParameterObject Pageable pageable) {
 
         return success(groupMeetingService.groupMeetingList(pageable, groupId));
     }
@@ -74,6 +85,7 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/{groupId}/meeting/{meetingId}")
+    @Operation(summary = "그룹 모임 상세 조회" ,description = "그룹 모임 상세 조회")
     public ApiResult<?> getMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
@@ -88,6 +100,7 @@ public class GroupMeetingController {
      * @return
      */
     @PatchMapping("/{groupId}/meeting/{meetingId}")
+    @Operation(summary = "그룹 모임 수정" ,description = "그룹 모임 수정")
     public ApiResult<?> updateMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId,
@@ -104,6 +117,7 @@ public class GroupMeetingController {
      * @return
      */
     @DeleteMapping("/{groupId}/meeting/{meetingId}")
+    @Operation(summary = "그룹 모임 삭제" ,description = "그룹 모임 삭제")
     public ApiResult<?> deleteMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
@@ -117,6 +131,7 @@ public class GroupMeetingController {
      * @return
      */
     @PostMapping("/{groupId}/meeting/{meetingId}/participant")
+    @Operation(summary = "그룹 모임 참여" ,description = "그룹 모임 참여")
     @GroupMeetingLock(tryLockTime = 3000L)
     public ApiResult<?> participantMeeting(
             @PathVariable("groupId") Long groupId,
@@ -132,6 +147,7 @@ public class GroupMeetingController {
      * @return
      */
     @DeleteMapping("/{groupId}/meeting/{meetingId}/participant")
+    @Operation(summary = "그룹 모임 참여 취소" ,description = "그룹 모임 참여 취소")
     public ApiResult<?> cancelParticipantMeeting(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId) {
@@ -148,10 +164,11 @@ public class GroupMeetingController {
      * @return
      */
     @GetMapping("/{groupId}/meeting/{meetingId}/participant")
+    @Operation(summary = "그룹 모임 참여자 리스트 조회" ,description = "그룹 모임 참여자 리스트 조회")
     public ApiResult<?> participantMeetingList(
             @PathVariable("groupId") Long groupId,
             @PathVariable("meetingId") Long meetingId,
-            Pageable pageable) {
+            @ParameterObject Pageable pageable) {
 
         return success(
                 groupMeetingService.groupMeetingParticipantList(

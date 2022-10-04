@@ -3,6 +3,9 @@ package com.workduo.member.membercalendar.controller;
 import com.workduo.member.membercalendar.service.MemberCalendarService;
 import com.workduo.util.ApiUtils;
 import com.workduo.util.ApiUtils.ApiResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,22 +21,30 @@ import java.time.LocalDate;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/member/calendar")
+@Tag(name="멤버 일정 서비스",description = "멤버 일정 조회 관련 API 입니다.")
 public class MemberCalendarController {
 
     private final MemberCalendarService memberService;
 
     @GetMapping("")
+    @Operation(summary = "멤버 일정 월 단위 조회" ,description = "멤버 일정 월 단위 조회")
     public ApiResult<?> getMonthCalendar(
-            // date type example "2022-09-30"
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Valid LocalDate date
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "일정 조회 시 YYYY-MM-DD 의 입력 이 필요합니다."
+            ,example = "2022-10-03")
+            @Valid LocalDate date
     ){
         return ApiUtils.success(memberService.getMonthCalendar(date));
     }
 
     @GetMapping("/list")
+    @Operation(summary = "멤버 일정 일 단위 조회" ,description = "멤버 일정 일 단위 조회")
     public ApiResult<?> getDayCalendar(
-            // date type example "2022-09-30"
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Valid LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @Parameter(description = "일정 조회 시 YYYY-MM-DD 의 입력 이 필요합니다."
+                    ,example = "2022-10-03")
+            @Valid LocalDate date
     ){
         return ApiUtils.success(memberService.getDayCalendar(date));
     }

@@ -1,6 +1,7 @@
 package com.workduo.configuration.security;
 
 import com.workduo.configuration.jwt.JwtAuthenticationFilter;
+import com.workduo.configuration.jwt.JwtExceptionHandlerFilter;
 import com.workduo.configuration.security.error.CustomNotAuthentication;
 import com.workduo.configuration.security.error.CustomNotAuthorization;
 import com.workduo.configuration.security.handler.LogoutSuccessHandler;
@@ -34,6 +35,8 @@ import static org.springframework.security.web.header.writers.ClearSiteDataHeade
 public class SecurityConfiguration {
     private final MemberService memberService;
     private final JwtAuthenticationFilter authenticationFilter;
+    private final JwtExceptionHandlerFilter jwtExceptionHandlerFilter;
+
     private static final ClearSiteDataHeaderWriter.Directive[] SOURCE =
             {CACHE, COOKIES, STORAGE, EXECUTION_CONTEXTS};
 
@@ -91,6 +94,7 @@ public class SecurityConfiguration {
                 ).permitAll();
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtExceptionHandlerFilter,JwtAuthenticationFilter.class);
 
 
         // 로그인 된 유저(토큰 이 있는),권한 이 있는 접근
