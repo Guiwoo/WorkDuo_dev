@@ -2,6 +2,9 @@ package com.workduo.area.common.controller;
 
 import com.workduo.area.common.service.AreaService;
 import com.workduo.common.CommonResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.models.annotations.OpenAPI30;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,7 @@ public class AreaController {
     private final AreaService areaService;
 
     @PostMapping("")
+    @Operation(hidden = true)
     public ResponseEntity<?> insertArea() throws Exception {
         areaService.insertArea();
 

@@ -19,8 +19,8 @@ public enum MemberErrorCode {
     MEMBER_PHONE_DUPLICATE(HttpStatus.FORBIDDEN,"❌ 이미 존재하는 전화번호 입니다."),
     MEMBER_PASSWORD_DUPLICATE(HttpStatus.FORBIDDEN,"❌ 이전 비밀번호 와 동일합니다."),
     // 삭제예정
-    MEMBER_SIGG_ERROR(HttpStatus.FORBIDDEN,"❌ 삭제예정."),
-    MEMBER_SPORT_ERROR(HttpStatus.FORBIDDEN,"❌ 삭제예정."),
+    MEMBER_SIGG_ERROR(HttpStatus.FORBIDDEN,"❌ 존재하지 않는 시도 아이디 입니다.."),
+    MEMBER_SPORT_ERROR(HttpStatus.FORBIDDEN,"❌ 존재하지 않는 스포츠 아이디 입니다."),
     // 회원 상태 에러
     MEMBER_STOP_ERROR(HttpStatus.FORBIDDEN,"❌ 정지된 회원 입니다."),
     MEMBER_WITHDRAW_ERROR(HttpStatus.FORBIDDEN,"❌ 탈퇴한 회원 입니다."),

@@ -115,7 +115,10 @@ class MemberContentControllerTest {
         @DisplayName("멤버 피드 생성 성공")
         public void successCreateMemberContent() throws Exception{
 
-            ContentCreate.Request req = ContentCreate.Request.builder().build();
+            ContentCreate.Request req = ContentCreate.Request.builder()
+                    .title("abc")
+                    .content("abcd")
+                    .build();
             List<MultipartFile> arr = new ArrayList<>();
             MockMultipartFile image = new MockMultipartFile(
                     "multipartFiles",
@@ -128,9 +131,9 @@ class MemberContentControllerTest {
             //when
             mockMvc.perform(multipart("/api/v1/member/content")
                             .file(image)
-                            .param("title", "test")
-                            .param("content", "test")
-                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("title", "abc")
+                            .param("content", "abcd")
+                            .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
                     .andDo(print());

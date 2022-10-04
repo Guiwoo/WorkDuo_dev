@@ -127,7 +127,6 @@ public class MemberServiceImpl implements MemberService {
     /**
      * 유저 정보 수정
      * @param edit
-     * @param multipartFile
      */
     @Override
     public void editUser(MemberEdit.Request edit) {
