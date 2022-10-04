@@ -44,6 +44,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
     implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
+    implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'mysql:mysql-connector-java'

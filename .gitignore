@@ -45,3 +45,7 @@ src/jacoco/
 ._*
 .Spotlight-V100
 .Trashes
+
+### log ###
+*.logs
+*.log

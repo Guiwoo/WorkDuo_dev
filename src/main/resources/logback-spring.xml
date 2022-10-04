@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <property name="LOGS_NORMAL_PATH" value="./logs/normal"/>
+    <property name="LOGS_ERROR_PATH" value="./logs/error"/>
+    <property name="LOGS_LEVEL" value="INFO"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta(%-4relative) --- [ %thread{10} ] %cyan(%logger{20}) : %msg%n </pattern>
+        </layout>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_NORMAL_PATH}/log_file.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_NORMAL_PATH}/%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_ERROR_PATH}/error_file.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ERROR_PATH}/%d{yyyy-MM-dd}_error.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="file-async" class="ch.qos.logback.classic.AsyncAppender" includeLocation="true">
+        <appender-ref ref="FILE" />
+        <queueSize>1</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+    <appender name="error-async" class="ch.qos.logback.classic.AsyncAppender" includeLocation="true">
+        <appender-ref ref="ERROR" />
+        <queueSize>1</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+    <logger name="jdbc" level="OFF" />
+    <logger name="jdbc.sqlonly" level="${LOGS_LEVEL}" />
+    <logger name="jdbc.sqltiming" level="${LOGS_LEVEL}" />
+    <logger name="jdbc.audit" level="OFF" />
+    <logger name="jdbc.resultset" level="OFF" />
+    <logger name="jdbc.resultsettable" level="OFF" />
+    <logger name="jdbc.connection" level="OFF" />
+
+    <root level="${LOGS_LEVEL}">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="file-async" />
+        <appender-ref ref="error-async" />
+    </root>
+</configuration>
