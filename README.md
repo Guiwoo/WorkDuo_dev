@@ -3,7 +3,7 @@
 
 **[서비스 소개 페이지 바로가기](https://alive-tern-b83.notion.site/7e43c82a2ab146789ee99eea6124d139).**
 
-## 서비스 API 문서
+## 서비스 API 문서 (현재 AWS 요금 문제로 RDS 가 내려간 상태입니다. 문제 해결후 제 배포 예정입니다.)
 **[Swagger API DOCS](http://ec2-3-36-166-82.ap-northeast-2.compute.amazonaws.com:8080/swagger-ui/index.html).**
 
 ## 워크듀오 흐름도
