@@ -28,12 +28,16 @@ public class RedisConfig {
     @Value("${spring.redis.port}")
     private int port;
 
+    @Value("${spring.redis.password}")
+    private String password;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        // single instance server이기 때문에 RedisStandaloneConfiguration instance 생성
+        // single instance server 이기 때문에 RedisStandaloneConfiguration instance 생성
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(host);
         redisStandaloneConfiguration.setPort(port);
+        redisStandaloneConfiguration.setPassword(password);
 
         LettuceConnectionFactory lettuceConnectionFactory
                 = new LettuceConnectionFactory(redisStandaloneConfiguration);
@@ -67,7 +71,8 @@ public class RedisConfig {
     RedissonClient redissonClient() {
         Config redisConfig = new Config();
         redisConfig.useSingleServer()
-                .setAddress("redis://" + host + ":" + port);
+                .setAddress("redis://" + host + ":" + port)
+                .setPassword(password);
 
         return Redisson.create(redisConfig);
     }
