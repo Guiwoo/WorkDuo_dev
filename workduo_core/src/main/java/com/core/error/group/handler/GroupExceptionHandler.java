@@ -16,6 +16,7 @@ public class GroupExceptionHandler {
 
     @ExceptionHandler(GroupException.class)
     public ResponseEntity<GroupErrorResult> groupException(GroupException e) {
+        log.error("error ", e);
         GroupErrorCode groupErrorCode = e.getErrorCode();
         GroupErrorResult result = GroupErrorResult.of(e.getErrorCode());
 

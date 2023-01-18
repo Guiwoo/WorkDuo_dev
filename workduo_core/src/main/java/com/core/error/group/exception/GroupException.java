@@ -13,6 +13,7 @@ public class GroupException extends RuntimeException {
     private String errorMessage;
 
     public GroupException(GroupErrorCode errorCode) {
+        super(errorCode.getMessage());
         this.errorCode = errorCode;
         this.errorMessage = errorCode.getMessage();
     }
