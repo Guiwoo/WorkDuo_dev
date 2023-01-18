@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.group.group.dto</a> &gt; <span class="el_source">GroupDto.java</span></div><h1>GroupDto.java</h1><pre class="source lang-java linenums">package com.workduo.group.group.dto;
+
+import com.querydsl.core.annotations.QueryProjection;
+import com.workduo.area.sidoarea.dto.SidoAreaDto;
+import com.workduo.area.siggarea.dto.siggarea.SiggAreaDto;
+import com.workduo.area.sidoarea.entity.SidoArea;
+import com.workduo.area.siggarea.entity.SiggArea;
+import com.workduo.group.group.entity.Group;
+import com.workduo.sport.sport.dto.SportDto;
+import com.workduo.sport.sport.entity.Sport;
+import com.workduo.sport.sportcategory.dto.SportCategoryDto;
+import com.workduo.sport.sportcategory.entity.SportCategory;
+import lombok.*;
+
+@Getter
+<span class="nc" id="L16">@Setter</span>
+<span class="nc" id="L17">@NoArgsConstructor</span>
+<span class="nc" id="L18">@AllArgsConstructor</span>
+<span class="nc" id="L19">@Builder</span>
+public class GroupDto {
+
+<span class="nc" id="L22">    private Long groupId;</span>
+<span class="nc" id="L23">    private String name;</span>
+<span class="nc" id="L24">    private Integer limitPerson;</span>
+<span class="nc" id="L25">    private SiggAreaDto siggArea;</span>
+<span class="nc" id="L26">    private SidoAreaDto sidoArea;</span>
+<span class="nc" id="L27">    private SportDto sport;</span>
+<span class="nc" id="L28">    private SportCategoryDto sportCategory;</span>
+<span class="nc" id="L29">    private String introduce;</span>
+<span class="nc" id="L30">    private String thumbnailPath;</span>
+<span class="nc" id="L31">    private Long participants;</span>
+<span class="nc" id="L32">    private Long likes;</span>
+
+    @QueryProjection
+<span class="nc" id="L35">    public GroupDto(Long groupId, String name, Integer limitPerson, SiggArea siggArea, SidoArea sidoArea, Sport sport, SportCategory sportCategory, String introduce, String thumbnailPath, Long participants, Long likes) {</span>
+<span class="nc" id="L36">        this.groupId = groupId;</span>
+<span class="nc" id="L37">        this.name = name;</span>
+<span class="nc" id="L38">        this.limitPerson = limitPerson;</span>
+<span class="nc" id="L39">        this.siggArea = SiggAreaDto.fromEntity(siggArea);</span>
+<span class="nc" id="L40">        this.sidoArea = SidoAreaDto.fromEntity(sidoArea);</span>
+<span class="nc" id="L41">        this.sport = SportDto.fromEntity(sport);</span>
+<span class="nc" id="L42">        this.sportCategory = SportCategoryDto.fromEntity(sportCategory);</span>
+<span class="nc" id="L43">        this.introduce = introduce;</span>
+<span class="nc" id="L44">        this.thumbnailPath = thumbnailPath;</span>
+<span class="nc" id="L45">        this.participants = participants;</span>
+<span class="nc" id="L46">        this.likes = likes;</span>
+<span class="nc" id="L47">    }</span>
+
+//    public static GroupDto fromEntity(Group group) {
+//        return GroupDto.builder()
+//                .groupId(group.getId())
+//                .name(group.getName())
+//                .limitPerson(group.getLimitPerson())
+//                .siggArea(SiggAreaDto.fromEntity(group.getSiggArea()))
+//                .sidoArea(SidoAreaDto.fromEntity(group.getSiggArea().getSidoArea()))
+//                .sport(SportDto.fromEntity(group.getSport()))
+//                .sportCategory(SportCategoryDto.fromEntity(group.getSport().getSportCategory()))
+//                .introduce(group.getIntroduce())
+//                .thumbnailPath(group.getThumbnailPath())
+//                .build();
+//    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

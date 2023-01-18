@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QGroup.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.group.group.entity</a> &gt; <span class="el_source">QGroup.java</span></div><h1>QGroup.java</h1><pre class="source lang-java linenums">package com.workduo.group.group.entity;
+
+import static com.querydsl.core.types.PathMetadataFactory.*;
+
+import com.querydsl.core.types.dsl.*;
+
+import com.querydsl.core.types.PathMetadata;
+import javax.annotation.processing.Generated;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
+
+
+/**
+ * QGroup is a Querydsl query type for Group
+ */
+@Generated(&quot;com.querydsl.codegen.DefaultEntitySerializer&quot;)
+public class QGroup extends EntityPathBase&lt;Group&gt; {
+
+    private static final long serialVersionUID = 983328704L;
+
+<span class="nc" id="L21">    private static final PathInits INITS = PathInits.DIRECT2;</span>
+
+<span class="nc" id="L23">    public static final QGroup group = new QGroup(&quot;group1&quot;);</span>
+
+<span class="nc" id="L25">    public final com.workduo.configuration.jpa.entitiy.QBaseEntity _super = new com.workduo.configuration.jpa.entitiy.QBaseEntity(this);</span>
+
+    //inherited
+<span class="nc" id="L28">    public final DateTimePath&lt;java.time.LocalDateTime&gt; createdAt = _super.createdAt;</span>
+
+<span class="nc" id="L30">    public final DateTimePath&lt;java.time.LocalDateTime&gt; deletedAt = createDateTime(&quot;deletedAt&quot;, java.time.LocalDateTime.class);</span>
+
+<span class="nc" id="L32">    public final EnumPath&lt;com.workduo.group.group.type.GroupStatus&gt; groupStatus = createEnum(&quot;groupStatus&quot;, com.workduo.group.group.type.GroupStatus.class);</span>
+
+<span class="nc" id="L34">    public final NumberPath&lt;Long&gt; id = createNumber(&quot;id&quot;, Long.class);</span>
+
+<span class="nc" id="L36">    public final StringPath introduce = createString(&quot;introduce&quot;);</span>
+
+<span class="nc" id="L38">    public final NumberPath&lt;Integer&gt; limitPerson = createNumber(&quot;limitPerson&quot;, Integer.class);</span>
+
+<span class="nc" id="L40">    public final StringPath name = createString(&quot;name&quot;);</span>
+
+    public final com.workduo.area.siggarea.entity.QSiggArea siggArea;
+
+    public final com.workduo.sport.sport.entity.QSport sport;
+
+<span class="nc" id="L46">    public final StringPath thumbnailPath = createString(&quot;thumbnailPath&quot;);</span>
+
+    //inherited
+<span class="nc" id="L49">    public final DateTimePath&lt;java.time.LocalDateTime&gt; updatedAt = _super.updatedAt;</span>
+
+    public QGroup(String variable) {
+<span class="nc" id="L52">        this(Group.class, forVariable(variable), INITS);</span>
+<span class="nc" id="L53">    }</span>
+
+    public QGroup(Path&lt;? extends Group&gt; path) {
+<span class="nc" id="L56">        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));</span>
+<span class="nc" id="L57">    }</span>
+
+    public QGroup(PathMetadata metadata) {
+<span class="nc" id="L60">        this(metadata, PathInits.getFor(metadata, INITS));</span>
+<span class="nc" id="L61">    }</span>
+
+    public QGroup(PathMetadata metadata, PathInits inits) {
+<span class="nc" id="L64">        this(Group.class, metadata, inits);</span>
+<span class="nc" id="L65">    }</span>
+
+    public QGroup(Class&lt;? extends Group&gt; type, PathMetadata metadata, PathInits inits) {
+<span class="nc" id="L68">        super(type, metadata, inits);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        this.siggArea = inits.isInitialized(&quot;siggArea&quot;) ? new com.workduo.area.siggarea.entity.QSiggArea(forProperty(&quot;siggArea&quot;), inits.get(&quot;siggArea&quot;)) : null;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        this.sport = inits.isInitialized(&quot;sport&quot;) ? new com.workduo.sport.sport.entity.QSport(forProperty(&quot;sport&quot;), inits.get(&quot;sport&quot;)) : null;</span>
+<span class="nc" id="L71">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

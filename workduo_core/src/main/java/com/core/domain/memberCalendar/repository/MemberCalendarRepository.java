@@ -1,0 +1,60 @@
+package com.core.domain.memberCalendar.repository;
+
+import com.core.domain.group.entity.Group;
+import com.core.domain.groupMeeting.entity.GroupMeeting;
+import com.core.domain.member.entity.Member;
+import com.core.domain.memberCalendar.entity.MemberCalendar;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface MemberCalendarRepository extends JpaRepository<MemberCalendar, Long> {
+
+    @Modifying
+    @Query("update MemberCalendar  mc " +
+            "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_GROUP_LEADER_WITHDRAW' " +
+            "where mc.group = :group")
+    void updateMemberCalendarMeetingActiveStatusGroupCancel(@Param("group") Group group);
+
+    @Modifying
+    @Query("update MemberCalendar  mc " +
+            "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_CANCEL' " +
+            "where mc.member = :member")
+    void updateMemberCalendarMemberWithdraw(@Param("member") Member member);
+
+    @Modifying
+    @Query("update MemberCalendar  mc " +
+            "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_CANCEL' " +
+            "where mc.member = :member " +
+            "and mc.group = :group")
+    void updateMemberCalendarMemberAndGroupWithdraw(
+            @Param("member") Member member,
+            @Param("group") Group group);
+
+    @Modifying
+    @Query("delete from MemberCalendar mc where mc.member = :member")
+    void deleteByMember(@Param("member") Member m);
+
+    @Query("select mc from MemberCalendar mc " +
+            "where mc.member = :member " +
+            "and mc.group = :group " +
+            "and mc.groupMeeting = :groupMeeting " +
+            "and mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_ING'")
+    Optional<MemberCalendar> findByMemberAndGroupAndGroupMeeting(
+            @Param("member") Member member,
+            @Param("group") Group group,
+            @Param("groupMeeting") GroupMeeting groupMeeting);
+
+    @Modifying
+    @Query("update MemberCalendar  mc " +
+            "set mc.meetingActiveStatus = 'MEETING_ACTIVE_STATUS_DISMISS' " +
+            "where mc.groupMeeting = :groupMeeting ")
+    void updateMemberCalendarByGroupMeeting(@Param("groupMeeting") GroupMeeting groupMeeting);
+
+}
+

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QExistMember.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.member.existmember.entity</a> &gt; <span class="el_source">QExistMember.java</span></div><h1>QExistMember.java</h1><pre class="source lang-java linenums">package com.workduo.member.existmember.entity;
+
+import static com.querydsl.core.types.PathMetadataFactory.*;
+
+import com.querydsl.core.types.dsl.*;
+
+import com.querydsl.core.types.PathMetadata;
+import javax.annotation.processing.Generated;
+import com.querydsl.core.types.Path;
+
+
+/**
+ * QExistMember is a Querydsl query type for ExistMember
+ */
+@Generated(&quot;com.querydsl.codegen.DefaultEntitySerializer&quot;)
+public class QExistMember extends EntityPathBase&lt;ExistMember&gt; {
+
+    private static final long serialVersionUID = -478164023L;
+
+<span class="nc" id="L20">    public static final QExistMember existMember = new QExistMember(&quot;existMember&quot;);</span>
+
+<span class="nc" id="L22">    public final StringPath memberEmail = createString(&quot;memberEmail&quot;);</span>
+
+    public QExistMember(String variable) {
+<span class="nc" id="L25">        super(ExistMember.class, forVariable(variable));</span>
+<span class="nc" id="L26">    }</span>
+
+    public QExistMember(Path&lt;? extends ExistMember&gt; path) {
+<span class="nc" id="L29">        super(path.getType(), path.getMetadata());</span>
+<span class="nc" id="L30">    }</span>
+
+    public QExistMember(PathMetadata metadata) {
+<span class="nc" id="L33">        super(ExistMember.class, metadata);</span>
+<span class="nc" id="L34">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

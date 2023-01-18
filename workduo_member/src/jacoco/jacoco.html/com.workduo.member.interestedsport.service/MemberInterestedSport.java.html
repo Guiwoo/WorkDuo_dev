@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberInterestedSport.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.member.interestedsport.service</a> &gt; <span class="el_source">MemberInterestedSport.java</span></div><h1>MemberInterestedSport.java</h1><pre class="source lang-java linenums">package com.workduo.member.interestedsport.service;
+
+import com.workduo.member.member.repository.InterestedSportRepository;
+import domain.member.Member;
+import com.workduo.sport.sport.service.SportService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+<span class="nc" id="L14">@RequiredArgsConstructor</span>
+@Transactional
+public class MemberInterestedSport {
+
+    private final InterestedSportRepository interestedSportRepository;
+    private final SportService sportService;
+
+    public void saveInterestedSport(Member m, List&lt;Integer&gt; sportList){
+<span class="nc" id="L22">        sportList.forEach(</span>
+                (id)-&gt;{
+<span class="nc" id="L24">                    com.workduo.member.member.entity.MemberInterestedSport i = com.workduo.member.member.entity.MemberInterestedSport.builder()</span>
+<span class="nc" id="L25">                            .member(m)</span>
+<span class="nc" id="L26">                            .sport(sportService.getSport(id))</span>
+<span class="nc" id="L27">                            .build();</span>
+<span class="nc" id="L28">                    interestedSportRepository.save(i);</span>
+<span class="nc" id="L29">                }</span>
+        );
+<span class="nc" id="L31">    }</span>
+    public void updateInterestedSport(Member m, List&lt;Integer&gt; sportList){
+<span class="nc" id="L33">        List&lt;com.workduo.member.member.entity.MemberInterestedSport&gt; active = interestedSportRepository.findAllByMember(m);</span>
+<span class="nc" id="L34">        List&lt;Integer&gt; activeList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L35">        active.forEach(</span>
+                (act)-&gt; {
+<span class="nc" id="L37">                    activeList.add(act.getSport().getId());</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">                    if(!sportList.contains(act.getSport().getId())){</span>
+<span class="nc" id="L39">                        interestedSportRepository.delete(act);</span>
+                    }
+<span class="nc" id="L41">                }</span>
+        );
+<span class="nc" id="L43">        sportList.forEach(</span>
+                (id)-&gt;{
+<span class="nc bnc" id="L45" title="All 2 branches missed.">                    if(!activeList.contains(id)){</span>
+<span class="nc" id="L46">                        com.workduo.member.member.entity.MemberInterestedSport i = com.workduo.member.member.entity.MemberInterestedSport.builder()</span>
+<span class="nc" id="L47">                                .member(m)</span>
+<span class="nc" id="L48">                                .sport(sportService.getSport(id))</span>
+<span class="nc" id="L49">                                .build();</span>
+<span class="nc" id="L50">                        interestedSportRepository.save(i);</span>
+                    }
+<span class="nc" id="L52">                }</span>
+        );
+<span class="nc" id="L54">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

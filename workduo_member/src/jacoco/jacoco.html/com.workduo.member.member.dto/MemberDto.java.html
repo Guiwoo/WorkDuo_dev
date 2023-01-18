@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.member.member.dto</a> &gt; <span class="el_source">MemberDto.java</span></div><h1>MemberDto.java</h1><pre class="source lang-java linenums">package com.workduo.member.member.dto;
+
+import domain.member.Member;
+import com.workduo.member.member.type.MemberStatus;
+import com.workduo.member.member.type.MemberRoleType;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+<span class="nc" id="L12">@Setter</span>
+<span class="nc" id="L13">@NoArgsConstructor</span>
+<span class="nc" id="L14">@AllArgsConstructor</span>
+<span class="nc" id="L15">@Builder</span>
+public class MemberDto {
+<span class="nc" id="L17">    private Long id;</span>
+<span class="nc" id="L18">    private String email;</span>
+<span class="nc" id="L19">    private String username;</span>
+<span class="nc" id="L20">    private String phoneNumber;</span>
+<span class="nc" id="L21">    private String password;</span>
+<span class="nc" id="L22">    private String nickname;</span>
+<span class="nc" id="L23">    private String status;</span>
+<span class="nc" id="L24">    private String profileImg;</span>
+<span class="nc" id="L25">    private MemberStatus memberStatus;</span>
+<span class="nc" id="L26">    private LocalDateTime createdAt;</span>
+
+    public static MemberDto fromEntity(Member member) {
+<span class="nc" id="L29">        return MemberDto.builder()</span>
+<span class="nc" id="L30">                .id(member.getId())</span>
+<span class="nc" id="L31">                .email(member.getEmail())</span>
+<span class="nc" id="L32">                .username(member.getUsername())</span>
+<span class="nc" id="L33">                .memberStatus(member.getMemberStatus())</span>
+<span class="nc" id="L34">                .createdAt(member.getCreatedAt())</span>
+<span class="nc" id="L35">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.error.member.type</a> &gt; <span class="el_source">MemberErrorCode.java</span></div><h1>MemberErrorCode.java</h1><pre class="source lang-java linenums">package com.workduo.error.member.type;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+<span class="nc" id="L7">@RequiredArgsConstructor</span>
+@Getter
+public enum MemberErrorCode {
+    //일반 에러
+<span class="nc" id="L11">    MEMBER_ERROR_NEED_LOGIN(HttpStatus.FORBIDDEN,&quot;❌ 로그인 이 필요 합니다.(사용자 이메일이 다릅니다.)&quot;),</span>
+<span class="nc" id="L12">    MEMBER_EMAIL_ERROR(HttpStatus.FORBIDDEN,&quot;❌ 이메일 계정 이 존재하지 않습니다.&quot;),</span>
+<span class="nc" id="L13">    MEMBER_EMAIL_FORM(HttpStatus.FORBIDDEN,&quot;❌ 이메일 형태가 아닙니다.&quot;),</span>
+<span class="nc" id="L14">    MEMBER_PASSWORD_ERROR(HttpStatus.FORBIDDEN,&quot;❌ 패스워드 가 일치하지 않습니다.&quot;),</span>
+<span class="nc" id="L15">    MEMBER_PASSWORD_POLICY(HttpStatus.FORBIDDEN,&quot;❌ 최소 8 최대20, 최소 문자 1개,숫자1개,특수문자 1개를 포함하고 있어야 합니다.&quot;),</span>
+    // 중복체크 에러
+<span class="nc" id="L17">    MEMBER_EMAIL_DUPLICATE(HttpStatus.FORBIDDEN,&quot;❌ 이미 존재하는 이메일 입니다.&quot;),</span>
+<span class="nc" id="L18">    MEMBER_NICKNAME_DUPLICATE(HttpStatus.FORBIDDEN,&quot;❌ 이미 존재하는 닉네임 입니다.&quot;),</span>
+<span class="nc" id="L19">    MEMBER_PHONE_DUPLICATE(HttpStatus.FORBIDDEN,&quot;❌ 이미 존재하는 전화번호 입니다.&quot;),</span>
+<span class="nc" id="L20">    MEMBER_PASSWORD_DUPLICATE(HttpStatus.FORBIDDEN,&quot;❌ 이전 비밀번호 와 동일합니다.&quot;),</span>
+    // 삭제예정
+<span class="nc" id="L22">    MEMBER_SIGG_ERROR(HttpStatus.FORBIDDEN,&quot;❌ 삭제예정.&quot;),</span>
+<span class="nc" id="L23">    MEMBER_SPORT_ERROR(HttpStatus.FORBIDDEN,&quot;❌ 삭제예정.&quot;),</span>
+    // 회원 상태 에러
+<span class="nc" id="L25">    MEMBER_STOP_ERROR(HttpStatus.FORBIDDEN,&quot;❌ 정지된 회원 입니다.&quot;),</span>
+<span class="nc" id="L26">    MEMBER_WITHDRAW_ERROR(HttpStatus.FORBIDDEN,&quot;❌ 탈퇴한 회원 입니다.&quot;),</span>
+<span class="nc" id="L27">    MEMBER_REFRESH_TOKEN_ERROR(HttpStatus.FORBIDDEN,&quot;❌ 탈퇴한 회원 입니다.&quot;);</span>
+
+
+
+<span class="nc" id="L31">    private final HttpStatus httpStatus;</span>
+<span class="nc" id="L32">    private final String message;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

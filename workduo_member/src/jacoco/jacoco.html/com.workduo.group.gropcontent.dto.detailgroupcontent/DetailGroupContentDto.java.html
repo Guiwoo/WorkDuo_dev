@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DetailGroupContentDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.group.gropcontent.dto.detailgroupcontent</a> &gt; <span class="el_source">DetailGroupContentDto.java</span></div><h1>DetailGroupContentDto.java</h1><pre class="source lang-java linenums">package com.workduo.group.gropcontent.dto.detailgroupcontent;
+
+import com.workduo.group.gropcontent.entity.GroupContent;
+import com.workduo.group.gropcontent.entity.GroupContentImage;
+import lombok.*;
+import org.springframework.data.domain.Page;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Getter
+<span class="nc" id="L14">@Setter</span>
+<span class="nc" id="L15">@NoArgsConstructor</span>
+<span class="nc" id="L16">@AllArgsConstructor</span>
+<span class="nc" id="L17">@Builder</span>
+public class DetailGroupContentDto {
+
+<span class="nc" id="L20">    private Long id;</span>
+<span class="nc" id="L21">    private String title;</span>
+<span class="nc" id="L22">    private String content;</span>
+<span class="nc" id="L23">    private Long memberId;</span>
+<span class="nc" id="L24">    private String username;</span>
+<span class="nc" id="L25">    private String nickname;</span>
+<span class="nc" id="L26">    private String profileImg;</span>
+<span class="nc" id="L27">    private LocalDateTime createdAt;</span>
+<span class="nc" id="L28">    private Long contentLike;</span>
+<span class="nc" id="L29">    private List&lt;GroupContentImageDto&gt; groupContentImages = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L30">    private Page&lt;GroupContentCommentDto&gt; groupContentComments;</span>
+
+    public static DetailGroupContentDto from(
+            GroupContentDto groupContent,
+            List&lt;GroupContentImageDto&gt; groupContentImages,
+            Page&lt;GroupContentCommentDto&gt; groupContentComments) {
+<span class="nc" id="L36">    return DetailGroupContentDto.builder()</span>
+<span class="nc" id="L37">            .id(groupContent.getId())</span>
+<span class="nc" id="L38">            .title(groupContent.getTitle())</span>
+<span class="nc" id="L39">            .content(groupContent.getContent())</span>
+<span class="nc" id="L40">            .memberId(groupContent.getMemberId())</span>
+<span class="nc" id="L41">            .username(groupContent.getUsername())</span>
+<span class="nc" id="L42">            .nickname(groupContent.getNickname())</span>
+<span class="nc" id="L43">            .profileImg(groupContent.getProfileImg())</span>
+<span class="nc" id="L44">            .createdAt(groupContent.getCreatedAt())</span>
+<span class="nc" id="L45">            .contentLike(groupContent.getContentLike())</span>
+<span class="nc" id="L46">            .groupContentImages(groupContentImages)</span>
+<span class="nc" id="L47">            .groupContentComments(groupContentComments)</span>
+<span class="nc" id="L48">            .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QBaseEntityProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.configuration.jpa.entitiy</a> &gt; <span class="el_source">QBaseEntityProvider.java</span></div><h1>QBaseEntityProvider.java</h1><pre class="source lang-java linenums">package com.workduo.configuration.jpa.entitiy;
+
+import static com.querydsl.core.types.PathMetadataFactory.*;
+
+import com.querydsl.core.types.dsl.*;
+
+import com.querydsl.core.types.PathMetadata;
+import javax.annotation.processing.Generated;
+import com.querydsl.core.types.Path;
+
+
+/**
+ * QBaseEntityProvider is a Querydsl query type for BaseEntityProvider
+ */
+@Generated(&quot;com.querydsl.codegen.DefaultSupertypeSerializer&quot;)
+public class QBaseEntityProvider extends EntityPathBase&lt;BaseEntityProvider&gt; {
+
+    private static final long serialVersionUID = -563328154L;
+
+<span class="nc" id="L20">    public static final QBaseEntityProvider baseEntityProvider = new QBaseEntityProvider(&quot;baseEntityProvider&quot;);</span>
+
+<span class="nc" id="L22">    public final QBaseEntity _super = new QBaseEntity(this);</span>
+
+<span class="nc" id="L24">    public final StringPath createBy = createString(&quot;createBy&quot;);</span>
+
+    //inherited
+<span class="nc" id="L27">    public final DateTimePath&lt;java.time.LocalDateTime&gt; createdAt = _super.createdAt;</span>
+
+<span class="nc" id="L29">    public final StringPath lastModifiedBy = createString(&quot;lastModifiedBy&quot;);</span>
+
+    //inherited
+<span class="nc" id="L32">    public final DateTimePath&lt;java.time.LocalDateTime&gt; updatedAt = _super.updatedAt;</span>
+
+    public QBaseEntityProvider(String variable) {
+<span class="nc" id="L35">        super(BaseEntityProvider.class, forVariable(variable));</span>
+<span class="nc" id="L36">    }</span>
+
+    public QBaseEntityProvider(Path&lt;? extends BaseEntityProvider&gt; path) {
+<span class="nc" id="L39">        super(path.getType(), path.getMetadata());</span>
+<span class="nc" id="L40">    }</span>
+
+    public QBaseEntityProvider(PathMetadata metadata) {
+<span class="nc" id="L43">        super(BaseEntityProvider.class, metadata);</span>
+<span class="nc" id="L44">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

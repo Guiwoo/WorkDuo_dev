@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.member.member.controller</a> &gt; <span class="el_source">MemberController.java</span></div><h1>MemberController.java</h1><pre class="source lang-java linenums">package com.workduo.member.member.controller;
+
+import com.workduo.configuration.jwt.TokenProvider;
+import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshService;
+import com.workduo.error.global.exception.CustomMethodArgumentNotValidException;
+import com.workduo.group.group.service.GroupService;
+import com.workduo.member.history.service.LoginHistoryService;
+import com.workduo.member.member.dto.*;
+import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
+import com.workduo.member.member.service.MemberService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
+
+
+@RestController
+<span class="fc" id="L25">@Slf4j</span>
+<span class="fc" id="L26">@RequiredArgsConstructor</span>
+@RequestMapping(&quot;/api/v1/member&quot;)
+public class MemberController {
+
+    private final MemberService memberService;
+    private final TokenProvider tokenProvider;
+    private final MemberRefreshService refreshService;
+    private final LoginHistoryService loginHistoryService;
+    private final GroupService groupService;
+    //로그인
+    @PostMapping(&quot;/login&quot;)
+    public ResponseEntity&lt;?&gt; apiLogin(
+            HttpServletRequest request,
+            @RequestBody @Validated MemberLogin.Request req,
+            BindingResult bindingResult
+            ) throws Exception {
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        if(bindingResult.hasErrors()){</span>
+<span class="nc" id="L43">            throw new CustomMethodArgumentNotValidException(bindingResult);</span>
+        }
+<span class="fc" id="L45">        MemberAuthenticateDto m = memberService.authenticateUser(req);</span>
+<span class="fc" id="L46">        String token = tokenProvider.generateToken(m.getEmail(),m.getRoles());</span>
+<span class="fc" id="L47">        refreshService.validateRefreshToken(m);</span>
+<span class="fc" id="L48">        loginHistoryService.saveLoginHistory(m.getEmail(),request);</span>
+
+<span class="fc" id="L50">        Map&lt;String,String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L51">        map.put(&quot;token&quot;,token);</span>
+
+<span class="fc" id="L53">        return new ResponseEntity&lt;&gt;(MemberLogin.Response.builder()</span>
+<span class="fc" id="L54">                        .success(&quot;T&quot;)</span>
+<span class="fc" id="L55">                        .result(map)</span>
+<span class="fc" id="L56">                        .build(), HttpStatus.OK);</span>
+    }
+    //회원가입
+    @PostMapping(&quot;&quot;)
+    public ResponseEntity&lt;?&gt; apiCreate(
+            @RequestBody @Validated MemberCreate.Request req,
+            BindingResult bindingResult
+    ){
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if(bindingResult.hasErrors()){</span>
+<span class="nc" id="L65">            throw new CustomMethodArgumentNotValidException(bindingResult);</span>
+        }
+<span class="fc" id="L67">        memberService.createUser(req);</span>
+<span class="fc" id="L68">        return new ResponseEntity&lt;&gt;(MemberCreate.Response.from(), HttpStatus.CREATED);</span>
+    }
+
+    //회원정보수정
+    @PatchMapping(&quot;&quot;)
+    public ResponseEntity&lt;?&gt; apiEdit(
+            @RequestBody @Validated MemberEdit.Request req,
+            BindingResult bindingResult
+    ){
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if(bindingResult.hasErrors()){</span>
+<span class="nc" id="L78">            throw new CustomMethodArgumentNotValidException(bindingResult);</span>
+        }
+<span class="fc" id="L80">        memberService.editUser(req);</span>
+<span class="fc" id="L81">        return new ResponseEntity&lt;&gt;(MemberEdit.Response.from(), HttpStatus.OK);</span>
+    }
+    //비밀번호 변경
+    @PatchMapping(&quot;/password&quot;)
+    public ResponseEntity&lt;?&gt; apiPasswordEdit(
+            @RequestBody @Validated MemberChangePassword.Request req,
+            BindingResult bindingResult
+    ){
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        if(bindingResult.hasErrors()){</span>
+<span class="nc" id="L90">            throw new CustomMethodArgumentNotValidException(bindingResult);</span>
+        }
+<span class="fc" id="L92">        memberService.changePassword(req);</span>
+<span class="fc" id="L93">        return new ResponseEntity&lt;&gt;(MemberChangePassword.Response.from(), HttpStatus.OK);</span>
+    }
+    //회원탈퇴
+    @DeleteMapping(&quot;&quot;)
+    public ResponseEntity&lt;?&gt; apiDelete(){
+<span class="fc" id="L98">        memberService.withdraw(groupService);</span>
+<span class="fc" id="L99">        return new ResponseEntity&lt;&gt;(MemberWithdraw.Response.from(),HttpStatus.OK);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

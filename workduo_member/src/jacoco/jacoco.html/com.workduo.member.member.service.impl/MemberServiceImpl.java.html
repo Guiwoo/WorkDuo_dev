@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.member.member.service.impl</a> &gt; <span class="el_source">MemberServiceImpl.java</span></div><h1>MemberServiceImpl.java</h1><pre class="source lang-java linenums">package com.workduo.member.member.service.impl;
+
+import com.workduo.area.siggarea.entity.SiggArea;
+import com.workduo.area.siggarea.repository.SiggAreaRepository;
+import com.workduo.common.CommonRequestContext;
+import com.workduo.configuration.jwt.memberrefreshtoken.repository.MemberRefreshTokenRepository;
+import com.workduo.error.member.exception.MemberException;
+import com.workduo.error.member.type.MemberErrorCode;
+import com.workduo.group.group.entity.GroupJoinMember;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
+import com.workduo.group.group.service.GroupService;
+import com.workduo.group.group.service.impl.GroupServiceImpl;
+import com.workduo.group.group.type.GroupRole;
+import com.workduo.group.groupmeetingparticipant.entity.GroupMeetingParticipant;
+import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
+import com.workduo.member.member.entity.MemberActiveArea;
+import com.workduo.member.member.repository.MemberActiveAreaRepository;
+import com.workduo.member.member.entity.ExistMember;
+import com.workduo.member.member.repository.ExistMemberRepository;
+import com.workduo.member.member.entity.MemberInterestedSport;
+import com.workduo.member.member.repository.InterestedSportRepository;
+import com.workduo.member.member.dto.MemberChangePassword;
+import com.workduo.member.member.dto.MemberCreate;
+import com.workduo.member.member.dto.MemberEdit;
+import com.workduo.member.member.dto.MemberLogin;
+import com.workduo.member.member.dto.auth.MemberAuthDto;
+import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
+import com.workduo.member.member.dto.auth.PrincipalDetails;
+import domain.member.Member;
+import com.workduo.member.member.repository.MemberRepository;
+import com.workduo.member.member.service.MemberService;
+import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
+import com.workduo.member.member.entity.MemberRole;
+import com.workduo.member.member.repository.MemberRoleRepository;
+import com.workduo.member.member.type.MemberRoleType;
+import com.workduo.sport.sport.entity.Sport;
+import com.workduo.sport.sport.repository.SportRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_STOP;
+import static com.workduo.member.member.type.MemberStatus.MEMBER_STATUS_WITHDRAW;
+
+@Service
+<span class="nc" id="L57">@RequiredArgsConstructor</span>
+@Transactional
+public class MemberServiceImpl implements MemberService {
+
+    private final MemberRepository memberRepository;
+    private final ExistMemberRepository existMemberRepository;
+    private final MemberRoleRepository memberRoleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final CommonRequestContext commonRequestContext;
+    private final MemberActiveAreaRepository memberActiveAreaRepository;
+    private final SiggAreaRepository siggAreaRepository;
+    private final InterestedSportRepository interestedSportRepository;
+    private final SportRepository sportRepository;
+    private final MemberRefreshTokenRepository memberRefreshTokenRepository;
+    private final MemberCalendarRepository memberCalendarRepository;
+    private final GroupJoinMemberRepository groupJoinMemberRepository;
+    private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+<span class="nc" id="L76">        Member member = memberRepository.findByEmail(email)</span>
+<span class="nc" id="L77">                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;❌ 유저 를 찾을수 없습니다, 로그인 되었지만 삭제 되었습니다.&quot;));</span>
+<span class="nc" id="L78">        List&lt;MemberRole&gt; roles = memberRoleRepository.findByMember(member);</span>
+<span class="nc" id="L79">        MemberAuthDto authDto = MemberAuthDto.builder()</span>
+<span class="nc" id="L80">                .username(member.getUsername())</span>
+<span class="nc" id="L81">                .password(member.getPassword())</span>
+<span class="nc" id="L82">                .roles(roles)</span>
+<span class="nc" id="L83">                .build();</span>
+
+<span class="nc" id="L85">        return new PrincipalDetails(authDto);</span>
+    }
+    @Transactional(readOnly = true)
+    public MemberAuthenticateDto authenticateUser(MemberLogin.Request member){
+<span class="nc" id="L89">        Member m = memberRepository.findByEmail(member.getEmail()).</span>
+<span class="nc" id="L90">                orElseThrow(()-&gt;new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));</span>
+<span class="nc" id="L91">        validCheckActiveMember(m);</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (!passwordEncoder.matches(member.getPassword(), m.getPassword())) {</span>
+<span class="nc" id="L93">            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_ERROR);</span>
+        }
+
+<span class="nc" id="L96">        List&lt;MemberRole&gt; all = memberRoleRepository.findByMember(m);</span>
+
+<span class="nc" id="L98">        return MemberAuthenticateDto.builder().email(m.getEmail()).roles(all).build();</span>
+    }
+    @Override
+    public void createUser(MemberCreate.Request create) {
+<span class="nc" id="L102">        validationCreateData(create);</span>
+        // Need to add aws s3 img file path ,or default path should be added
+<span class="nc" id="L104">        Member m = MemberCreate.createReqToMember(create);</span>
+<span class="nc" id="L105">        m.updatePassword(passwordEncoder.encode(create.getPassword()));</span>
+<span class="nc" id="L106">        memberRepository.save(m);</span>
+        // 롤 저장
+<span class="nc" id="L108">        MemberRole r = MemberCreate.createReqToMemberRole(m,MemberRoleType.ROLE_MEMBER);</span>
+<span class="nc" id="L109">        memberRoleRepository.save(r);</span>
+        // 이메일 테이블 저장
+<span class="nc" id="L111">        ExistMember e = MemberCreate.createReqToExistMember(create.getEmail());</span>
+<span class="nc" id="L112">        existMemberRepository.save(e);</span>
+        //시도 저장
+<span class="nc" id="L114">        saveActiveArea(m,create.getSiggAreaList());</span>
+        //운동 저장
+<span class="nc" id="L116">        saveInterestedSport(m,create.getSportList());</span>
+<span class="nc" id="L117">    }</span>
+    @Override
+    public void editUser(MemberEdit.Request edit) {
+<span class="nc" id="L120">        Member m = validCheckLoggedInUser();</span>
+<span class="nc" id="L121">        validationEditDate(edit,m);</span>
+<span class="nc" id="L122">        m.updateUserInfo(edit);</span>
+        //지역 변경 해줘야함 테이블에서 찾아서 지울꺼 지우고 업데이트할꺼 하고
+<span class="nc" id="L124">        updateActiveArea(m,edit.getSiggAreaList());</span>
+        //운동 변경
+<span class="nc" id="L126">        updateInterestedSport(m,edit.getSportList());</span>
+<span class="nc" id="L127">    }</span>
+    @Override
+    public void changePassword(MemberChangePassword.Request req) {
+<span class="nc" id="L130">        Member m  = validCheckLoggedInUser();</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if(passwordEncoder.matches(req.getPassword(),m.getPassword())){</span>
+<span class="nc" id="L132">            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_DUPLICATE);</span>
+        }
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if(!passwordPolicyCheck(req.getPassword())){</span>
+<span class="nc" id="L135">            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_POLICY);</span>
+        }
+<span class="nc" id="L137">        m.updatePassword(passwordEncoder.encode(req.getPassword()));</span>
+<span class="nc" id="L138">    }</span>
+
+    @Override
+    public void withdraw(GroupService groupService) {
+<span class="nc" id="L142">        Member m = validCheckLoggedInUser();</span>
+<span class="nc" id="L143">        validCheckActiveMember(m);</span>
+        //리프레시 토큰 테이블
+<span class="nc" id="L145">        memberRefreshTokenRepository.deleteById(m.getEmail());</span>
+        //멤버 이메일 중복체크 테이블
+<span class="nc" id="L147">        existMemberRepository.deleteById(m.getEmail());</span>
+        // 멤버 롤 테이블
+<span class="nc" id="L149">        memberRoleRepository.deleteByMember(m);</span>
+        // 멤버 활동 지역 테이블
+<span class="nc" id="L151">        memberActiveAreaRepository.deleteByMember(m);</span>
+        // 멤버 관심 운동 테이블
+<span class="nc" id="L153">        interestedSportRepository.deleteByMember(m);</span>
+
+        //맴버 피드 도 업데이트 해줘야함
+
+        //그룹 쪽 지우러 가보자
+<span class="nc" id="L158">        List&lt;GroupJoinMember&gt; groupJoinMemberList = groupJoinMemberRepository.findAllByMember(m);</span>
+<span class="nc" id="L159">        groupJoinMemberList.forEach(</span>
+                (groupJoinMember) -&gt; {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                    if(groupJoinMember.getGroupRole() == GroupRole.GROUP_ROLE_LEADER){</span>
+<span class="nc" id="L162">                        groupService.deleteGroup(groupJoinMember.getGroup().getId());</span>
+                    }
+<span class="nc" id="L164">                }</span>
+        );
+<span class="nc" id="L166">        groupMeetingParticipantRepository.deleteByMember(m);</span>
+<span class="nc" id="L167">        memberCalendarRepository.deleteByMember(m);</span>
+<span class="nc" id="L168">        m.terminate();</span>
+<span class="nc" id="L169">    }</span>
+
+    @Transactional(readOnly = true)
+    public void validCheckActiveMember(Member m){
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if(m.getMemberStatus() == MEMBER_STATUS_STOP){</span>
+            // Member who already got stooped by admin
+<span class="nc" id="L175">            throw new MemberException(MemberErrorCode.MEMBER_STOP_ERROR);</span>
+        }
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if(m.getMemberStatus() == MEMBER_STATUS_WITHDRAW){</span>
+            // Member who already got withdraw
+<span class="nc" id="L179">            throw new MemberException(MemberErrorCode.MEMBER_WITHDRAW_ERROR);</span>
+        }
+<span class="nc" id="L181">    }</span>
+    @Transactional(readOnly = true)
+    public Member validCheckLoggedInUser(){
+<span class="nc" id="L184">        Member m = memberRepository.findByEmail(commonRequestContext.getMemberEmail())</span>
+<span class="nc" id="L185">                .orElseThrow(()-&gt;new MemberException(MemberErrorCode.MEMBER_EMAIL_ERROR));</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if(!Objects.equals(commonRequestContext.getMemberEmail(), m.getEmail())){</span>
+<span class="nc" id="L187">            throw new MemberException(MemberErrorCode.MEMBER_ERROR_NEED_LOGIN);</span>
+        }
+<span class="nc" id="L189">        return m;</span>
+    }
+    @Transactional(readOnly = true)
+    public void  validationCreateData(MemberCreate.Request create) {
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if(emailDuplicateCheck(create.getEmail())){</span>
+<span class="nc" id="L194">            throw new MemberException(MemberErrorCode.MEMBER_EMAIL_DUPLICATE);</span>
+        }
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if(nickNameDuplicateCheck(create.getNickname())){</span>
+<span class="nc" id="L197">            throw new MemberException(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE);</span>
+        }
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        if(phoneNumberDuplicateCheck(create.getPhoneNumber())){</span>
+<span class="nc" id="L200">            throw new MemberException(MemberErrorCode.MEMBER_PHONE_DUPLICATE);</span>
+        }
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if(!passwordPolicyCheck(create.getPassword())){</span>
+<span class="nc" id="L203">            throw new MemberException(MemberErrorCode.MEMBER_PASSWORD_POLICY);</span>
+        }
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if(!siggCheck(create.getSiggAreaList())){</span>
+<span class="nc" id="L206">            throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);</span>
+        }
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if(!sportsCheck(create.getSportList())){</span>
+<span class="nc" id="L209">            throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);</span>
+        }
+<span class="nc" id="L211">    }</span>
+    @Transactional(readOnly = true)
+    public void validationEditDate(MemberEdit.Request edit,Member m){
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        if(!edit.getNickname().equals(m.getNickname())</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">                &amp;&amp; nickNameDuplicateCheck(edit.getNickname())){</span>
+<span class="nc" id="L216">            throw new MemberException(MemberErrorCode.MEMBER_NICKNAME_DUPLICATE);</span>
+        }
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if(!edit.getPhoneNumber().equals(m.getPhoneNumber())</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                &amp;&amp; phoneNumberDuplicateCheck(edit.getPhoneNumber())){</span>
+<span class="nc" id="L220">            throw new MemberException(MemberErrorCode.MEMBER_PHONE_DUPLICATE);</span>
+        }
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if(!siggCheck(edit.getSiggAreaList())){</span>
+<span class="nc" id="L223">            throw new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR);</span>
+        }
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if(!sportsCheck(edit.getSportList())){</span>
+<span class="nc" id="L226">            throw new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR);</span>
+        }
+<span class="nc" id="L228">    }</span>
+
+    private void saveActiveArea(Member m, List&lt;String&gt; siggList){
+<span class="nc" id="L231">        siggList.forEach(</span>
+                (id)-&gt;{
+<span class="nc" id="L233">                    MemberActiveArea a = MemberActiveArea.builder()</span>
+<span class="nc" id="L234">                            .siggArea(getSiggArea(id))</span>
+<span class="nc" id="L235">                            .member(m)</span>
+<span class="nc" id="L236">                            .build();</span>
+<span class="nc" id="L237">                    memberActiveAreaRepository.save(a);</span>
+<span class="nc" id="L238">                }</span>
+        );
+<span class="nc" id="L240">    }</span>
+    private void updateActiveArea(Member m,List&lt;String&gt; siggList){
+<span class="nc" id="L242">        List&lt;MemberActiveArea&gt; active = memberActiveAreaRepository.findAllByMember(m);</span>
+<span class="nc" id="L243">        List&lt;String&gt; activeList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L244">        active.forEach(</span>
+                (act)-&gt; {
+<span class="nc" id="L246">                    activeList.add(act.getSiggArea().getSgg());</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">                    if(!siggList.contains(act.getSiggArea().getSgg())){</span>
+<span class="nc" id="L248">                        memberActiveAreaRepository.delete(act);</span>
+                    }
+<span class="nc" id="L250">                }</span>
+        );
+<span class="nc" id="L252">        siggList.forEach(</span>
+                (sigg)-&gt;{
+<span class="nc bnc" id="L254" title="All 2 branches missed.">                    if(!activeList.contains(sigg)){</span>
+<span class="nc" id="L255">                        MemberActiveArea a = MemberActiveArea.builder()</span>
+<span class="nc" id="L256">                                .member(m)</span>
+<span class="nc" id="L257">                                .siggArea(getSiggArea(sigg))</span>
+<span class="nc" id="L258">                                .build();</span>
+<span class="nc" id="L259">                        memberActiveAreaRepository.save(a);</span>
+                    }
+<span class="nc" id="L261">                }</span>
+        );
+<span class="nc" id="L263">    }</span>
+    private void saveInterestedSport(Member m, List&lt;Integer&gt; sportList){
+<span class="nc" id="L265">        sportList.forEach(</span>
+                (id)-&gt;{
+<span class="nc" id="L267">                    MemberInterestedSport i = MemberInterestedSport.builder()</span>
+<span class="nc" id="L268">                            .member(m)</span>
+<span class="nc" id="L269">                            .sport(getSport(id))</span>
+<span class="nc" id="L270">                            .build();</span>
+<span class="nc" id="L271">                    interestedSportRepository.save(i);</span>
+<span class="nc" id="L272">                }</span>
+        );
+<span class="nc" id="L274">    }</span>
+    private void updateInterestedSport(Member m, List&lt;Integer&gt; sportList){
+<span class="nc" id="L276">        List&lt;MemberInterestedSport&gt; active = interestedSportRepository.findAllByMember(m);</span>
+<span class="nc" id="L277">        List&lt;Integer&gt; activeList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L278">        active.forEach(</span>
+                (act)-&gt; {
+<span class="nc" id="L280">                    activeList.add(act.getSport().getId());</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                    if(!sportList.contains(act.getSport().getId())){</span>
+<span class="nc" id="L282">                        interestedSportRepository.delete(act);</span>
+                    }
+<span class="nc" id="L284">                }</span>
+        );
+<span class="nc" id="L286">        sportList.forEach(</span>
+                (id)-&gt;{
+<span class="nc bnc" id="L288" title="All 2 branches missed.">                    if(!activeList.contains(id)){</span>
+<span class="nc" id="L289">                        com.workduo.member.member.entity.MemberInterestedSport i = com.workduo.member.member.entity.MemberInterestedSport.builder()</span>
+<span class="nc" id="L290">                                .member(m)</span>
+<span class="nc" id="L291">                                .sport(getSport(id))</span>
+<span class="nc" id="L292">                                .build();</span>
+<span class="nc" id="L293">                        interestedSportRepository.save(i);</span>
+                    }
+<span class="nc" id="L295">                }</span>
+        );
+<span class="nc" id="L297">    }</span>
+    private Sport getSport(int id){
+<span class="nc" id="L299">        return sportRepository.findById(id)</span>
+<span class="nc" id="L300">                .orElseThrow(()-&gt;new MemberException(MemberErrorCode.MEMBER_SPORT_ERROR));</span>
+    }
+    private SiggArea getSiggArea(String id){
+<span class="nc" id="L303">        return siggAreaRepository.findBySgg(id)</span>
+<span class="nc" id="L304">                .orElseThrow(()-&gt;new MemberException(MemberErrorCode.MEMBER_SIGG_ERROR));</span>
+    }
+    private boolean sportsCheck(List&lt;Integer&gt; sportList){
+<span class="nc bnc" id="L307" title="All 2 branches missed.">        if(sportList == null) return false;</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">        for (int integer : sportList) {</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">            if(!sportRepository.existsById(integer)) return false;</span>
+<span class="nc" id="L310">        }</span>
+<span class="nc" id="L311">        return true;</span>
+    }
+    private boolean siggCheck(List&lt;String&gt; siggCheck){
+<span class="nc bnc" id="L314" title="All 2 branches missed.">        if(siggCheck == null) return false;</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        for (String sgg : siggCheck) {</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">            if(!siggAreaRepository.existsBySgg(sgg)) return false;</span>
+<span class="nc" id="L317">        }</span>
+<span class="nc" id="L318">        return true;</span>
+    }
+    private boolean passwordPolicyCheck(String password){
+<span class="nc" id="L321">        final String reg = &quot;^(?=.*[0-9])(?=.*[a-zA-z])(?=.*[!@#&amp;()–[{}]:;',?/*~$^+=&lt;&gt;]).{8,20}$&quot;;</span>
+<span class="nc" id="L322">        Pattern p = Pattern.compile(reg);</span>
+<span class="nc" id="L323">        Matcher m = p.matcher(password);</span>
+<span class="nc" id="L324">        return m.matches();</span>
+    }
+    private boolean phoneNumberDuplicateCheck(String phoneNumber){
+        //01012341234 형태로 들어올시
+<span class="nc" id="L328">        return memberRepository.existsByPhoneNumber(phoneNumber);</span>
+    }
+    private boolean nickNameDuplicateCheck(String nickname){
+<span class="nc" id="L331">        return memberRepository.existsByNickname(nickname);</span>
+    }
+    private boolean emailDuplicateCheck(String email){
+<span class="nc" id="L334">        final String reg = &quot;^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$&quot;;</span>
+<span class="nc" id="L335">        Pattern p = Pattern.compile(reg);</span>
+<span class="nc" id="L336">        Matcher m = p.matcher(email);</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if(!m.matches()){</span>
+<span class="nc" id="L338">            throw new MemberException(MemberErrorCode.MEMBER_EMAIL_FORM);</span>
+        };
+<span class="nc" id="L340">        return existMemberRepository.existsByMemberEmail(email);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

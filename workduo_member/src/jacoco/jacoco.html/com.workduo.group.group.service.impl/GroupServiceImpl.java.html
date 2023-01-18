@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.group.group.service.impl</a> &gt; <span class="el_source">GroupServiceImpl.java</span></div><h1>GroupServiceImpl.java</h1><pre class="source lang-java linenums">package com.workduo.group.group.service.impl;
+
+import com.workduo.area.siggarea.entity.SiggArea;
+import com.workduo.area.siggarea.repository.SiggAreaRepository;
+import com.workduo.common.CommonRequestContext;
+import com.workduo.error.group.exception.GroupException;
+import com.workduo.error.member.exception.MemberException;
+import com.workduo.group.group.dto.GroupDto;
+import com.workduo.group.group.dto.GroupParticipantsDto;
+import com.workduo.group.group.dto.ListGroup;
+import com.workduo.group.group.entity.Group;
+import com.workduo.group.group.entity.GroupJoinMember;
+import com.workduo.group.group.entity.GroupLike;
+import com.workduo.group.group.repository.GroupJoinMemberRepository;
+import com.workduo.group.group.repository.GroupLikeRepository;
+import com.workduo.group.group.repository.GroupRepository;
+import com.workduo.group.group.repository.query.GroupQueryRepository;
+import com.workduo.group.group.service.GroupService;
+import com.workduo.group.group.type.GroupStatus;
+import com.workduo.group.group.entity.GroupCreateMember;
+import com.workduo.group.group.repository.GroupCreateMemberRepository;
+import com.workduo.group.groupmeetingparticipant.repository.GroupMeetingParticipantRepository;
+import domain.member.Member;
+import com.workduo.member.member.repository.MemberRepository;
+import com.workduo.member.membercalendar.repository.MemberCalendarRepository;
+import com.workduo.sport.sport.entity.Sport;
+import com.workduo.sport.sport.repository.SportRepository;
+import com.workduo.util.AwsS3Utils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.persistence.EntityManager;
+
+import java.util.List;
+
+import static com.workduo.error.group.type.GroupErrorCode.*;
+import static com.workduo.error.member.type.MemberErrorCode.MEMBER_EMAIL_ERROR;
+import static com.workduo.group.group.dto.CreateGroup.Request;
+import static com.workduo.group.group.type.GroupJoinMemberStatus.GROUP_JOIN_MEMBER_STATUS_ING;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_LEADER;
+import static com.workduo.group.group.type.GroupRole.GROUP_ROLE_NORMAL;
+import static com.workduo.group.group.type.GroupStatus.GROUP_STATUS_ING;
+import static org.springframework.util.StringUtils.hasText;
+
+<span class="nc" id="L50">@Slf4j</span>
+@Service
+<span class="nc" id="L52">@RequiredArgsConstructor</span>
+public class GroupServiceImpl implements GroupService {
+
+    private final MemberRepository memberRepository;
+    private final MemberCalendarRepository memberCalendarRepository;
+    private final GroupRepository groupRepository;
+    private final GroupQueryRepository groupQueryRepository;
+    private final GroupCreateMemberRepository groupCreateMemberRepository;
+    private final GroupJoinMemberRepository groupJoinMemberRepository;
+    private final GroupMeetingParticipantRepository groupMeetingParticipantRepository;
+    private final GroupLikeRepository groupLikeRepository;
+    private final SportRepository sportRepository;
+    private final SiggAreaRepository siggAreaRepository;
+    private final CommonRequestContext context;
+    private final AwsS3Utils awsS3Utils;
+    private final EntityManager entityManager;
+
+    /**
+     * 그룹 생성
+     * @param request
+     */
+    @Override
+    @Transactional
+    public void createGroup(Request request, List&lt;MultipartFile&gt; multipartFiles) {
+<span class="nc" id="L76">        Member member = getMember(context.getMemberEmail());</span>
+<span class="nc" id="L77">        SiggArea siggArea = getSiggArea(request.getSgg());</span>
+
+<span class="nc" id="L79">        Sport sport = getSport(request.getSportId());</span>
+
+<span class="nc" id="L81">        createGroupValidate(member);</span>
+
+<span class="nc" id="L83">        Group group = Group.builder()</span>
+<span class="nc" id="L84">                .siggArea(siggArea)</span>
+<span class="nc" id="L85">                .sport(sport)</span>
+<span class="nc" id="L86">                .name(request.getName())</span>
+<span class="nc" id="L87">                .limitPerson(request.getLimitPerson())</span>
+<span class="nc" id="L88">                .introduce(request.getIntroduce())</span>
+<span class="nc" id="L89">                .groupStatus(GROUP_STATUS_ING)</span>
+<span class="nc" id="L90">                .build();</span>
+
+<span class="nc" id="L92">        groupRepository.save(group);</span>
+<span class="nc" id="L93">        entityManager.flush();</span>
+
+<span class="nc" id="L95">        String path = generatePath(group.getId());</span>
+<span class="nc" id="L96">        List&lt;String&gt; files = awsS3Utils.uploadFile(multipartFiles, path);</span>
+<span class="nc" id="L97">        group.updateThumbnail(files.get(0));</span>
+
+<span class="nc" id="L99">        GroupJoinMember groupJoinMember = GroupJoinMember.builder()</span>
+<span class="nc" id="L100">                .member(member)</span>
+<span class="nc" id="L101">                .group(group)</span>
+<span class="nc" id="L102">                .groupJoinMemberStatus(GROUP_JOIN_MEMBER_STATUS_ING)</span>
+<span class="nc" id="L103">                .groupRole(GROUP_ROLE_LEADER)</span>
+<span class="nc" id="L104">                .build();</span>
+
+<span class="nc" id="L106">        groupJoinMemberRepository.save(groupJoinMember);</span>
+
+<span class="nc" id="L108">        GroupCreateMember groupCreateMember = GroupCreateMember.builder()</span>
+<span class="nc" id="L109">                .group(group)</span>
+<span class="nc" id="L110">                .member(member)</span>
+<span class="nc" id="L111">                .build();</span>
+
+<span class="nc" id="L113">        groupCreateMemberRepository.save(groupCreateMember);</span>
+<span class="nc" id="L114">    }</span>
+
+    /**
+     * 그룹 해지 - 그룹장만 가능
+     * @param groupId
+     */
+    @Override
+    @Transactional
+    public void deleteGroup(Long groupId) {
+<span class="nc" id="L123">        Member member = getMember(context.getMemberEmail());</span>
+
+<span class="nc" id="L125">        Group group = getGroup(groupId);</span>
+
+<span class="nc" id="L127">        boolean existsGroupLeader =</span>
+<span class="nc" id="L128">                groupCreateMemberRepository.existsByMemberAndGroup(member, group);</span>
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (!existsGroupLeader) {</span>
+<span class="nc" id="L131">            throw new GroupException(GROUP_NOT_LEADER);</span>
+        }
+
+<span class="nc" id="L134">        groupCreateMemberRepository.deleteByMemberAndGroup(member, group);</span>
+<span class="nc" id="L135">        groupJoinMemberRepository.updateGroupJoinMemberStatusCancel(group);</span>
+<span class="nc" id="L136">        groupMeetingParticipantRepository.deleteByGroup(group);</span>
+<span class="nc" id="L137">        memberCalendarRepository.updateMemberCalendarMeetingActiveStatusGroupCancel(group);</span>
+<span class="nc" id="L138">        group.updateGroupStatusCancel();</span>
+<span class="nc" id="L139">    }</span>
+
+    /**
+     * 그룹 탈퇴 - 그룹장은 불가능
+     * @param groupId
+     */
+    @Override
+    @Transactional
+    public void withdrawGroup(Long groupId) {
+<span class="nc" id="L148">        Member member = getMember(context.getMemberEmail());</span>
+<span class="nc" id="L149">        Group group = getGroup(groupId);</span>
+<span class="nc" id="L150">        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);</span>
+
+<span class="nc" id="L152">        withdrawGroupValidate(member, group, groupJoinMember);</span>
+
+<span class="nc" id="L154">        groupMeetingParticipantRepository.deleteByGroupAndMember(group, member);</span>
+<span class="nc" id="L155">        memberCalendarRepository.updateMemberCalendarMemberAndGroupWithdraw(member, group);</span>
+<span class="nc" id="L156">        groupJoinMember.withdrawGroup();</span>
+<span class="nc" id="L157">    }</span>
+
+    /**
+     * 그룹 상세
+     * @param groupId
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public GroupDto groupDetail(Long groupId) {
+//        getMember(context.getMemberEmail());
+
+<span class="nc" id="L169">        Group group = getGroup(groupId);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (group.getGroupStatus() != GROUP_STATUS_ING) {</span>
+<span class="nc" id="L171">            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);</span>
+        }
+
+<span class="nc" id="L174">        return groupQueryRepository.findById(groupId)</span>
+<span class="nc" id="L175">                .orElseThrow(() -&gt; new GroupException(GROUP_NOT_FOUND));</span>
+    }
+
+    /**
+     * 그룹 리스트
+     *
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;GroupDto&gt; groupList(Pageable pageable, ListGroup.Request condition) {
+<span class="nc" id="L186">        String memberEmail = context.getMemberEmail();</span>
+<span class="nc" id="L187">        Long memberId = null;</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (hasText(memberEmail)) {</span>
+<span class="nc" id="L189">            Member member = getMember(memberEmail);</span>
+<span class="nc" id="L190">            memberId = member.getId();</span>
+        }
+
+<span class="nc" id="L193">        return groupQueryRepository.findByGroupList(pageable, memberId, condition);</span>
+    }
+
+    /**
+     * 그룹 좋아요
+     * @param groupId
+     */
+    @Override
+    @Transactional
+    public void groupLike(Long groupId) {
+<span class="nc" id="L203">        Member member = getMember(context.getMemberEmail());</span>
+<span class="nc" id="L204">        Group group = getGroup(groupId);</span>
+
+<span class="nc" id="L206">        groupLikeValidate(member, group);</span>
+
+<span class="nc" id="L208">        GroupLike groupLike = GroupLike.builder()</span>
+<span class="nc" id="L209">                .group(group)</span>
+<span class="nc" id="L210">                .member(member)</span>
+<span class="nc" id="L211">                .build();</span>
+
+<span class="nc" id="L213">        groupLikeRepository.save(groupLike);</span>
+<span class="nc" id="L214">    }</span>
+
+    /**
+     * 그룹 좋아요 취소
+     * @param groupId
+     */
+    @Override
+    @Transactional
+    public void groupUnLike(Long groupId) {
+<span class="nc" id="L223">        Member member = getMember(context.getMemberEmail());</span>
+<span class="nc" id="L224">        Group group = getGroup(groupId);</span>
+
+<span class="nc" id="L226">        groupUnLikeValidate(member, group);</span>
+
+<span class="nc" id="L228">        groupLikeRepository.deleteByGroupAndMember(group, member);</span>
+<span class="nc" id="L229">    }</span>
+
+    /**
+     * 그룹 참여
+     * @param groupId
+     */
+    @Override
+    @Transactional
+    public void groupParticipant(Long groupId) {
+<span class="nc" id="L238">        Member member = getMember(context.getMemberEmail());</span>
+<span class="nc" id="L239">        Group group = getGroup(groupId);</span>
+
+<span class="nc" id="L241">        groupJoinValidate(member, group);</span>
+
+<span class="nc" id="L243">        GroupJoinMember groupJoinMember = GroupJoinMember.builder()</span>
+<span class="nc" id="L244">                .group(group)</span>
+<span class="nc" id="L245">                .member(member)</span>
+<span class="nc" id="L246">                .groupJoinMemberStatus(GROUP_JOIN_MEMBER_STATUS_ING)</span>
+<span class="nc" id="L247">                .groupRole(GROUP_ROLE_NORMAL)</span>
+<span class="nc" id="L248">                .build();</span>
+
+<span class="nc" id="L250">        groupJoinMemberRepository.save(groupJoinMember);</span>
+<span class="nc" id="L251">    }</span>
+
+    /**
+     * 그룹 참여자 리스트
+     * @param pageable
+     * @param groupId
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;GroupParticipantsDto&gt; groupParticipantList(Pageable pageable, Long groupId) {
+<span class="nc" id="L262">        Member member = getMember(context.getMemberEmail());</span>
+<span class="nc" id="L263">        Group group = getGroup(groupId);</span>
+<span class="nc" id="L264">        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);</span>
+
+<span class="nc" id="L266">        groupParticipantValidate(member, group, groupJoinMember);</span>
+<span class="nc" id="L267">        return groupQueryRepository.findByGroupParticipantList(pageable, groupId);</span>
+    }
+
+    private void groupParticipantValidate(Member member, Group group, GroupJoinMember groupJoinMember) {
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (group.getGroupStatus() != GROUP_STATUS_ING) {</span>
+<span class="nc" id="L272">            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);</span>
+        }
+
+<span class="nc" id="L275">        boolean existsByMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        if (!existsByMember) {</span>
+<span class="nc" id="L277">            throw new GroupException(GROUP_NOT_FOUND_USER);</span>
+        }
+
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {</span>
+<span class="nc" id="L281">            throw new GroupException(GROUP_ALREADY_WITHDRAW);</span>
+        }
+<span class="nc" id="L283">    }</span>
+
+    private void groupJoinValidate(Member member, Group group) {
+
+<span class="nc" id="L287">        boolean exists = groupJoinMemberRepository.existsByGroupAndMember(group, member);</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        if (exists) {</span>
+<span class="nc" id="L289">            throw new GroupException(GROUP_ALREADY_PARTICIPANT) ;</span>
+        }
+
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        if (group.getGroupStatus() != GROUP_STATUS_ING) {</span>
+<span class="nc" id="L293">            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);</span>
+        }
+
+<span class="nc" id="L296">        Integer groupParticipants = groupJoinMemberRepository.countByGroup(group);</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">        if (groupParticipants &gt;= group.getLimitPerson()) {</span>
+<span class="nc" id="L298">            throw new GroupException(GROUP_MAXIMUM_PARTICIPANT);</span>
+        }
+<span class="nc" id="L300">    }</span>
+
+    private void createGroupValidate(Member member) {
+
+<span class="nc" id="L304">        Long groupCreateMemberCount = groupCreateMemberCount(member);</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        if (groupCreateMemberCount &gt;= 3) {</span>
+<span class="nc" id="L306">            throw new GroupException(GROUP_MAXIMUM_EXCEEDED);</span>
+        }
+<span class="nc" id="L308">    }</span>
+
+    private void withdrawGroupValidate(Member member, Group group, GroupJoinMember groupJoinMember) {
+
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        if (group.getGroupStatus() != GroupStatus.GROUP_STATUS_ING) {</span>
+<span class="nc" id="L313">            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);</span>
+        }
+
+<span class="nc" id="L316">        boolean existsGroupLeader =</span>
+                groupCreateMemberRepository.existsByMemberAndGroup
+<span class="nc" id="L318">                        (member, group);</span>
+
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (existsGroupLeader) {</span>
+<span class="nc" id="L321">            throw new GroupException(GROUP_LEADER_NOT_WITHDRAW);</span>
+        }
+
+<span class="nc bnc" id="L324" title="All 2 branches missed.">        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {</span>
+<span class="nc" id="L325">            throw new GroupException(GROUP_ALREADY_WITHDRAW);</span>
+        }
+
+<span class="nc" id="L328">    }</span>
+
+    private void groupLikeValidate(Member member, Group group) {
+
+<span class="nc" id="L332">        boolean exists = groupLikeRepository.existsByGroupAndMember(group, member);</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        if (exists) {</span>
+<span class="nc" id="L334">            throw new GroupException(GROUP_ALREADY_LIKE);</span>
+        }
+
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (group.getGroupStatus() != GroupStatus.GROUP_STATUS_ING) {</span>
+<span class="nc" id="L338">            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);</span>
+        }
+
+<span class="nc" id="L341">        boolean existsByMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        if (!existsByMember ) {</span>
+<span class="nc" id="L343">            throw new GroupException(GROUP_NOT_FOUND_USER);</span>
+        }
+
+<span class="nc" id="L346">        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {</span>
+<span class="nc" id="L348">            throw new GroupException(GROUP_ALREADY_WITHDRAW);</span>
+        }
+<span class="nc" id="L350">    }</span>
+
+    private void groupUnLikeValidate(Member member, Group group) {
+
+<span class="nc bnc" id="L354" title="All 2 branches missed.">        if (group.getGroupStatus() != GroupStatus.GROUP_STATUS_ING) {</span>
+<span class="nc" id="L355">            throw new GroupException(GROUP_ALREADY_DELETE_GROUP);</span>
+        }
+
+<span class="nc" id="L358">        boolean existsByMember = groupJoinMemberRepository.existsByGroupAndMember(group, member);</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">        if (!existsByMember ) {</span>
+<span class="nc" id="L360">            throw new GroupException(GROUP_NOT_FOUND_USER);</span>
+        }
+
+<span class="nc" id="L363">        GroupJoinMember groupJoinMember = getGroupJoinMember(member, group);</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        if (groupJoinMember.getGroupJoinMemberStatus() != GROUP_JOIN_MEMBER_STATUS_ING) {</span>
+<span class="nc" id="L365">            throw new GroupException(GROUP_ALREADY_WITHDRAW);</span>
+        }
+<span class="nc" id="L367">    }</span>
+
+    private GroupJoinMember getGroupJoinMember(Member member, Group group) {
+<span class="nc" id="L370">        return groupJoinMemberRepository.findByMemberAndGroup(member, group)</span>
+<span class="nc" id="L371">                .orElseThrow(() -&gt; new GroupException(GROUP_NOT_FOUND_USER));</span>
+    }
+
+    private Member getMember(String email) {
+<span class="nc" id="L375">        return memberRepository.findByEmail(email)</span>
+<span class="nc" id="L376">                .orElseThrow(() -&gt; new MemberException(MEMBER_EMAIL_ERROR));</span>
+    }
+
+    private Group getGroup(Long groupId) {
+<span class="nc" id="L380">        return groupRepository.findById(groupId)</span>
+<span class="nc" id="L381">                .orElseThrow(() -&gt; new GroupException(GROUP_NOT_FOUND));</span>
+    }
+
+    private Long groupCreateMemberCount(Member member) {
+<span class="nc" id="L385">        return groupCreateMemberRepository.countByMember(member);</span>
+    }
+
+    private Sport getSport(Integer id) {
+<span class="nc" id="L389">        return sportRepository.findById(id)</span>
+<span class="nc" id="L390">                .orElseThrow(() -&gt; new IllegalStateException(&quot;해당 운동은 없는 운동입니다.&quot;));</span>
+    }
+
+    private SiggArea getSiggArea(String sgg) {
+<span class="nc" id="L394">        return siggAreaRepository.findBySgg(sgg)</span>
+<span class="nc" id="L395">                .orElseThrow(() -&gt; new IllegalStateException(&quot;해당 지역은 없는 지역입니다.&quot;));</span>
+    }
+
+    public String generatePath(Long groupId) {
+<span class="nc" id="L399">        return &quot;group/&quot; + groupId + &quot;/&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RedisConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.configuration.redis</a> &gt; <span class="el_source">RedisConfig.java</span></div><h1>RedisConfig.java</h1><pre class="source lang-java linenums">package com.workduo.configuration.redis;
+
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+@Configuration
+@EnableCaching
+<span class="nc" id="L23">public class RedisConfig {</span>
+
+    @Value(&quot;${spring.redis.host}&quot;)
+    private String host;
+
+    @Value(&quot;${spring.redis.port}&quot;)
+    private int port;
+
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory() {
+        // single instance server이기 때문에 RedisStandaloneConfiguration instance 생성
+<span class="nc" id="L34">        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();</span>
+<span class="nc" id="L35">        redisStandaloneConfiguration.setHostName(host);</span>
+<span class="nc" id="L36">        redisStandaloneConfiguration.setPort(port);</span>
+
+<span class="nc" id="L38">        LettuceConnectionFactory lettuceConnectionFactory</span>
+                = new LettuceConnectionFactory(redisStandaloneConfiguration);
+
+<span class="nc" id="L41">        return lettuceConnectionFactory;</span>
+    }
+
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        // Serialization
+        // 데이터 or 오브젝트와 같은 값들을 바이트 형태로 반환
+        // 자바에서 쓰고있는 데이터를 다른 곳에서도 쓸 수 있는 기본 데이터 타입인 바이트 형태로 바꾸는 과정
+<span class="nc" id="L49">        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()</span>
+<span class="nc" id="L50">                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))</span>
+<span class="nc" id="L51">                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));</span>
+
+<span class="nc" id="L53">        return RedisCacheManager.RedisCacheManagerBuilder</span>
+<span class="nc" id="L54">                .fromConnectionFactory(redisConnectionFactory)</span>
+<span class="nc" id="L55">                .cacheDefaults(redisCacheConfiguration)</span>
+<span class="nc" id="L56">                .build();</span>
+    }
+
+    @Bean
+    public RedisTemplate&lt;?, ?&gt; redisTemplate() {
+<span class="nc" id="L61">        RedisTemplate&lt;byte[], byte[]&gt; redisTemplate = new RedisTemplate&lt;&gt;();</span>
+<span class="nc" id="L62">        redisTemplate.setConnectionFactory(redisConnectionFactory());</span>
+<span class="nc" id="L63">        return redisTemplate;</span>
+    }
+
+    @Bean
+    RedissonClient redissonClient() {
+<span class="nc" id="L68">        Config redisConfig = new Config();</span>
+<span class="nc" id="L69">        redisConfig.useSingleServer()</span>
+<span class="nc" id="L70">                .setAddress(&quot;redis://&quot; + host + &quot;:&quot; + port);</span>
+
+<span class="nc" id="L72">        return Redisson.create(redisConfig);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

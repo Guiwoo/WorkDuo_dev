@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.configuration.jwt</a> &gt; <span class="el_source">TokenProvider.java</span></div><h1>TokenProvider.java</h1><pre class="source lang-java linenums">package com.workduo.configuration.jwt;
+
+import com.workduo.member.member.service.MemberService;
+import com.workduo.member.member.dto.MemberRoleDto;
+import com.workduo.member.member.entity.MemberRole;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.List;
+
+@Component
+<span class="nc" id="L23">@RequiredArgsConstructor</span>
+public class TokenProvider {
+
+    private static final String KEY_ROLES = &quot;roles&quot;;
+    private static final long TOKEN_EXPIRE_TIME = 1000 * 60 * 60;
+
+    private final MemberService memberService;
+
+<span class="nc" id="L31">    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);</span>
+    public String generateToken(String email, List&lt;MemberRoleDto&gt; roles) {
+<span class="nc" id="L33">        Claims claims = Jwts.claims().setSubject(email);</span>
+<span class="nc" id="L34">        claims.put(KEY_ROLES, roles);</span>
+
+<span class="nc" id="L36">        var now = new Date();</span>
+<span class="nc" id="L37">        var expireDate = new Date(now.getTime() + TOKEN_EXPIRE_TIME);</span>
+
+<span class="nc" id="L39">        return Jwts.builder()</span>
+<span class="nc" id="L40">                .setClaims(claims)</span>
+<span class="nc" id="L41">                .setIssuedAt(now)</span>
+<span class="nc" id="L42">                .setExpiration(expireDate)</span>
+<span class="nc" id="L43">                .signWith(this.secretKey)</span>
+<span class="nc" id="L44">                .compact();</span>
+    }
+
+    // jwt token으로 부터 인증 정보를 가져오는 메소드
+    public Authentication getAuthentication(String jwt) {
+<span class="nc" id="L49">        UserDetails userDetails = memberService.loadUserByUsername(getEmail(jwt));</span>
+
+<span class="nc" id="L51">        return new UsernamePasswordAuthenticationToken(userDetails, &quot;&quot;, userDetails.getAuthorities());</span>
+    }
+
+    public String getEmail(String token) {
+<span class="nc" id="L55">        return this.parseClaims(token).getSubject();</span>
+    }
+
+    public boolean validateToken(String token) {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (!StringUtils.hasText(token)) {</span>
+<span class="nc" id="L60">            return false;</span>
+        }
+
+<span class="nc" id="L63">        Claims claims = this.parseClaims(token);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        return !claims.getExpiration().before(new Date());</span>
+    }
+
+    public List&lt;MemberRoleDto&gt; getKeyRoles(String token){
+<span class="nc" id="L68">        return this.parseClaims(token).get(KEY_ROLES, List.class);</span>
+    }
+    public Claims parseClaims(String token) {
+        try {
+<span class="nc" id="L72">            return Jwts.parser()</span>
+<span class="nc" id="L73">                    .setSigningKey(this.secretKey)</span>
+<span class="nc" id="L74">                    .parseClaimsJws(token).getBody();</span>
+<span class="nc" id="L75">        } catch (ExpiredJwtException e) {</span>
+<span class="nc" id="L76">            return e.getClaims();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

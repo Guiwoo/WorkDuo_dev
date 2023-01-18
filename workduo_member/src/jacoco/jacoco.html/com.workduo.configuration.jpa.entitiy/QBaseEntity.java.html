@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QBaseEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.configuration.jpa.entitiy</a> &gt; <span class="el_source">QBaseEntity.java</span></div><h1>QBaseEntity.java</h1><pre class="source lang-java linenums">package com.workduo.configuration.jpa.entitiy;
+
+import static com.querydsl.core.types.PathMetadataFactory.*;
+
+import com.querydsl.core.types.dsl.*;
+
+import com.querydsl.core.types.PathMetadata;
+import javax.annotation.processing.Generated;
+import com.querydsl.core.types.Path;
+
+
+/**
+ * QBaseEntity is a Querydsl query type for BaseEntity
+ */
+@Generated(&quot;com.querydsl.codegen.DefaultSupertypeSerializer&quot;)
+public class QBaseEntity extends EntityPathBase&lt;BaseEntity&gt; {
+
+    private static final long serialVersionUID = -1961163179L;
+
+<span class="nc" id="L20">    public static final QBaseEntity baseEntity = new QBaseEntity(&quot;baseEntity&quot;);</span>
+
+<span class="nc" id="L22">    public final DateTimePath&lt;java.time.LocalDateTime&gt; createdAt = createDateTime(&quot;createdAt&quot;, java.time.LocalDateTime.class);</span>
+
+<span class="nc" id="L24">    public final DateTimePath&lt;java.time.LocalDateTime&gt; updatedAt = createDateTime(&quot;updatedAt&quot;, java.time.LocalDateTime.class);</span>
+
+    public QBaseEntity(String variable) {
+<span class="nc" id="L27">        super(BaseEntity.class, forVariable(variable));</span>
+<span class="nc" id="L28">    }</span>
+
+    public QBaseEntity(Path&lt;? extends BaseEntity&gt; path) {
+<span class="nc" id="L31">        super(path.getType(), path.getMetadata());</span>
+<span class="nc" id="L32">    }</span>
+
+    public QBaseEntity(PathMetadata metadata) {
+<span class="nc" id="L35">        super(BaseEntity.class, metadata);</span>
+<span class="nc" id="L36">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

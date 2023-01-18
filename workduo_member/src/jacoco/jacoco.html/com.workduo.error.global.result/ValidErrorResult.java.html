@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidErrorResult.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">workduo</a> &gt; <a href="index.source.html" class="el_package">com.workduo.error.global.result</a> &gt; <span class="el_source">ValidErrorResult.java</span></div><h1>ValidErrorResult.java</h1><pre class="source lang-java linenums">package com.workduo.error.global.result;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Getter
+<span class="nc" id="L15">@NoArgsConstructor</span>
+<span class="nc" id="L16">@AllArgsConstructor</span>
+<span class="nc" id="L17">@Builder</span>
+public class ValidErrorResult {
+
+<span class="nc" id="L20">    private String success;</span>
+<span class="nc" id="L21">    private List&lt;String&gt; messages;</span>
+
+   public static ValidErrorResult of(BindingResult bindingResult) {
+<span class="nc" id="L24">       return ValidErrorResult.builder()</span>
+<span class="nc" id="L25">               .success(&quot;F&quot;)</span>
+<span class="nc" id="L26">               .messages(bindingResult.getAllErrors().stream()</span>
+<span class="nc" id="L27">                       .map(DefaultMessageSourceResolvable::getDefaultMessage)</span>
+<span class="nc" id="L28">                       .collect(Collectors.toList()))</span>
+<span class="nc" id="L29">               .build();</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

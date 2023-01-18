@@ -1,119 +1,102 @@
 buildscript {
     ext {
         queryDslVersion = "5.0.0"
+        springBootVersion = '2.7.3'
+        querydslPluginVersion = "1.0.10"
+    }
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "io.spring.gradle:dependency-management-plugin:1.1.0"
+        classpath "gradle.plugin.com.ewerk.gradle.plugins:querydsl-plugin:${querydslPluginVersion}"
     }
 }
-
-plugins {
-    id 'org.springframework.boot' version '2.7.3'
-    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
-    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
-    id 'java'
-    id 'jacoco'
+allprojects{
+    group = 'workduo'
+    version = '0.1.0-SNAPSHOT'
 }
 
-group = 'com.example'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'com.ewerk.gradle.plugins.querydsl'
 
-jacoco {
-    toolVersion = "0.8.8"
-    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
-}
+    group = 'core'
+    version = '1.0'
+    sourceCompatibility = '11'
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    repositories {
+        mavenCentral()
     }
-}
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
-    implementation 'org.redisson:redisson-spring-boot-starter:3.17.5'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'com.10duke.client.jwt:jjwt:1.1.0'
-    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-    implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
-    implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
-    implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
-    implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'mysql:mysql-connector-java'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
-test {
-    finalizedBy jacocoTestReport
-}
-jacocoTestReport{
-    dependsOn test
-    reports {
-        html.enabled true
-        xml.enabled true
-        csv.enabled true
-
-        html.destination file("src/jacoco/jacoco.html")
-        xml.destination file("src/jacoco/jacoco.xml")
-    }
-    finalizedBy 'jacocoTestCoverageVerification'
-}
-
-jacocoTestCoverageVerification {
-    violationRules {
-//        추후 회의를 통해 violation Rules 설정이 필요합니다.
-        rule {
-            element = 'CLASS'
-            enabled = true
-
-            limit {
-                counter = 'LINE'
-                value = 'COVEREDRATIO'
-                minimum = 0.30
-            }
-
-            limit {
-                counter = 'METHOD'
-                value = 'COVEREDRATIO'
-                minimum = 0.30
-            }
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
         }
     }
-}
 
-def querydslDir = "$buildDir/generated/querydsl"
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+        implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
+        implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+        implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+        implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
-querydsl {
-    jpa = true
-    querydslSourcesDir = querydslDir
-}
-
-sourceSets {
-    main.java.srcDir querydslDir
-}
-
-compileQuerydsl {
-    options.annotationProcessorPath = configurations.querydsl
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation('org.springframework.boot:spring-boot-starter-test') {
+            exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+        }
     }
-    querydsl.extendsFrom compileClasspath
+    def querydslDir = "$buildDir/generated/querydsl"
+
+    querydsl {
+        jpa = true
+        querydslSourcesDir = querydslDir
+    }
+
+    sourceSets {
+        main.java.srcDir querydslDir
+    }
+
+
+    configurations {
+        querydsl.extendsFrom compileClasspath
+    }
+
+    compileQuerydsl {
+        options.annotationProcessorPath = configurations.querydsl
+    }
+}
+
+//project(':workduo_core') {
+//    // core 에서는 bootjar로 패키징 할 필요가 없으므로 추가
+//    bootJar.enabled = false
+//    jar.enabled = true
+//    dependencies {}
+//}
+project(':workduo_member') {
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+        implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
+        implementation 'org.redisson:redisson-spring-boot-starter:3.17.5'
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+        implementation 'com.10duke.client.jwt:jjwt:1.1.0'
+        implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
+        compileOnly 'org.projectlombok:lombok'
+        runtimeOnly 'com.h2database:h2'
+        compileOnly project(':workduo_core')
+        runtimeOnly 'mysql:mysql-connector-java'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+    }
 }
