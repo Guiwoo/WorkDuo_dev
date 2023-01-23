@@ -1,5 +1,6 @@
 package com.workduo.member.content.dto;
 
+import com.core.domain.member.dto.MemberContentImageDto;
 import com.core.domain.memberContent.entity.MemberContent;
 import lombok.*;
 

@@ -1,5 +1,6 @@
 package com.workduo.member.membercalendar.dto;
 
+import com.core.domain.memberCalendar.dto.CalendarDayDto;
 import lombok.Builder;
 import lombok.Data;
 

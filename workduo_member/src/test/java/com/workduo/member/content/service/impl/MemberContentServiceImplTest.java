@@ -6,7 +6,6 @@ import com.workduo.error.member.type.MemberErrorCode;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.entity.MemberContent;
 import com.workduo.member.content.entity.MemberContentComment;
-import com.workduo.member.content.repository.*;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
 import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;

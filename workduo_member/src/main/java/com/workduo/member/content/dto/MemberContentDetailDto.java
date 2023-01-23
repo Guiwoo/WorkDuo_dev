@@ -1,6 +1,8 @@
 package com.workduo.member.content.dto;
 
 
+import com.core.domain.member.dto.MemberContentCommentDto;
+import com.core.domain.member.dto.MemberContentImageDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

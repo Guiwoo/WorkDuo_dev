@@ -1,6 +1,9 @@
 package com.workduo.member.content.service.impl;
 
 import com.core.domain.common.CommonRequestContext;
+import com.core.domain.member.dto.MemberContentCommentDto;
+import com.core.domain.member.dto.MemberContentDto;
+import com.core.domain.member.dto.MemberContentImageDto;
 import com.core.domain.member.entity.Member;
 import com.core.domain.member.repository.MemberRepository;
 import com.core.domain.memberContent.dto.ContentMemberUpdate;
@@ -11,7 +14,7 @@ import com.core.error.member.type.MemberErrorCode;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.repository.query.impl.MemberContentQueryRepositoryImpl;
 import com.workduo.member.content.service.MemberContentService;
-import com.workduo.util.AwsS3Provider;
+import com.core.util.AwsS3Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

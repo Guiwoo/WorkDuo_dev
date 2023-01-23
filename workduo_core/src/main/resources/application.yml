@@ -1,0 +1,65 @@
+spring:
+  profiles:
+    # local 세팅 입니다. 추후 prod 타입일경우 active : prod 변경 필요
+    # application-prod.properties
+    active: dev
+
+  datasource:
+    #    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_HOST}
+    username: ${DB_NAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+
+  redis:
+    port: ${REDIS_PORT}
+    host: ${REDIS_HOST}
+  #    password: ${REDIS_PASSWORD}
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  jwt:
+    secret: ${JWT_SECRET}
+
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 1000
+        jdbc.batch_size: 1000
+        dialect: com.workduo.configuration.querydsl.CustomMySQL8InnoDBDialect
+    database: mysql
+  #    hibernate:
+  #      ddl-auto: create
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+#      h2 DB Setting for local
+#    h2:
+#      console:
+#        enabled: true
+#
+#      datasource:
+#        url: jdbc:h2:mem:test
+#        username: sa
+#        password:
+#        driver-class-name: org.h2.Driver
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    #    org.hibernate.SQL: debug
+    com.amazonaws.util.EC2MetadataUtils: ERROR
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui-custom.html
+    operations-sorter: method
+    tags-sorter: alpha

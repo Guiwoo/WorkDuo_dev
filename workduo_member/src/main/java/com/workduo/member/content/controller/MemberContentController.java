@@ -3,19 +3,12 @@ package com.workduo.member.content.controller;
 import com.core.domain.memberContent.dto.ContentMemberUpdate;
 import com.workduo.member.content.dto.*;
 import com.workduo.member.content.service.MemberContentService;
-import com.workduo.util.ApiUtils.ApiResult;
+import com.core.util.ApiUtils.ApiResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.SchemaProperties;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.Lint;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 import java.util.List;
 
-import static com.workduo.util.ApiUtils.success;
+import static com.core.util.ApiUtils.success;
 
 ;
 

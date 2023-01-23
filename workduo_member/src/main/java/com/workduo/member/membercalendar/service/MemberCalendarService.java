@@ -1,7 +1,6 @@
 package com.workduo.member.membercalendar.service;
 
 import com.workduo.member.membercalendar.dto.CalendarDay;
-import com.workduo.member.membercalendar.dto.CalendarDayDto;
 
 import java.time.LocalDate;
 import java.util.List;

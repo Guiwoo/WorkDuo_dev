@@ -1,11 +1,11 @@
 package com.workduo.member.membercalendar.repository.query;
 
+import com.core.domain.memberCalendar.dto.CalendarDayDto;
+import com.core.domain.memberCalendar.dto.QCalendarDayDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.workduo.member.membercalendar.dto.CalendarDayDto;
-import com.workduo.member.membercalendar.dto.QCalendarDayDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

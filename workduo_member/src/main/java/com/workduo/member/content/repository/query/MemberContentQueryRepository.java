@@ -1,5 +1,8 @@
 package com.workduo.member.content.repository.query;
 
+import com.core.domain.member.dto.MemberContentCommentDto;
+import com.core.domain.member.dto.MemberContentDto;
+import com.core.domain.member.dto.MemberContentImageDto;
 import com.workduo.member.content.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

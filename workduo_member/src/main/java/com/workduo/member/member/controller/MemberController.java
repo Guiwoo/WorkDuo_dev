@@ -1,9 +1,10 @@
 package com.workduo.member.member.controller;
 
 import com.core.domain.member.dto.MemberEdit;
+import com.core.util.ApiUtils.ApiResult;
+import com.group.group.service.GroupService;
 import com.workduo.configuration.jwt.TokenProvider;
 import com.workduo.configuration.jwt.memberrefreshtoken.service.MemberRefreshService;
-import com.workduo.group.group.service.GroupService;
 import com.workduo.member.history.service.LoginHistoryService;
 import com.workduo.member.member.dto.MemberChangePassword;
 import com.workduo.member.member.dto.MemberCreate;
@@ -11,7 +12,6 @@ import com.workduo.member.member.dto.MemberLogin;
 import com.workduo.member.member.dto.MemberProfileDto;
 import com.workduo.member.member.dto.auth.MemberAuthenticateDto;
 import com.workduo.member.member.service.MemberService;
-import com.workduo.util.ApiUtils.ApiResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.workduo.util.ApiUtils.success;
+import static com.core.util.ApiUtils.success;
 
 
 @RestController

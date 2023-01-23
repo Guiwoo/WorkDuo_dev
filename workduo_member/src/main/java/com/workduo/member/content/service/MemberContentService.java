@@ -1,5 +1,6 @@
 package com.workduo.member.content.service;
 
+import com.core.domain.member.dto.MemberContentCommentDto;
 import com.core.domain.memberContent.dto.ContentMemberUpdate;
 import com.workduo.member.content.dto.*;
 import org.springframework.data.domain.Page;

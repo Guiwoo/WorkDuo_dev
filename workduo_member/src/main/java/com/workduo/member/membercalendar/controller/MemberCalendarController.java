@@ -1,8 +1,8 @@
 package com.workduo.member.membercalendar.controller;
 
 import com.workduo.member.membercalendar.service.MemberCalendarService;
-import com.workduo.util.ApiUtils;
-import com.workduo.util.ApiUtils.ApiResult;
+import com.core.util.ApiUtils;
+import com.core.util.ApiUtils.ApiResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -6,7 +6,6 @@ import com.workduo.member.member.entity.Member;
 import com.workduo.member.member.repository.MemberRepository;
 import com.workduo.member.member.type.MemberStatus;
 import com.workduo.member.membercalendar.dto.CalendarDay;
-import com.workduo.member.membercalendar.dto.CalendarDayDto;
 import com.workduo.member.membercalendar.repository.query.MemberCalendarQueryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

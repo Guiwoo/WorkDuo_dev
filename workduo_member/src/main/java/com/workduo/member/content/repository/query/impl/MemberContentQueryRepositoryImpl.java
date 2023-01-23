@@ -1,5 +1,6 @@
 package com.workduo.member.content.repository.query.impl;
 
+import com.core.domain.member.dto.*;
 import com.core.domain.memberContent.entity.MemberContent;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -8,7 +9,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.workduo.member.content.dto.*;
+import com.workduo.member.content.dto.MemberContentListDto;
+import com.workduo.member.content.dto.MemberContentWithImage;
 import com.workduo.member.content.repository.query.MemberContentQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

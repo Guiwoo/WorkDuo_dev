@@ -1,9 +1,8 @@
 package com.workduo.member.content.dto;
 
+import com.core.domain.member.dto.MemberContentCommentDto;
 import lombok.*;
 import org.springframework.data.domain.Page;
-
-import java.util.List;
 
 public class ContentCommentList {
 

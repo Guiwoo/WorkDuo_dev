@@ -1,6 +1,5 @@
 package com.workduo.member.member.dto;
 
-import com.workduo.group.group.dto.CreateGroup;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 

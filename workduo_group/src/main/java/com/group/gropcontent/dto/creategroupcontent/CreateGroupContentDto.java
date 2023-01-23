@@ -1,0 +1,32 @@
+package com.group.gropcontent.dto.creategroupcontent;
+
+import com.core.domain.groupContent.entity.GroupContent;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CreateGroupContentDto {
+
+    private Long id;
+    private Long memberId;
+    private Long groupId;
+    private String title;
+    private String content;
+    private LocalDateTime createdAt;
+
+    public static CreateGroupContentDto fromEntity(GroupContent groupContent) {
+        return CreateGroupContentDto.builder()
+                .id(groupContent.getId())
+                .memberId(groupContent.getMember().getId())
+                .groupId(groupContent.getGroup().getId())
+                .title(groupContent.getTitle())
+                .content(groupContent.getContent())
+                .createdAt(groupContent.getCreatedAt())
+                .build();
+    }
+}

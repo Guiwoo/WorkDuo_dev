@@ -47,8 +47,13 @@ subprojects {
         implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
         implementation 'com.googlecode.json-simple:json-simple:1.1.1'
         implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+        implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
 
         compileOnly 'org.projectlombok:lombok'
+
+        runtimeOnly 'com.h2database:h2'
+        runtimeOnly 'mysql:mysql-connector-java'
+
         annotationProcessor 'org.projectlombok:lombok'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
         testImplementation('org.springframework.boot:spring-boot-starter-test') {
@@ -76,27 +81,22 @@ subprojects {
     }
 }
 
-//project(':workduo_core') {
-//    // core 에서는 bootjar로 패키징 할 필요가 없으므로 추가
-//    bootJar.enabled = false
-//    jar.enabled = true
-//    dependencies {}
-//}
 project(':workduo_member') {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-security'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
+        implementation 'com.10duke.client.jwt:jjwt:1.1.0'
+
+        compileOnly project(':workduo_core')
+        compileOnly project(':workduo_group')
+    }
+}
+
+project(":workduo_group"){
+    dependencies {
         implementation 'org.redisson:redisson-spring-boot-starter:3.17.5'
         implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-        implementation 'com.10duke.client.jwt:jjwt:1.1.0'
-        implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
-        compileOnly 'org.projectlombok:lombok'
-        runtimeOnly 'com.h2database:h2'
         compileOnly project(':workduo_core')
-        runtimeOnly 'mysql:mysql-connector-java'
-        annotationProcessor 'org.projectlombok:lombok'
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testImplementation 'org.springframework.security:spring-security-test'
     }
 }
