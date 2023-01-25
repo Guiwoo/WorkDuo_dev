@@ -1,4 +1,4 @@
-package com.workduo.configuration.querydsl;
+package com.core.config.querydsl;
 
 import org.hibernate.dialect.MySQL8Dialect;
 import org.hibernate.dialect.function.StandardSQLFunction;

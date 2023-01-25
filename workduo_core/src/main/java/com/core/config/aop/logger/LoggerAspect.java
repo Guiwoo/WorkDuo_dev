@@ -1,4 +1,4 @@
-package com.workduo.configuration.aop.logger;
+package com.core.config.aop.logger;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,7 +18,7 @@ import java.util.Map;
 @Component
 public class LoggerAspect {
 
-    @Around("execution(* com.workduo..*Controller.*(..))")
+    @Around("execution(* com.*..*Controller.*(..))")
     public Object methodLogger(ProceedingJoinPoint pjp) throws Throwable {
 
         try {

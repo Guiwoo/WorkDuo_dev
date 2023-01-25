@@ -1,4 +1,4 @@
-package com.workduo.configuration.querydsl;
+package com.core.config.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.context.annotation.Bean;
