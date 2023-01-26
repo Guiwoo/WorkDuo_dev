@@ -1,6 +1,6 @@
 rootProject.name = 'workduo'
-include 'workduo_core'
-include 'workduo_member'
-include 'workduo_group'
-include 'workduo_auth'
+include ':workduo_core'
+include ':workduo_member'
+include ':workduo_group'
+include ':workduo_auth'
 

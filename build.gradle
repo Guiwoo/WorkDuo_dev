@@ -1,31 +1,27 @@
 buildscript {
     ext {
         queryDslVersion = "5.0.0"
-        springBootVersion = '2.7.3'
-        querydslPluginVersion = "1.0.10"
     }
     repositories {
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
     }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath "io.spring.gradle:dependency-management-plugin:1.1.0"
-        classpath "gradle.plugin.com.ewerk.gradle.plugins:querydsl-plugin:${querydslPluginVersion}"
-    }
 }
-allprojects{
-    group = 'workduo'
-    version = '0.1.0-SNAPSHOT'
+plugins {
+    id 'org.springframework.boot' version '2.7.3'
+    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+    id 'java'
 }
 
-subprojects {
+subprojects{
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'com.ewerk.gradle.plugins.querydsl'
 
-    group = 'core'
-    version = '1.0'
+    group = 'workduo'
+    version = '0.1.0-SNAPSHOT'
     sourceCompatibility = '11'
 
     repositories {
@@ -45,6 +41,8 @@ subprojects {
         implementation 'com.googlecode.json-simple:json-simple:1.1.1'
         implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
         implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
+        implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+        implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
 
         compileOnly 'org.projectlombok:lombok'
 
@@ -57,15 +55,7 @@ subprojects {
             exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
         }
     }
-}
-project(':workduo_core'){
-    apply plugin: 'com.ewerk.gradle.plugins.querydsl'
-    dependencies {
-        implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
-        implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
-    }
     def querydslDir = "$buildDir/generated/querydsl"
-
     querydsl {
         jpa = true
         querydslSourcesDir = querydslDir
@@ -101,6 +91,8 @@ project(":workduo_group"){
     dependencies {
         implementation 'org.redisson:redisson-spring-boot-starter:3.17.5'
         implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
         compileOnly project(':workduo_core')
+//        compileOnly project(':workduo_member')
     }
 }
